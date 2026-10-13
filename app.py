@@ -1,6 +1,9 @@
 import base64
+import html as htmllib
 import json
 import random
+import re
+import uuid
 from datetime import date, datetime, timedelta
 from fractions import Fraction
 from pathlib import Path
@@ -18,11 +21,22 @@ MATHS_TO_SOLVE = 3             # maths problems to solve to tick the maths task
 TRIES_FOR_CLUE_1 = 2           # wrong tries before clue 1 appears
 TRIES_FOR_CLUE_2 = 4           # wrong tries before clue 2 appears
 TRIES_BEFORE_SKIP = 3          # wrong tries before she may swap to a different problem
+MIN_STORY_WORDS = 50           # words a saved story needs to tick a writing task
+WORD_CHALLENGE_USES = 3        # times to use the word of the day
+WORD_CHALLENGE_MINUTES = 5     # screen-time minutes for completing the word challenge
+BIG_WHEEL_STREAK = 4           # star days in a row needed for a big-wheel spin
+BIG_SPINS_PER_WEEK = 2         # most big-wheel spins per week (Mon–Sun)
+CARROTS_FOR_SWAP = 30          # carrots needed to swap for screen time
+CARROT_SWAP_MINUTES = 30
+TOY_FUND_STEP = 10             # $ added to the toy fund per win
+TOY_FUND_TARGET = 30           # $ needed before the toy shop trip
+RESTAURANT_GAP_DAYS = 21       # days between restaurant dinners
 
 # id: short code (don't change once she has progress)   minutes: screen time it earns
 # required: True = must be done before ANY screen time unlocks that day
-# section: where it shows on the Today tab
 TASKS = [
+    {"id": "homework", "emoji": "📒", "name": "Finish today's homework", "minutes": 10,
+     "required": True, "section": "must"},
     {"id": "speak", "emoji": "🗣️", "name": f"Speak {LANGUAGE} for 10 minutes", "minutes": 10,
      "required": True, "section": "must"},
     {"id": "write1", "emoji": "✏️", "name": "English writing – piece 1", "minutes": 5, "section": "learn"},
@@ -46,10 +60,7 @@ SECTIONS = [
     ("habits", "🌙 Singing & sleep"),
 ]
 
-# Big rewards.
-#   streak_task / streak_len: that task must be done this many days IN A ROW
-#   window / needs: inside the last `window` days, these tasks need at least this many days
-#   bonus_minutes: instead of a treat, adds extra screen-time minutes to her bonus bank
+# Big rewards (streak goals).
 REWARDS = [
     {"id": "burrito", "emoji": "🌯", "name": "Burrito treat", "streak_task": "speak", "streak_len": 7,
      "window": 7, "needs": {"exercise": 4, "meditate": 4, "read": 4},
@@ -63,12 +74,47 @@ REWARDS = [
     {"id": "playcentre", "emoji": "🎠", "name": "Play centre of your choice (up to $50)", "streak_task": "bed",
      "streak_len": 90, "window": 90, "needs": {},
      "how": "In bed by 9:30 pm every night for 3 months (90 nights) in a row."},
-    {"id": "singing", "emoji": "🎶", "name": "Singing star: +60 bonus screen-time minutes", "streak_task": "sing",
+    {"id": "singing", "emoji": "🎶", "name": "Singing star: +60 screen-time minutes", "streak_task": "sing",
      "streak_len": 30, "window": 30, "needs": {}, "bonus_minutes": 60,
-     "how": "Practise singing 15 minutes every day for 30 days in a row. The minutes go into your bonus bank."},
+     "how": "Practise singing 15 minutes every day for 30 days in a row. The minutes go into your balance."},
 ]
 STAR_DAYS_PER_DOLLAR = 14      # a "star day" = she earned the full daily screen time
-BONUS_SPEND_STEP = 10          # bonus-bank minutes used per tap
+
+# Spin-the-wheel prizes. "auto" prizes are added straight away; the rest wait in "My prizes"
+# until a grown-up marks them as done.
+BIG_PRIZES = [
+    {"id": "movie_night", "emoji": "🎬", "name": "Choose the family movie and watch it together"},
+    {"id": "outing", "emoji": "🏞️", "name": "Pick a weekend outing (park, beach, library, bike ride)"},
+    {"id": "gamenight", "emoji": "🎲", "name": "Family game night where I pick the game"},
+    {"id": "bake", "emoji": "🧁", "name": "Bake or cook something special together"},
+    {"id": "bubblebath", "emoji": "🛁", "name": "Bubble bath with extra bubbles"},
+    {"id": "timezone", "emoji": "🕹️", "name": "30 minutes at Timezone"},
+    {"id": "restaurant", "emoji": "🍽️", "name": "Choose my favourite restaurant for a family dinner",
+     "rules": f"No Mexican restaurants! Only if at least {RESTAURANT_GAP_DAYS // 7} weeks have passed since "
+              "our last family dinner at a restaurant."},
+    {"id": "toyshop", "emoji": "🧸", "name": f"Toy shop trip: +${TOY_FUND_STEP} to my Toy Fund", "auto": "toy",
+     "rules": f"Save up to ${TOY_FUND_TARGET}, then go toy shopping and choose toys within the budget!"},
+    {"id": "bowling", "emoji": "🎳", "name": "Bowling and ice cream day (I choose the flavour!)"},
+]
+SMALL_PRIZES = [
+    {"id": "dessert", "emoji": "🍨", "name": "Pick a healthy dessert for dinner (as agreed by my parent)"},
+    {"id": "carmusic", "emoji": "🎵", "name": "Choose the music in the car for a day"},
+    {"id": "cardgame", "emoji": "🃏", "name": "A quick card or board game with a grown-up"},
+    {"id": "dinner", "emoji": "🍝", "name": "Choose dinner for one evening"},
+    {"id": "breakfast", "emoji": "🥞", "name": "Choose breakfast for one morning"},
+    {"id": "stickers", "emoji": "🦕", "name": "Fun stickers: animals, space, dinos, favourite characters"},
+    {"id": "stationery", "emoji": "✏️", "name": "Special stationery, up to $5 value"},
+    {"id": "milkshake", "emoji": "🥤", "name": "Make a special milkshake together"},
+    {"id": "story", "emoji": "📚", "name": "Choose a bedtime story, even a funny or unusual one"},
+    {"id": "parentgame", "emoji": "🎮", "name": "A parent joins my favourite game for 30 minutes"},
+    {"id": "extra30", "emoji": "⏰", "name": "30 minutes extra screen time, added straight to my balance",
+     "auto": "minutes"},
+    {"id": "bedpass", "emoji": "🌙", "name": "30 minutes later bedtime on Friday (bedtime pass)",
+     "rules": "Ask a grown-up to mark it done the morning after. That night still counts for your bedtime streak!"},
+    {"id": "carrots", "emoji": "🥕", "name": "Earn 10 carrots!", "auto": "carrots",
+     "rules": f"Collect {CARROTS_FOR_SWAP} carrots to swap for {CARROT_SWAP_MINUTES} minutes of screen time "
+              "(a grown-up approves the swap)."},
+]
 
 SPEAKING_IDEAS = [
     "Tell a story about your favourite animal 🐰",
@@ -98,9 +144,167 @@ WRITING_PROMPTS = [
     "A story that starts with 'The door creaked open…'",
     "How to be a good friend",
 ]
+WORDS_OF_THE_DAY = [
+    ("curious", "wanting to know or learn about something", "The curious bunny peeked inside the box."),
+    ("enormous", "very, very big", "The elephant had enormous ears."),
+    ("delighted", "very happy and pleased", "I was delighted to see the rainbow."),
+    ("whisper", "to speak very softly", "She whispered a secret to her friend."),
+    ("glimmer", "a faint, flickering light", "A glimmer of moonlight shone through the window."),
+    ("brave", "ready to face danger or fear", "The brave girl climbed the tall tree."),
+    ("fragile", "easily broken", "Be gentle — the egg is fragile."),
+    ("peculiar", "strange or unusual", "The cat made a peculiar noise."),
+    ("cautious", "careful to avoid danger", "The rabbit was cautious near the fox's den."),
+    ("generous", "happy to give and share", "My generous friend shared her lunch."),
+    ("magnificent", "very beautiful and impressive", "The castle looked magnificent at sunset."),
+    ("nervous", "a bit worried or scared", "I felt nervous before my concert."),
+    ("exhausted", "extremely tired", "After the race, I was exhausted."),
+    ("furious", "very, very angry", "The dragon was furious when someone took its treasure."),
+    ("cheerful", "happy and bright", "Her cheerful song made everyone smile."),
+    ("mysterious", "strange and hard to explain", "A mysterious map was hidden under the bed."),
+    ("scurry", "to move quickly with small steps", "The mice scurry across the floor."),
+    ("astonished", "very surprised", "We were astonished by the magic trick."),
+    ("gentle", "kind, soft and calm", "Be gentle when you pat the bunny."),
+    ("sparkle", "to shine with little flashes of light", "The stars sparkle in the night sky."),
+    ("ancient", "very, very old", "We visited an ancient castle."),
+    ("determined", "not giving up", "She was determined to finish the puzzle."),
+    ("tremble", "to shake a little", "My knees began to tremble on the stage."),
+    ("wander", "to walk around without hurrying", "We like to wander through the park."),
+    ("grateful", "thankful", "I am grateful for my family."),
+    ("mischievous", "playfully naughty", "The mischievous puppy hid my shoe."),
+    ("swift", "very fast", "The swift rabbit raced across the field."),
+    ("vivid", "bright and strong (colours) or very clear", "She painted a vivid sunset."),
+    ("adventure", "an exciting journey or experience", "Our camping trip was a big adventure."),
+    ("imagine", "to make a picture in your mind", "Imagine a unicorn made of clouds."),
+]
+FUN_FACTS = [
+    "Rabbits' teeth never stop growing — that's why they love to chew! 🐰",
+    "When a rabbit is super happy, it jumps and twists in the air. This is called a 'binky'! 🐇",
+    "Rabbits can see almost all the way around them without turning their heads. 👀",
+    "Baby rabbits are called kits. 🍼",
+    "Happy rabbits sometimes 'purr' by gently rubbing their teeth together. 😊",
+    "The unicorn is the national animal of Scotland! 🦄",
+    "A rainbow is really a full circle — from the ground we only see half of it. 🌈",
+    "Octopuses have three hearts! 🐙",
+    "Honey never goes bad. Honey thousands of years old has been found in ancient Egyptian tombs! 🍯",
+    "A group of flamingos is called a 'flamboyance'. 🦩",
+    "Sea otters hold hands while they sleep so they don't drift apart. 🦦",
+    "Butterflies taste with their feet! 🦋",
+    "A day on Venus is longer than a whole year on Venus. 🪐",
+    "Koalas can sleep up to 20 hours a day. 🐨",
+    "Bananas are berries, but strawberries are not! 🍌",
+    "Your heart beats about 100,000 times every day. ❤️",
+    "A bolt of lightning is hotter than the surface of the Sun! ⚡",
+    "Jupiter is so big that all the other planets could fit inside it. 🪐",
+    "Hummingbirds are the only birds that can fly backwards. 🐦",
+    "Dolphins sleep with one half of their brain at a time. 🐬",
+    "Platypuses are mammals that lay eggs! 🥚",
+    "Male seahorses are the ones who carry the babies. 🌊",
+    "Some penguins give a pebble to the penguin they like best. 🐧",
+    "Wombat poo is shaped like little cubes! 🟫",
+    "Koalas have fingerprints that look almost exactly like human fingerprints. 🐨",
+    "A kookaburra's call sounds just like someone laughing. 😂",
+    "Saturn is so light for its size that it would float in a giant bathtub! 🛁",
+    "Starfish don't have a brain. ⭐",
+    "Owls can't move their eyes, so they turn their whole heads instead. 🦉",
+    "Polar bears have black skin under their white fur. 🐻‍❄️",
+    "A shrimp's heart is in its head! 🦐",
+    "Sloths can hold their breath for up to 40 minutes underwater. 🦥",
+    "The Eiffel Tower grows a little taller in summer because metal expands in the heat. 🗼",
+    "Snails have thousands of tiny teeth. 🐌",
+    "The Moon has 'moonquakes', a bit like earthquakes. 🌙",
+    "Elephants can't jump. 🐘",
+    "Cows have best friends and get stressed when they are apart. 🐄",
+    "There is no sound in space because there's no air to carry it. 🚀",
+]
+
+MOODS = [
+    ("happy", "😄", "Happy", "Yay! Happy bunnies hop the highest! 🐰"),
+    ("excited", "🤩", "Excited", "Woohoo! Tell a grown-up what you're excited about!"),
+    ("calm", "😌", "Calm", "Lovely and peaceful, like a bunny in the sunshine ☀️"),
+    ("tired", "😴", "Tired", "Maybe a little rest and a glass of water will help 💧"),
+    ("worried", "😟", "Worried", "Telling a grown-up what's worrying you can make it feel smaller 💗"),
+    ("sad", "😢", "Sad", "It's okay to feel sad. A hug from a grown-up can really help 💗"),
+    ("cross", "😠", "Cross", "Big feelings are okay. Try 3 slow, deep bunny breaths 🌬️"),
+]
+
+# Pet growth by total star days
+PET_STAGES = [
+    (0, "egg", "A magic egg", "Earn your first star day to help it hatch!"),
+    (1, "hatching", "Hatching!", "Something is wriggling inside…"),
+    (3, "baby", "Baby bunny", "So tiny and fluffy!"),
+    (7, "little", "Little bunny", "Growing bigger every day!"),
+    (15, "big", "Big bunny", "Strong and bouncy!"),
+    (30, "beautiful", "Beautiful bunny", "The most beautiful bunny in the land!"),
+    (60, "magical", "Magical rainbow bunny", "Shimmering with rainbow magic! ✨"),
+]
+
+# Dress-ups. stat = which number unlocks it (see compute_stats)
+ACCESSORIES = [
+    {"id": "bow", "slot": "head", "emoji": "🎀", "name": "Pink bow", "stat": "star_days", "need": 3,
+     "how": "3 star days"},
+    {"id": "flowers", "slot": "head", "emoji": "🌸", "name": "Flower crown", "stat": "star_days", "need": 7,
+     "how": "7 star days"},
+    {"id": "tophat", "slot": "head", "emoji": "🎩", "name": "Fancy top hat", "stat": "maths_solved", "need": 30,
+     "how": "solve 30 maths problems"},
+    {"id": "crown", "slot": "head", "emoji": "👑", "name": "Princess crown", "stat": "star_days", "need": 30,
+     "how": "30 star days"},
+    {"id": "horn", "slot": "head", "emoji": "🦄", "name": "Unicorn horn", "stat": "star_days", "need": 45,
+     "how": "45 star days"},
+    {"id": "wings", "slot": "back", "emoji": "🧚", "name": "Fairy wings", "stat": "max_speak_streak", "need": 7,
+     "how": "a 7-day speaking streak"},
+    {"id": "cape", "slot": "back", "emoji": "🌈", "name": "Rainbow cape", "stat": "star_days", "need": 20,
+     "how": "20 star days"},
+    {"id": "glasses", "slot": "face", "emoji": "🕶️", "name": "Cool sunglasses", "stat": "stories", "need": 3,
+     "how": "write 3 stories"},
+    {"id": "scarf", "slot": "neck", "emoji": "🧣", "name": "Cosy scarf", "stat": "max_bed_streak", "need": 7,
+     "how": "7 bedtimes in a row"},
+    {"id": "necklace", "slot": "neck", "emoji": "💎", "name": "Sparkly necklace", "stat": "homework_days",
+     "need": 10, "how": "10 homework days"},
+]
+SLOT_NAMES = {"head": "🎀 Head", "back": "🧚 Back", "face": "🕶️ Face", "neck": "🧣 Neck"}
+
+THEMES = [
+    {"id": "rainbow", "name": "🌈 Rainbow", "need": 0},
+    {"id": "candy", "name": "🍬 Candy", "need": 3},
+    {"id": "ocean", "name": "🌊 Ocean", "need": 7},
+    {"id": "hearts", "name": "💗 Love hearts", "need": 14},
+    {"id": "galaxy", "name": "🌌 Galaxy", "need": 21},
+    {"id": "unicorn", "name": "🦄 Unicorn dream", "need": 30},
+]
+
+# Badges: stat >= need. c1/c2 = medal colours
+BADGES = [
+    ("first_hop", "🌱", "First Hop", "Finish your very first task", "active_days", 1, "#d9fbe0", "#7fd99a"),
+    ("first_star", "⭐", "First Star", "Earn your first star day", "star_days", 1, "#fff6c9", "#ffd23f"),
+    ("homework_hero", "🦸", "Homework Hero", "Do homework on 10 days", "homework_days", 10, "#ffe0ec", "#ff7fb0"),
+    ("week_talker", "🔥", "7-Day Talker", "Speak your language 7 days in a row", "max_speak_streak", 7,
+     "#ffe7d1", "#ff9f43"),
+    ("chatterbox", "🗣️", "Chatterbox", "Speak your language on 30 days", "speak_days", 30, "#ffe3f1", "#ff79b6"),
+    ("star_collector", "🌟", "Star Collector", "Earn 10 star days", "star_days", 10, "#fff1c2", "#f5c400"),
+    ("superstar", "💫", "Superstar", "Earn 30 star days", "star_days", 30, "#efe3ff", "#9b6bff"),
+    ("maths_magician", "🪄", "Maths Magician", "Solve 25 maths problems", "maths_solved", 25, "#e0f2ff", "#38b6ff"),
+    ("fraction_fairy", "🧚", "Fraction Fairy", "Solve 10 fraction problems", "fraction_solved", 10,
+     "#fde2ff", "#d36bff"),
+    ("decimal_dancer", "💃", "Decimal Dancer", "Solve 10 decimal problems", "decimal_solved", 10,
+     "#ffe2e2", "#ff6b6b"),
+    ("story_starter", "✏️", "Story Starter", "Save your first story", "stories", 1, "#e6f9ff", "#4cc9f0"),
+    ("little_author", "📖", "Little Author", "Write 10 stories", "stories", 10, "#e9e4ff", "#7b61ff"),
+    ("word_wizard", "💖", "Word Wizard", "Use the word of the day 3 times", "word_wins", 1, "#ffe0f0", "#ff4fa3"),
+    ("bookworm", "🐛", "Bookworm Bunny", "Read on 15 days", "read_days", 15, "#e7ffd9", "#6cc644"),
+    ("sleepy_star", "🌙", "Sleepy Star", "In bed on time 7 nights in a row", "max_bed_streak", 7,
+     "#e6e6ff", "#6c63ff"),
+    ("dream_keeper", "🦉", "Dream Keeper", "In bed on time 30 nights in a row", "max_bed_streak", 30,
+     "#e3e0ff", "#4b3a99"),
+    ("songbird", "🎤", "Little Songbird", "Sing on 7 days", "sing_days", 7, "#fff0d6", "#ffb347"),
+    ("calm_cloud", "☁️", "Calm Cloud", "Sit still for 2 minutes 5 times", "sit2_days", 5, "#eef6ff", "#8ab6ff"),
+    ("bouncy", "🤸", "Bouncy Bunny", "Exercise on 10 days", "exercise_days", 10, "#dcfff4", "#2ec4a6"),
+    ("lucky", "🎡", "Lucky Spinner", "Spin a prize wheel", "spins", 1, "#fff3e0", "#ff8a3d"),
+    ("feelings", "😊", "Feelings Friend", "Share your mood 5 times", "moods", 5, "#fffbe0", "#f2c200"),
+]
 # ================================================================================
 
 TASK_BY_ID = {t["id"]: t for t in TASKS}
+PRIZE_BY_ID = {p["id"]: p for p in BIG_PRIZES + SMALL_PRIZES}
 
 
 def md_safe(text) -> str:
@@ -109,38 +313,37 @@ def md_safe(text) -> str:
 
 
 def html_safe(text) -> str:
-    """Same, for text placed inside HTML snippets."""
-    return str(text).replace("$", "&#36;")
+    """Escape text placed inside HTML snippets (also stops $…$ maths)."""
+    return htmllib.escape(str(text)).replace("$", "&#36;")
+
 
 st.set_page_config(page_title=f"{STUDENT_NAME} Earns Stars", page_icon="🦄", layout="centered")
 
-CSS = """
+BASE_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
-.stApp {
-  background:
-    radial-gradient(circle at 8% 8%, rgba(255,182,217,.55) 0, transparent 32%),
-    radial-gradient(circle at 92% 18%, rgba(196,170,255,.45) 0, transparent 34%),
-    radial-gradient(circle at 15% 92%, rgba(160,220,255,.45) 0, transparent 34%),
-    radial-gradient(circle at 88% 85%, rgba(255,236,150,.45) 0, transparent 30%),
-    linear-gradient(180deg, #fff3fa 0%, #fdf0ff 50%, #eef8ff 100%);
-}
-h1, h2, h3, p, label, li, input, .stMarkdown, [data-baseweb="tab"] p { font-family: 'Fredoka', sans-serif !important; }
+h1, h2, h3, p, label, li, input, textarea, .stMarkdown, [data-baseweb="tab"] p { font-family: 'Fredoka', sans-serif !important; }
 h3 { color: #5a2d66 !important; }
-.block-container { max-width: 800px; padding-top: 2rem; }
-.hero { position: relative; text-align: center; padding: 30px 16px 22px; border-radius: 28px;
-  background: rgba(255,255,255,.75); border: 3px solid #ffd1e8;
-  box-shadow: 0 8px 30px rgba(255,105,180,.18); margin-bottom: 16px; overflow: hidden; }
-.hero .title { display: inline-block; font-size: 2.7rem; font-weight: 700; line-height: 1.15;
+.block-container { max-width: 820px; padding-top: 2rem; }
+.hero { position: relative; text-align: center; padding: 28px 16px 20px; border-radius: 28px;
+  background: rgba(255,255,255,.82); border: 3px solid #ffd1e8;
+  box-shadow: 0 8px 30px rgba(255,105,180,.18); margin-bottom: 14px; overflow: hidden; }
+.hero .title { display: inline-block; font-size: 2.6rem; font-weight: 700; line-height: 1.15;
   background: linear-gradient(90deg,#ff4fa3,#ff9f43,#f5c400,#3fbf5a,#38b6ff,#9b6bff);
   -webkit-background-clip: text; background-clip: text; color: transparent; }
-.hero .sub { color: #8a5a8a; font-size: 1.05rem; margin-top: 4px; }
-.hero .badge { display: inline-block; margin: 10px 4px 0; padding: 4px 14px; border-radius: 999px;
-  font-weight: 600; font-size: .95rem; }
+.hero .sub { color: #8a5a8a; font-size: 1.05rem; margin-top: 2px; }
+.balance { display: inline-block; margin-top: 10px; padding: 8px 20px; border-radius: 999px; font-weight: 700;
+  font-size: 1.35rem; color: #fff; background: linear-gradient(90deg,#ff5fa2,#9b6bff);
+  box-shadow: 0 4px 14px rgba(155,107,255,.35); }
+.hero .badge { display: inline-block; margin: 8px 3px 0; padding: 4px 12px; border-radius: 999px;
+  font-weight: 600; font-size: .92rem; }
 .badge.fire { background: #fff0d6; color: #b35c00; }
 .badge.moon { background: #ece6ff; color: #4b3a99; }
 .badge.money { background: #e3f8e7; color: #1f7a37; }
-.badge.bank { background: #ffe3f1; color: #a3236b; }
+.badge.carrot { background: #ffe9d6; color: #b34d00; }
+.badge.toy { background: #e0f2ff; color: #1d5f8a; }
+.badge.spin { background: #fff3a8; color: #8a6500; animation: wiggle 1.2s ease-in-out infinite; }
+@keyframes wiggle { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 .float { position: absolute; font-size: 2rem; animation: bob 3s ease-in-out infinite; }
 .f1 { left: 16px; top: 14px; } .f2 { right: 18px; top: 16px; animation-delay: .6s; }
 .f3 { left: 30px; bottom: 10px; animation-delay: 1.2s; } .f4 { right: 32px; bottom: 12px; animation-delay: 1.8s; }
@@ -152,16 +355,23 @@ h3 { color: #5a2d66 !important; }
   background: linear-gradient(90deg,#ff4fa3,#ff9f43,#f5c400,#3fbf5a,#38b6ff,#9b6bff,#ff4fa3);
   background-size: 300% 100%; animation: slide 6s linear infinite; }
 @keyframes slide { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-[data-testid="stVerticalBlockBorderWrapper"] { background: rgba(255,255,255,.8);
+[data-testid="stVerticalBlockBorderWrapper"] { background: rgba(255,255,255,.84);
   border-radius: 22px !important; border: 2px solid #ffd1e8 !important; }
 [data-testid="stCheckbox"] label p { font-size: 1.12rem; font-weight: 500; }
 .tip { background: #fff6fb; border-left: 5px solid #ff9ccc; border-radius: 12px; padding: 8px 12px;
   color: #6b3f73; margin: 0 0 6px 30px; font-size: .98rem; }
-.reward-head { font-size: 1.35rem; font-weight: 700; color: #5a2d66; }
+.card { background: rgba(255,255,255,.9); border: 2px solid #ffd1e8; border-radius: 20px; padding: 14px 16px;
+  margin: 6px 0 10px; color: #3b2350; }
+.msg { background: linear-gradient(135deg,#ffe3f1,#efe3ff); border: 3px solid #ff9ccc; border-radius: 24px;
+  padding: 16px 18px; font-size: 1.2rem; color: #5a2d66; text-align: center; margin-bottom: 8px; }
+.fact { background: #fffbe6; border: 2px solid #ffe28a; border-radius: 18px; padding: 10px 14px; color: #5a4300;
+  margin: 6px 0 10px; }
+.reward-head { font-size: 1.3rem; font-weight: 700; color: #5a2d66; }
 .how { color: #7a5a80; margin: 2px 0 8px; }
 .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; margin: 3px 4px 3px 0;
   font-size: .95rem; background: #f3e8ff; color: #5a2d66; }
 .pill.ok { background: #dcf8e2; color: #1f7a37; }
+.pill.no { background: #f1eef3; color: #9a8aa3; }
 .topic { display: inline-block; padding: 3px 12px; border-radius: 999px; background: #e0f2ff; color: #1d5f8a;
   font-weight: 600; font-size: .9rem; }
 .question { font-size: 2rem; font-weight: 700; color: #3b2350; margin: 10px 0 6px; line-height: 1.3; }
@@ -170,82 +380,91 @@ h3 { color: #5a2d66 !important; }
 .clue { background: #fffbe6; border: 2px solid #ffe28a; border-radius: 14px; padding: 10px 14px;
   color: #6b4e00; margin: 6px 0; }
 .scroll { overflow-x: auto; }
-table.week { border-collapse: collapse; width: 100%; font-size: .95rem; background: rgba(255,255,255,.8); }
-table.week th, table.week td { text-align: center; padding: 6px 5px; border-bottom: 1px solid #f6d6ea; }
+table.week { border-collapse: collapse; width: 100%; font-size: .92rem; background: rgba(255,255,255,.9); }
+table.week th, table.week td { text-align: center; padding: 5px 4px; border-bottom: 1px solid #f6d6ea; }
 table.week th { color: #6b3f73; font-weight: 600; }
 table.week td.name { text-align: left; white-space: nowrap; }
 table.week tr.star td { font-weight: 600; background: #fffbe6; }
+.badge-grid { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.bdg { width: 112px; text-align: center; }
+.medal { position: relative; width: 84px; height: 84px; margin: 0 auto; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 40px; border: 4px solid #fff;
+  box-shadow: 0 0 0 3px var(--c2), 0 6px 14px rgba(0,0,0,.12); }
+.medal::before, .medal::after { content: ""; position: absolute; bottom: -16px; width: 16px; height: 24px;
+  background: var(--c2); z-index: -1; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+.medal::before { left: 18px; transform: rotate(14deg); } .medal::after { right: 18px; transform: rotate(-14deg); }
+.medal .shine { position: absolute; top: 8px; left: 14px; width: 18px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,.75); transform: rotate(-30deg); }
+.bname { font-weight: 700; color: #5a2d66; margin-top: 14px; font-size: .95rem; line-height: 1.15; }
+.bdesc { color: #8a6a96; font-size: .78rem; line-height: 1.2; margin-top: 2px; }
+.bdg.bdg-off .medal { filter: grayscale(1); opacity: .45; }
+.bdg.bdg-off .bname { color: #a99bb0; }
+.bdg.small { width: 86px; } .bdg.small .medal { width: 58px; height: 58px; font-size: 28px; }
+.bdg.small .medal::before, .bdg.small .medal::after { width: 12px; height: 18px; bottom: -12px; }
+.bdg.small .medal::before { left: 12px; } .bdg.small .medal::after { right: 12px; }
+.bdg.small .bname { font-size: .8rem; margin-top: 10px; }
+.pet-wrap { text-align: center; }
+.pet-wrap svg { max-width: 100%; height: auto; }
+.pet-hop { animation: hop 2.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.pet-sleep { animation: breathe 4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes hop { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-10px) scaleY(1.03); } 60% { transform: translateY(0) scaleY(.97); } }
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02, .985); } }
+.pet-name { font-size: 1.5rem; font-weight: 700; color: #5a2d66; }
+.wotd { font-size: 2.2rem; font-weight: 700; color: #ff4fa3; }
+.story { background: #fffefb; border: 2px solid #f6e3b5; border-radius: 16px; padding: 12px 16px;
+  color: #3b2350; line-height: 1.6; font-size: 1.05rem; }
+.note { background: #e9fbef; border-left: 5px solid #5cc97f; border-radius: 12px; padding: 8px 12px;
+  color: #1f5c33; margin-top: 8px; }
+.celebrate { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; pointer-events: none; z-index: 99999; animation: fadeaway 2.4s forwards; }
+.celebrate .thumb { font-size: 130px; animation: popin .55s cubic-bezier(.2,1.6,.4,1); filter: drop-shadow(0 8px 16px rgba(0,0,0,.2)); }
+.celebrate .burst { font-size: 46px; letter-spacing: 6px; animation: popin .8s ease-out; }
+.celebrate .word { font-size: 2.4rem; font-weight: 700; color: #ff4fa3; text-shadow: 0 3px 0 #fff, 0 6px 12px rgba(0,0,0,.15); }
+@keyframes popin { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes fadeaway { 0%, 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 </style>
 """
-st.markdown(CSS, unsafe_allow_html=True)
 
-
-# ------------------------------- dates & rules -------------------------------
-def today_local() -> date:
-    return datetime.now(ZoneInfo(TIMEZONE)).date()
-
-
-def default_data():
-    return {"days": {}, "claims": {}, "dollars_paid": 0, "history": [],
-            "maths": {}, "bonus_bank": 0, "bonus_used": {}}
-
-
-def done_on(data, d: date) -> set:
-    return set(data["days"].get(d.isoformat(), []))
-
-
-def task_minutes(done: set) -> int:
-    if not all(t["id"] in done for t in TASKS if t.get("required")):
-        return 0
-    return min(sum(TASK_BY_ID[t]["minutes"] for t in done if t in TASK_BY_ID), DAILY_GOAL_MINUTES)
-
-
-def is_star_day(done: set) -> bool:
-    return task_minutes(done) >= DAILY_GOAL_MINUTES
-
-
-def counts_for(data, reward_id, d: date) -> bool:
-    """Days on or before the last time this reward was given don't count again."""
-    last = data["claims"].get(reward_id)
-    return last is None or d > date.fromisoformat(last)
-
-
-def status_at(data, r, end: date):
-    streak, d = 0, end
-    while counts_for(data, r["id"], d) and r["streak_task"] in done_on(data, d):
-        streak += 1
-        d -= timedelta(days=1)
-    window = [end - timedelta(days=i) for i in range(r["window"])]
-    window = [x for x in window if counts_for(data, r["id"], x)]
-    counts = {tid: sum(tid in done_on(data, x) for x in window) for tid in r["needs"]}
-    ok = streak >= r["streak_len"] and all(counts[t] >= n for t, n in r["needs"].items())
-    return {"streak": streak, "counts": counts, "ok": ok}
-
-
-def reward_status(data, r, today: date):
-    """Check ending today, or ending yesterday (so a streak isn't 0 before today's task is done)."""
-    s_today = status_at(data, r, today)
-    if s_today["ok"] or r["streak_task"] in done_on(data, today):
-        return s_today
-    return status_at(data, r, today - timedelta(days=1))
-
-
-def task_streak(data, today: date, tid: str) -> int:
-    d = today if tid in done_on(data, today) else today - timedelta(days=1)
-    n = 0
-    while tid in done_on(data, d):
-        n += 1
-        d -= timedelta(days=1)
-    return n
-
-
-def dollar_status(data):
-    stars = sum(is_star_day(set(v)) for v in data["days"].values())
-    earned = stars // STAR_DAYS_PER_DOLLAR
-    return {"owed": earned - data.get("dollars_paid", 0),
-            "toward_next": stars % STAR_DAYS_PER_DOLLAR, "paid": data.get("dollars_paid", 0)}
-
-
+HEART_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E"
+             "%3Cpath d='M35 58 C 8 40, 8 14, 24 14 C 30 14, 35 19, 35 23 C 35 19, 40 14, 46 14 C 62 14, 62 40, 35 58 Z'"
+             " fill='%23ff8fc7' fill-opacity='0.28'/%3E%3C/svg%3E")
+THEME_CSS = {
+    "rainbow": """.stApp { background:
+        radial-gradient(circle at 8% 8%, rgba(255,182,217,.55) 0, transparent 32%),
+        radial-gradient(circle at 92% 18%, rgba(196,170,255,.45) 0, transparent 34%),
+        radial-gradient(circle at 15% 92%, rgba(160,220,255,.45) 0, transparent 34%),
+        radial-gradient(circle at 88% 85%, rgba(255,236,150,.45) 0, transparent 30%),
+        linear-gradient(180deg, #fff3fa 0%, #fdf0ff 50%, #eef8ff 100%); }""",
+    "candy": """.stApp { background:
+        repeating-linear-gradient(45deg, rgba(255,214,234,.75) 0 34px, rgba(214,255,240,.75) 34px 68px,
+        rgba(255,246,200,.75) 68px 102px), #fff; }""",
+    "ocean": """.stApp { background:
+        radial-gradient(circle at 12% 20%, rgba(255,255,255,.7) 0 10px, transparent 11px),
+        radial-gradient(circle at 85% 35%, rgba(255,255,255,.6) 0 14px, transparent 15px),
+        radial-gradient(circle at 30% 75%, rgba(255,255,255,.55) 0 8px, transparent 9px),
+        radial-gradient(circle at 70% 88%, rgba(255,255,255,.6) 0 12px, transparent 13px),
+        linear-gradient(180deg, #e3f8ff 0%, #b8ecff 45%, #8fd8f7 100%); }""",
+    "hearts": f""".stApp {{ background-color: #fff0f7; background-image: url("{HEART_SVG}"),
+        linear-gradient(180deg, #fff0f7, #ffe0ef); background-size: 70px 70px, 100% 100%; }}""",
+    "galaxy": """.stApp { background:
+        radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 90px 120px, #fff, transparent),
+        radial-gradient(2px 2px at 160px 60px, #ffe9a8, transparent),
+        radial-gradient(1px 1px at 130px 170px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 60px 190px, #cbd8ff, transparent),
+        radial-gradient(circle at 20% 20%, rgba(155,107,255,.55) 0, transparent 40%),
+        radial-gradient(circle at 85% 70%, rgba(255,79,163,.45) 0, transparent 40%),
+        linear-gradient(180deg, #1b1240 0%, #2a1b5e 50%, #120c2c 100%);
+        background-size: 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 100% 100%, 100% 100%, 100% 100%; }
+        .block-container { background: rgba(255,255,255,.84); border-radius: 28px; padding: 1.5rem 1.4rem 2rem !important;
+        margin-top: 1.2rem; }
+        [data-testid="stHeader"] { background: transparent; }""",
+    "unicorn": """.stApp { background:
+        radial-gradient(circle at 15% 15%, rgba(255,214,165,.7) 0, transparent 35%),
+        radial-gradient(circle at 85% 25%, rgba(202,180,255,.7) 0, transparent 38%),
+        radial-gradient(circle at 50% 95%, rgba(160,255,230,.6) 0, transparent 40%),
+        linear-gradient(160deg, #ffe6f2 0%, #f1e4ff 50%, #e1f7ff 100%); }""",
+}
 # ------------------------------ Year 4 maths bank ------------------------------
 def _frac(n, d):
     return f"{n}/{d}"
@@ -371,6 +590,215 @@ def parse_answer(text: str):
         return None
 
 
+# ------------------------------- dates & rules -------------------------------
+def today_local() -> date:
+    return datetime.now(ZoneInfo(TIMEZONE)).date()
+
+
+def default_data():
+    return {"days": {}, "claims": {}, "dollars_paid": 0, "history": [], "maths": {},
+            "credits": [], "used": [], "balance_start": None, "spins": [], "carrots": 0, "toy_fund": 0,
+            "last_restaurant": None, "pet": {"name": "Bunnicorn", "wear": {}}, "theme": "rainbow",
+            "badges_earned": {}, "stories": [], "wotd_custom": {}, "word_wins": [], "moods": [],
+            "messages": [], "facts": {}}
+
+
+def migrate(data, today: date):
+    """Bring older saved progress up to date (safe to run every time)."""
+    if not data.get("balance_start"):
+        data["balance_start"] = today.isoformat()   # minutes from before this version were already used
+        if data.get("bonus_bank"):
+            data["credits"].append({"date": today.isoformat(), "minutes": int(data["bonus_bank"]),
+                                    "reason": "Singing bonus minutes moved into balance"})
+    data.pop("bonus_bank", None)
+    data.pop("bonus_used", None)
+    data.setdefault("pet", {}).setdefault("wear", {})
+    data["pet"].setdefault("name", "Bunnicorn")
+    return data
+
+
+def done_on(data, d: date) -> set:
+    return set(data["days"].get(d.isoformat(), []))
+
+
+def task_minutes(done: set) -> int:
+    if not all(t["id"] in done for t in TASKS if t.get("required")):
+        return 0
+    return min(sum(TASK_BY_ID[t]["minutes"] for t in done if t in TASK_BY_ID), DAILY_GOAL_MINUTES)
+
+
+def is_star_day(done: set) -> bool:
+    return task_minutes(done) >= DAILY_GOAL_MINUTES
+
+
+def balance_info(data):
+    start = data.get("balance_start") or "0000"
+    earned = sum(task_minutes(set(v)) for k, v in data["days"].items() if k >= start)
+    credits = sum(int(c["minutes"]) for c in data.get("credits", []))
+    used = sum(int(u["minutes"]) for u in data.get("used", []))
+    return {"earned": earned, "credits": credits, "used": used, "balance": max(earned + credits - used, 0)}
+
+
+def counts_for(data, reward_id, d: date) -> bool:
+    """Days on or before the last time this reward was given don't count again."""
+    last = data["claims"].get(reward_id)
+    return last is None or d > date.fromisoformat(last)
+
+
+def status_at(data, r, end: date):
+    streak, d = 0, end
+    while counts_for(data, r["id"], d) and r["streak_task"] in done_on(data, d):
+        streak += 1
+        d -= timedelta(days=1)
+    window = [end - timedelta(days=i) for i in range(r["window"])]
+    window = [x for x in window if counts_for(data, r["id"], x)]
+    counts = {tid: sum(tid in done_on(data, x) for x in window) for tid in r["needs"]}
+    ok = streak >= r["streak_len"] and all(counts[t] >= n for t, n in r["needs"].items())
+    return {"streak": streak, "counts": counts, "ok": ok}
+
+
+def reward_status(data, r, today: date):
+    """Check ending today, or ending yesterday (so a streak isn't 0 before today's task is done)."""
+    s_today = status_at(data, r, today)
+    if s_today["ok"] or r["streak_task"] in done_on(data, today):
+        return s_today
+    return status_at(data, r, today - timedelta(days=1))
+
+
+def task_streak(data, today: date, tid: str) -> int:
+    d = today if tid in done_on(data, today) else today - timedelta(days=1)
+    n = 0
+    while tid in done_on(data, d):
+        n += 1
+        d -= timedelta(days=1)
+    return n
+
+
+def max_streak(data, tid: str) -> int:
+    days = sorted(date.fromisoformat(k) for k, v in data["days"].items() if tid in v)
+    best = cur = 0
+    prev = None
+    for d in days:
+        cur = cur + 1 if prev and d - prev == timedelta(days=1) else 1
+        best, prev = max(best, cur), d
+    return best
+
+
+def dollar_status(data):
+    stars = sum(is_star_day(set(v)) for v in data["days"].values())
+    earned = stars // STAR_DAYS_PER_DOLLAR
+    return {"owed": earned - data.get("dollars_paid", 0),
+            "toward_next": stars % STAR_DAYS_PER_DOLLAR, "paid": data.get("dollars_paid", 0)}
+
+
+def star_run_ending(data, end: date, after=None) -> int:
+    n, d = 0, end
+    while is_star_day(done_on(data, d)) and (after is None or d > after):
+        n += 1
+        d -= timedelta(days=1)
+    return n
+
+
+def small_wheel_status(data, today: date):
+    t = today.isoformat()
+    if any(s["wheel"] == "small" and s["date"] == t for s in data.get("spins", [])):
+        return {"ok": False, "why": "You've had today's small spin. Earn another star day tomorrow! 🌟"}
+    if not is_star_day(done_on(data, today)):
+        return {"ok": False, "why": f"Earn all {DAILY_GOAL_MINUTES} minutes today (a ⭐ star day) to spin!"}
+    return {"ok": True, "why": ""}
+
+
+def big_wheel_status(data, today: date):
+    t = today.isoformat()
+    bigs = [s for s in data.get("spins", []) if s["wheel"] == "big"]
+    week_start = today - timedelta(days=today.weekday())
+    this_week = [s for s in bigs if date.fromisoformat(s["date"]) >= week_start]
+    last = max((date.fromisoformat(s["date"]) for s in bigs), default=None)
+    run_end = today if is_star_day(done_on(data, today)) else today - timedelta(days=1)
+    run = star_run_ending(data, run_end, after=last)
+    info = {"run": min(run, BIG_WHEEL_STREAK), "week_used": len(this_week)}
+    if any(s["date"] == t for s in bigs):
+        return {**info, "ok": False, "why": "You've had a big spin today! 🦄"}
+    if len(this_week) >= BIG_SPINS_PER_WEEK:
+        return {**info, "ok": False,
+                "why": f"You've used both big spins this week. New spins from Monday! 🗓️"}
+    if not is_star_day(done_on(data, today)) or run < BIG_WHEEL_STREAK:
+        return {**info, "ok": False,
+                "why": f"Get {BIG_WHEEL_STREAK} ⭐ star days in a row to unlock a big spin "
+                       f"({min(run, BIG_WHEEL_STREAK)}/{BIG_WHEEL_STREAK} so far)."}
+    return {**info, "ok": True, "why": ""}
+
+
+def restaurant_ready_from(data):
+    last = data.get("last_restaurant")
+    return date.fromisoformat(last) + timedelta(days=RESTAURANT_GAP_DAYS) if last else None
+
+
+FRACTION_RE = re.compile(r"\d/\d|\bof\b")
+DECIMAL_RE = re.compile(r"\d\.\d")
+
+
+def compute_stats(data):
+    days = data["days"]
+    logs = [q for m in data.get("maths", {}).values() for q in m.get("log", [])]
+
+    def count(tid):
+        return sum(tid in v for v in days.values())
+
+    return {
+        "active_days": sum(1 for v in days.values() if v),
+        "star_days": sum(is_star_day(set(v)) for v in days.values()),
+        "speak_days": count("speak"), "read_days": count("read"), "sing_days": count("sing"),
+        "sit2_days": count("sit2"), "exercise_days": count("exercise"), "homework_days": count("homework"),
+        "max_speak_streak": max_streak(data, "speak"), "max_bed_streak": max_streak(data, "bed"),
+        "maths_solved": len(logs),
+        "fraction_solved": sum(1 for q in logs if FRACTION_RE.search(q)),
+        "decimal_solved": sum(1 for q in logs if DECIMAL_RE.search(q) and "$" not in q),
+        "stories": len(data.get("stories", [])), "word_wins": len(data.get("word_wins", [])),
+        "spins": len(data.get("spins", [])), "moods": len(data.get("moods", [])),
+    }
+
+
+def pet_stage(star_days):
+    stage = PET_STAGES[0]
+    for s in PET_STAGES:
+        if star_days >= s[0]:
+            stage = s
+    nxt = next((s for s in PET_STAGES if s[0] > star_days), None)
+    return stage, nxt
+
+
+def last_star_day(data):
+    stars = [k for k, v in data["days"].items() if is_star_day(set(v))]
+    return date.fromisoformat(max(stars)) if stars else None
+
+
+def word_of_the_day(data, day: date):
+    custom = data.get("wotd_custom", {}).get(day.isoformat())
+    if custom:
+        return custom
+    w, meaning, example = WORDS_OF_THE_DAY[day.toordinal() % len(WORDS_OF_THE_DAY)]
+    return {"word": w, "meaning": meaning, "example": example}
+
+
+def count_word(text: str, word: str) -> int:
+    if not word:
+        return 0
+    return len(re.findall(r"\b" + re.escape(word.lower()) + r"\w*", text.lower()))
+
+
+def count_words(text: str) -> int:
+    return len(re.findall(r"[A-Za-z0-9']+", text))
+
+
+def add_fact(d, today_key, info):
+    seen = d.setdefault("facts", {}).setdefault(today_key, [])
+    pool = [i for i in range(len(FUN_FACTS)) if i not in seen] or list(range(len(FUN_FACTS)))
+    i = random.choice(pool)
+    seen.append(i)
+    info["fact"] = i
+
+
 # --------------------------------- storage -----------------------------------
 LOCAL_FILE = Path("progress_local.json")
 
@@ -406,14 +834,14 @@ def load_data():
         url, headers = _gh(cfg)
         r = requests.get(url, headers=headers, timeout=15)
         if r.status_code == 404:
-            return default_data(), None
+            return migrate(default_data(), today_local()), None
         r.raise_for_status()
         body = r.json()
         data = json.loads(base64.b64decode(body["content"]).decode())
-        return {**default_data(), **data}, body["sha"]
+        return migrate({**default_data(), **data}, today_local()), body["sha"]
     if LOCAL_FILE.exists():
-        return {**default_data(), **json.loads(LOCAL_FILE.read_text())}, None
-    return default_data(), None
+        return migrate({**default_data(), **json.loads(LOCAL_FILE.read_text())}, today_local()), None
+    return migrate(default_data(), today_local()), None
 
 
 def save_data(data, sha):
@@ -437,7 +865,9 @@ def update(change) -> bool:
     for attempt in range(2):
         try:
             data, sha = load_data()
-            change(data)
+            if change(data) is False:      # the change decided not to save
+                st.session_state.data, st.session_state.sha = data, sha
+                return False
             sha = save_data(data, sha)
             st.session_state.data, st.session_state.sha = data, sha
             return True
@@ -453,68 +883,457 @@ def update(change) -> bool:
     return False
 
 
+def pin_ok(key) -> bool:
+    return str(st.session_state.get(key, "")).strip() == parent_pin()
+
+
+# ------------------------------- bunny drawing -------------------------------
+def _bunny_parts(stage, sleepy, wear):
+    fur, line = "#ffffff", "#efc3dc"
+    if stage == "beautiful":
+        fur = "#fff4fb"
+    if stage == "magical":
+        fur = "#fdf3ff"
+    p = []
+    # back accessories (behind the body)
+    if wear.get("back") == "wings":
+        p.append('<g opacity=".85"><ellipse cx="52" cy="140" rx="30" ry="46" transform="rotate(-28 52 140)" '
+                 'fill="#d9f1ff" stroke="#9fd6ff" stroke-width="3"/><ellipse cx="148" cy="140" rx="30" ry="46" '
+                 'transform="rotate(28 148 140)" fill="#ffe0f3" stroke="#ffa6d6" stroke-width="3"/>'
+                 '<ellipse cx="62" cy="182" rx="18" ry="26" transform="rotate(-50 62 182)" fill="#fff3c4" '
+                 'stroke="#ffd96b" stroke-width="3"/><ellipse cx="138" cy="182" rx="18" ry="26" '
+                 'transform="rotate(50 138 182)" fill="#e4dcff" stroke="#b9a6ff" stroke-width="3"/></g>')
+    if wear.get("back") == "cape":
+        p.append('<path d="M66 128 Q100 120 134 128 L160 214 Q100 226 40 214 Z" fill="url(#rainbowcape)" '
+                 'stroke="#fff" stroke-width="2"/>')
+    # ears
+    for cx, rot in ((78, -12), (122, 12)):
+        p.append(f'<ellipse cx="{cx}" cy="40" rx="15" ry="40" transform="rotate({rot} {cx} 80)" fill="{fur}" '
+                 f'stroke="{line}" stroke-width="3"/>')
+        p.append(f'<ellipse cx="{cx}" cy="44" rx="7" ry="28" transform="rotate({rot} {cx} 80)" fill="#ffc4dd"/>')
+    # body, feet, arms
+    p.append(f'<ellipse cx="100" cy="172" rx="52" ry="45" fill="{fur}" stroke="{line}" stroke-width="3"/>')
+    p.append('<ellipse cx="100" cy="182" rx="30" ry="28" fill="#fff7fb"/>')
+    for cx in (72, 128):
+        p.append(f'<ellipse cx="{cx}" cy="212" rx="19" ry="10" fill="{fur}" stroke="{line}" stroke-width="3"/>')
+        p.append(f'<ellipse cx="{cx}" cy="212" rx="8" ry="4" fill="#ffd3e6"/>')
+    p.append(f'<ellipse cx="70" cy="166" rx="10" ry="15" transform="rotate(20 70 166)" fill="{fur}" '
+             f'stroke="{line}" stroke-width="3"/>')
+    p.append(f'<ellipse cx="130" cy="166" rx="10" ry="15" transform="rotate(-20 130 166)" fill="{fur}" '
+             f'stroke="{line}" stroke-width="3"/>')
+    # neck accessories
+    if wear.get("neck") == "scarf":
+        p.append('<rect x="64" y="132" width="72" height="15" rx="7.5" fill="#ff6fa8"/>'
+                 '<rect x="106" y="138" width="14" height="32" rx="6" transform="rotate(12 113 138)" fill="#ff8fbd"/>'
+                 '<path d="M72 135 v9 M84 135 v9 M96 135 v9 M108 135 v9 M120 135 v9" stroke="#fff" '
+                 'stroke-width="2" opacity=".7"/>')
+    if wear.get("neck") == "necklace":
+        p.append('<path d="M70 132 Q100 156 130 132" fill="none" stroke="#ffd23f" stroke-width="3"/>'
+                 '<circle cx="80" cy="141" r="3.5" fill="#9b6bff"/><circle cx="90" cy="146" r="3.5" fill="#38b6ff"/>'
+                 '<circle cx="110" cy="146" r="3.5" fill="#3fbf5a"/><circle cx="120" cy="141" r="3.5" fill="#ff9f43"/>'
+                 '<path d="M100 146 l7 7 l-7 9 l-7 -9 z" fill="#ff4fa3" stroke="#fff" stroke-width="1.5"/>')
+    # head
+    p.append(f'<circle cx="100" cy="100" r="46" fill="{fur}" stroke="{line}" stroke-width="3"/>')
+    for cx in (75, 125):
+        p.append(f'<ellipse cx="{cx}" cy="113" rx="9" ry="6" fill="#ffb3d1" opacity=".85"/>')
+    if sleepy:
+        p.append('<path d="M75 98 Q83 105 91 98" stroke="#3b2350" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
+                 '<path d="M109 98 Q117 105 125 98" stroke="#3b2350" stroke-width="3.5" fill="none" stroke-linecap="round"/>')
+    else:
+        for cx in (83, 117):
+            p.append(f'<ellipse cx="{cx}" cy="96" rx="7.5" ry="9.5" fill="#3b2350"/>'
+                     f'<circle cx="{cx + 2.5}" cy="92" r="3" fill="#fff"/><circle cx="{cx - 2}" cy="100" r="1.4" fill="#fff"/>')
+        if stage in ("beautiful", "magical"):
+            p.append('<path d="M74 89 l-5 -4 M77 86 l-3 -5 M126 89 l5 -4 M123 86 l3 -5" stroke="#3b2350" '
+                     'stroke-width="2.2" stroke-linecap="round"/>')
+    p.append('<path d="M95 107 Q100 103 105 107 Q100 113 95 107 Z" fill="#ff7fb0"/>')
+    p.append('<path d="M91 115 Q95.5 120 100 115 Q104.5 120 109 115" stroke="#3b2350" stroke-width="2.4" '
+             'fill="none" stroke-linecap="round"/>')
+    # face accessories
+    if wear.get("face") == "glasses" and not sleepy:
+        p.append('<rect x="70" y="86" width="26" height="18" rx="7" fill="#3b2350" opacity=".92"/>'
+                 '<rect x="104" y="86" width="26" height="18" rx="7" fill="#3b2350" opacity=".92"/>'
+                 '<path d="M96 93 Q100 90 104 93" stroke="#3b2350" stroke-width="3" fill="none"/>'
+                 '<path d="M74 90 l6 0" stroke="#fff" stroke-width="2" opacity=".7"/>'
+                 '<path d="M108 90 l6 0" stroke="#fff" stroke-width="2" opacity=".7"/>')
+    # head accessories
+    head = wear.get("head")
+    if head == "bow":
+        p.append('<path d="M134 62 L117 50 L119 74 Z" fill="#ff5fa2"/><path d="M134 62 L151 50 L149 74 Z" fill="#ff5fa2"/>'
+                 '<circle cx="134" cy="62" r="6" fill="#ff8fc0"/>')
+    elif head == "flowers":
+        cols = ["#ff8fc0", "#ffd23f", "#9b6bff", "#5cc97f", "#38b6ff", "#ff9f43"]
+        for i, x in enumerate((66, 79, 93, 107, 121, 134)):
+            y = 64 - (6 if 79 <= x <= 121 else 0) - (3 if 93 <= x <= 107 else 0)
+            p.append(f'<circle cx="{x}" cy="{y}" r="7.5" fill="{cols[i]}"/><circle cx="{x}" cy="{y}" r="2.8" fill="#fff6c9"/>')
+    elif head == "tophat":
+        p.append('<rect x="70" y="50" width="60" height="9" rx="4.5" fill="#4b2a6b"/>'
+                 '<rect x="81" y="16" width="38" height="38" rx="4" fill="#5b3480"/>'
+                 '<rect x="81" y="42" width="38" height="7" fill="#ff6fa8"/><circle cx="112" cy="45" r="4" fill="#ffd23f"/>')
+    elif head == "crown":
+        p.append('<path d="M72 60 L76 30 L89 46 L100 22 L111 46 L124 30 L128 60 Z" fill="#ffd23f" stroke="#e0a800" '
+                 'stroke-width="2.5" stroke-linejoin="round"/><circle cx="100" cy="47" r="5" fill="#ff4fa3"/>'
+                 '<circle cx="85" cy="52" r="3.5" fill="#38b6ff"/><circle cx="115" cy="52" r="3.5" fill="#3fbf5a"/>')
+    elif head == "horn":
+        p.append('<path d="M100 6 L89 58 L111 58 Z" fill="url(#horngold)" stroke="#e0a800" stroke-width="2"/>'
+                 '<path d="M92 46 L107 40 M94 34 L104 30 M96 22 L102 19" stroke="#fff" stroke-width="2.5" '
+                 'stroke-linecap="round" opacity=".8"/>')
+    if stage in ("beautiful", "magical"):
+        for x, y, s in ((30, 60, 1), (170, 70, .8), (160, 190, .9), (35, 175, .7)):
+            p.append(f'<path transform="translate({x} {y}) scale({s})" d="M0 -9 L2.5 -2.5 L9 0 L2.5 2.5 L0 9 '
+                     f'L-2.5 2.5 L-9 0 L-2.5 -2.5 Z" fill="#ffd23f"/>')
+    return p
+
+
+def pet_svg(stage_id, sleepy=False, wear=None, size=200):
+    wear = wear or {}
+    defs = ('<defs><linearGradient id="rainbowcape" x1="0" x2="1"><stop offset="0" stop-color="#ff7fb0"/>'
+            '<stop offset=".25" stop-color="#ffb35c"/><stop offset=".5" stop-color="#ffe066"/>'
+            '<stop offset=".75" stop-color="#7fd99a"/><stop offset="1" stop-color="#7fb8ff"/></linearGradient>'
+            '<linearGradient id="horngold" x1="0" x2="1"><stop offset="0" stop-color="#fff3b0"/>'
+            '<stop offset="1" stop-color="#ffc93c"/></linearGradient>'
+            '<radialGradient id="aura"><stop offset="0" stop-color="#fff" stop-opacity="0"/>'
+            '<stop offset=".7" stop-color="#e7c6ff" stop-opacity=".55"/><stop offset="1" stop-color="#ffd0ea" '
+            'stop-opacity="0"/></radialGradient></defs>')
+    parts = []
+    if stage_id in ("egg", "hatching"):
+        spots = ('<circle cx="78" cy="110" r="9" fill="#ffd0e6"/><circle cx="122" cy="96" r="7" fill="#d9ccff"/>'
+                 '<circle cx="118" cy="160" r="10" fill="#c9f0ff"/><circle cx="74" cy="168" r="7" fill="#fff0a8"/>'
+                 '<circle cx="100" cy="130" r="5" fill="#c7f5d9"/>')
+        if stage_id == "egg":
+            parts.append('<path d="M100 36 C 142 36, 164 120, 160 160 C 156 200, 130 220, 100 220 C 70 220, 44 200, '
+                         '40 160 C 36 120, 58 36, 100 36 Z" fill="#fff6fb" stroke="#f3c6e0" stroke-width="4"/>' + spots)
+        else:
+            parts.append('<g transform="rotate(-6 100 120)">')
+            for cx, rot in ((84, -14), (116, 14)):
+                parts.append(f'<ellipse cx="{cx}" cy="58" rx="11" ry="28" transform="rotate({rot} {cx} 86)" '
+                             'fill="#fff" stroke="#efc3dc" stroke-width="3"/>'
+                             f'<ellipse cx="{cx}" cy="62" rx="5" ry="18" transform="rotate({rot} {cx} 86)" fill="#ffc4dd"/>')
+            parts.append('<circle cx="100" cy="112" r="34" fill="#fff" stroke="#efc3dc" stroke-width="3"/>'
+                         '<ellipse cx="88" cy="108" rx="5.5" ry="7" fill="#3b2350"/><ellipse cx="112" cy="108" rx="5.5" '
+                         'ry="7" fill="#3b2350"/><circle cx="90" cy="105" r="2" fill="#fff"/><circle cx="114" cy="105" '
+                         'r="2" fill="#fff"/><path d="M96 117 Q100 114 104 117 Q100 121 96 117 Z" fill="#ff7fb0"/></g>')
+            parts.append('<path d="M42 130 L56 118 L70 132 L84 116 L100 132 L116 116 L130 132 L144 118 L158 130 '
+                         'C 162 170, 140 220, 100 220 C 60 220, 38 170, 42 130 Z" fill="#fff6fb" stroke="#f3c6e0" '
+                         'stroke-width="4" stroke-linejoin="round"/>'
+                         '<circle cx="118" cy="170" r="10" fill="#c9f0ff"/><circle cx="76" cy="178" r="7" fill="#fff0a8"/>'
+                         '<circle cx="98" cy="196" r="6" fill="#ffd0e6"/>')
+        body = "".join(parts)
+        anim = "pet-hop" if stage_id == "hatching" else "pet-sleep"
+    else:
+        scale = {"baby": .72, "little": .84, "big": .95, "beautiful": 1, "magical": 1}.get(stage_id, 1)
+        if stage_id == "magical":
+            parts.append('<circle cx="100" cy="128" r="100" fill="url(#aura)"/>')
+        parts.append(f'<g transform="translate(100 224) scale({scale}) translate(-100 -224)">')
+        parts.extend(_bunny_parts(stage_id, sleepy, wear))
+        parts.append("</g>")
+        if sleepy:
+            parts.append('<text x="150" y="44" font-size="22" font-weight="700" fill="#8a7bb0">z</text>'
+                         '<text x="164" y="28" font-size="28" font-weight="700" fill="#8a7bb0">Z</text>'
+                         '<text x="182" y="14" font-size="18" font-weight="700" fill="#8a7bb0">z</text>')
+        body = "".join(parts)
+        anim = "pet-sleep" if sleepy else "pet-hop"
+    return (f'<div class="pet-wrap"><svg class="{anim}" width="{size}" height="{int(size * 1.15)}" '
+            f'viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">{defs}{body}</svg></div>')
+
+
+# ---------------------------------- badges -----------------------------------
+def badge_html(b, earned=True, small=False, show_desc=True):
+    bid, emoji, name, desc, _stat, _need, c1, c2 = b
+    cls = "bdg" + ("" if earned else " bdg-off") + (" small" if small else "")
+    desc_html = f'<div class="bdesc">{html_safe(desc)}</div>' if show_desc else ""
+    return (f'<div class="{cls}"><div class="medal" style="--c2:{c2};background:radial-gradient(circle at 32% 28%, '
+            f'#ffffff 0, {c1} 45%, {c2} 100%)"><span class="shine"></span>{emoji}</div>'
+            f'<div class="bname">{html_safe(name)}</div>{desc_html}</div>')
+
+
+# ------------------------------ sounds (Web Audio) ------------------------------
+SOUND_ENGINE = r"""
+(function(){
+  if (window.__andalSound) return; window.__andalSound = true;
+  var ctx = null;
+  function ensure(){ if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+    if (ctx.state === 'suspended') { ctx.resume(); } return ctx; }
+  function unlock(){ var c = ensure(); if(!c) return; try{ var b=c.createBuffer(1,1,22050), s=c.createBufferSource();
+    s.buffer=b; s.connect(c.destination); s.start(0);}catch(e){} }
+  ['pointerdown','touchend','click','keydown'].forEach(function(ev){ document.addEventListener(ev, unlock, {capture:true, passive:true}); });
+  function note(c,f,t,d,type,vol){ var o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.25,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+0.05); }
+  var SONGS = {
+    chime:   [[659,0,.25],[784,.09,.25],[1047,.18,.3],[1319,.3,.45]],
+    fanfare: [[523,0,.18],[659,.14,.18],[784,.28,.18],[1047,.44,.5],[784,.62,.15],[1047,.76,.6]],
+    win:     [[784,0,.15],[988,.1,.15],[1175,.2,.15],[1568,.32,.55],[1319,.5,.2],[1568,.62,.7]],
+    tick:    [[1800,0,.03]],
+    pop:     [[880,0,.08],[1320,.05,.12]]
+  };
+  window.__andalPlay = function(kind){ var c = ensure(); if(!c) return; var t = c.currentTime + 0.03;
+    (SONGS[kind]||SONGS.chime).forEach(function(n){ note(c, n[0], t+n[1], n[2], kind==='tick'?'square':'triangle', kind==='tick'?0.08:0.22); }); };
+})();
+"""
+
+
+def _embed(html_doc, height):
+    if hasattr(st, "iframe"):
+        st.iframe(html_doc, height=height)
+    else:  # older Streamlit versions
+        import streamlit.components.v1 as components
+        components.html(html_doc, height=height)
+
+
+def install_sound_engine():
+    code = json.dumps(SOUND_ENGINE)
+    _embed("<script>try{var P=window.parent;if(!P.__andalSound){var s=P.document.createElement('script');"
+           f"s.textContent={code};P.document.head.appendChild(s);}}}}catch(e){{}}</script>", 1)
+
+
+def play_sound(kind):
+    _embed(f"<script>/*{random.random()}*/setTimeout(function(){{try{{window.parent.__andalPlay('{kind}')}}"
+           "catch(e){}}, 60);</script>", 1)
+
+
+# ------------------------------------ wheel ------------------------------------
+WHEEL_COLOURS = ["#ffd0e6", "#d9ccff", "#c9f0ff", "#fff0a8", "#c7f5d9", "#ffd9c2", "#f3d1ff", "#d1e8ff"]
+WHEEL_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:'Fredoka',system-ui,-apple-system,sans-serif;text-align:center;background:transparent;overflow:hidden}
+.wrap{position:relative;width:290px;height:290px;margin:8px auto 0}
+#w{width:290px;height:290px;transform-origin:50% 50%;filter:drop-shadow(0 6px 14px rgba(255,105,180,.35))}
+.pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:36px;z-index:3}
+.hub{position:absolute;top:50%;left:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:#fff;
+ border:4px solid #ff8cc6;display:flex;align-items:center;justify-content:center;font-size:32px;z-index:2}
+#res{min-height:64px;margin-top:10px;font-size:19px;font-weight:700;color:#5a2d66;padding:0 10px;line-height:1.35}
+.conf{position:fixed;top:-40px;font-size:26px;animation:fall 2.8s linear forwards}
+@keyframes fall{to{transform:translateY(520px) rotate(360deg);opacity:.2}}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.prize{display:inline-block;animation:pop .6s;background:#fff3a8;border-radius:16px;padding:6px 12px;margin-top:4px}
+</style></head><body>
+<div class="wrap"><div class="pointer">🔻</div><svg id="w" viewBox="-110 -110 220 220">__SEGS__</svg><div class="hub">__HUB__</div></div>
+<div id="res">__IDLE__</div>
+<script>
+var target=__TARGET__, n=__N__, prize=__PRIZE__;
+function play(k){try{window.parent.__andalPlay&&window.parent.__andalPlay(k)}catch(e){}}
+var w=document.getElementById('w'), res=document.getElementById('res');
+if(target>=0){
+  var seg=360/n, finalA=360*6+(360-(target*seg+seg/2)), last=-1, running=true;
+  function angle(){var m=getComputedStyle(w).transform; if(!m||m==='none')return 0; var v=m.match(/matrix\\(([^)]+)\\)/);
+    if(!v)return 0; var p=v[1].split(',').map(parseFloat); return (Math.atan2(p[1],p[0])*180/Math.PI+360)%360;}
+  function watch(){ if(!running)return; var s=Math.floor(angle()/seg); if(s!==last){ if(last!==-1) play('tick'); last=s; } requestAnimationFrame(watch); }
+  res.innerHTML='Spinning… 🌀';
+  setTimeout(function(){ w.style.transition='transform 5s cubic-bezier(.12,.75,.15,1)'; w.style.transform='rotate('+finalA+'deg)'; watch(); },150);
+  setTimeout(function(){ running=false; res.innerHTML='🎉 You won! 🎉<br><span class="prize">'+prize+'</span>'; play('win');
+    var em=['🎉','✨','🦄','🐰','🌈','💖','⭐'];
+    for(var i=0;i<26;i++){var c=document.createElement('div');c.className='conf';c.textContent=em[i%7];
+      c.style.left=(Math.random()*100)+'%';c.style.animationDelay=(Math.random()*0.8)+'s';document.body.appendChild(c);} },5300);
+}
+</script></body></html>"""
+
+
+def wheel_html(prizes, target=-1, hub="🎡", idle=""):
+    import math
+    n = len(prizes)
+    seg = 360 / n
+    segs = []
+    for i, p in enumerate(prizes):
+        a0, a1 = math.radians(i * seg), math.radians((i + 1) * seg)
+        x0, y0 = 100 * math.sin(a0), -100 * math.cos(a0)
+        x1, y1 = 100 * math.sin(a1), -100 * math.cos(a1)
+        large = 1 if seg > 180 else 0
+        col = WHEEL_COLOURS[i % len(WHEEL_COLOURS)]
+        segs.append(f'<path d="M0 0 L{x0:.2f} {y0:.2f} A100 100 0 {large} 1 {x1:.2f} {y1:.2f} Z" fill="{col}" '
+                    f'stroke="#fff" stroke-width="2"/>')
+        mid = (i + .5) * seg
+        tx, ty = 70 * math.sin(math.radians(mid)), -70 * math.cos(math.radians(mid))
+        segs.append(f'<text x="{tx:.2f}" y="{ty:.2f}" font-size="19" text-anchor="middle" dominant-baseline="central" '
+                    f'transform="rotate({mid:.1f} {tx:.2f} {ty:.2f})">{p["emoji"]}</text>')
+    segs.append('<circle r="104" fill="none" stroke="#ff8cc6" stroke-width="7"/>')
+    prize_text = html_safe(f'{prizes[target]["emoji"]} {prizes[target]["name"]}') if target >= 0 else ""
+    return (WHEEL_HTML.replace("__SEGS__", "".join(segs)).replace("__HUB__", hub)
+            .replace("__IDLE__", html_safe(idle)).replace("__TARGET__", str(target)).replace("__N__", str(n))
+            .replace("__PRIZE__", json.dumps(prize_text)))
+
+
+SIT_TIMER = """
+<div style="font-family:'Fredoka',system-ui,sans-serif;text-align:center;padding:10px;border-radius:16px;
+  background:#f6f0ff;border:2px solid #d9c4f6">
+  <div id="t" style="font-size:2.4rem;font-weight:700;color:#5a2d66">🦢 Ready?</div>
+  <div style="margin-top:6px">
+    <button onclick="go(60)" style="font-size:1rem;padding:6px 14px;border-radius:999px;border:0;
+      background:#ff7fbf;color:white;margin:3px;cursor:pointer">Start 1 minute</button>
+    <button onclick="go(120)" style="font-size:1rem;padding:6px 14px;border-radius:999px;border:0;
+      background:#9b6bff;color:white;margin:3px;cursor:pointer">Start 2 minutes</button>
+  </div>
+</div>
+<script>
+var iv = null;
+function play(k){ try { window.parent.__andalPlay && window.parent.__andalPlay(k); } catch(e){} }
+function go(sec){ clearInterval(iv); var left = sec; var t = document.getElementById('t'); play('pop');
+  var show = function(){ t.textContent = '🤫 ' + Math.floor(left/60) + ':' + String(left%60).padStart(2,'0'); };
+  show(); iv = setInterval(function(){ left--; if(left<=0){ clearInterval(iv);
+    t.textContent='🎉 Done! Show your grown-up'; play('fanfare'); } else show(); }, 1000); }
+</script>
+"""
+
+
+# -------------------------------- certificates --------------------------------
+def certificate_html(title, name, week_label, stats_pills, badges, standalone=False):
+    pills = "".join(f'<span style="display:inline-block;margin:4px;padding:6px 12px;border-radius:999px;'
+                    f'background:#fff;border:2px solid #ffd1e8;font-size:15px">{p}</span>' for p in stats_pills)
+    bdg = ""
+    if badges:
+        bdg = ('<div style="margin-top:10px;font-size:15px;color:#7a5a80">New badges this week:</div>'
+               f'<div style="font-size:30px;margin-top:2px">{" ".join(badges)}</div>')
+    body = (f'<div style="max-width:640px;margin:10px auto;padding:26px 22px;border-radius:26px;text-align:center;'
+            f'background:linear-gradient(135deg,#fff6fb,#f3ecff);border:7px double #ff9ccc;color:#3b2350;'
+            f'font-family:Fredoka,system-ui,sans-serif;box-shadow:0 8px 24px rgba(255,105,180,.2)">'
+            f'<div style="font-size:40px">🦄 🏆 🐰</div>'
+            f'<div style="font-size:28px;font-weight:700;color:#a3236b;margin-top:4px">{title}</div>'
+            f'<div style="font-size:16px;margin-top:8px">This certificate is proudly presented to</div>'
+            f'<div style="font-size:44px;font-weight:700;color:#ff4fa3;margin:2px 0">{html_safe(name)}</div>'
+            f'<div style="font-size:16px">for a wonderful week · {week_label}</div>'
+            f'<div style="margin-top:12px">{pills}</div>{bdg}'
+            f'<div style="margin-top:18px;font-size:15px;color:#7a5a80">Signed: ____________________ (Grown-up)</div>'
+            f'<div style="font-size:26px;margin-top:6px">🌈 ⭐ 💖 ⭐ 🌈</div></div>')
+    if not standalone:
+        return body
+    return ('<!doctype html><html><head><meta charset="utf-8"><title>Certificate</title>'
+            '<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">'
+            '<style>body{background:#fff;margin:30px}@media print{body{margin:0}}</style></head><body>'
+            f'{body}</body></html>')
+
+
+# =================================== APP ===================================
 if "data" not in st.session_state:
     try:
         st.session_state.data, st.session_state.sha = load_data()
     except Exception as e:
-        st.session_state.data, st.session_state.sha = default_data(), None
+        st.session_state.data, st.session_state.sha = migrate(default_data(), today_local()), None
         st.session_state.save_error = f"Couldn't load saved progress ({e})."
 
-data = st.session_state.data
 today = today_local()
 TODAY_KEY = today.isoformat()
+data = st.session_state.data
+
+# ---- new badges? record + celebrate ----
+stats = compute_stats(data)
+earned_ids = {b[0] for b in BADGES if stats.get(b[4], 0) >= b[5]}
+new_badges = earned_ids - set(data.get("badges_earned", {}))
+if new_badges and not st.session_state.get("badge_save_failed"):
+    def _record(d):
+        be = d.setdefault("badges_earned", {})
+        for bid in new_badges:
+            be.setdefault(bid, TODAY_KEY)
+    if update(_record):
+        st.session_state.new_badge_party = sorted(new_badges)
+    else:
+        st.session_state.badge_save_failed = True
+    data = st.session_state.data
+
+theme_id = data.get("theme", "rainbow")
+st.markdown(BASE_CSS + "<style>" + THEME_CSS.get(theme_id, THEME_CSS["rainbow"]) + "</style>",
+            unsafe_allow_html=True)
+install_sound_engine()
+alerts = st.container()   # fixed holders, so the tabs below never move (moving resets the open tab)
+
 done_today = done_on(data, today)
+bal = balance_info(data)
+small_ws = small_wheel_status(data, today)
+big_ws = big_wheel_status(data, today)
+star_days = stats["star_days"]
+earned_badges = data.get("badges_earned", {})
 
 # ------------------------------ messages on top ------------------------------
-if err := st.session_state.pop("save_error", None):
-    st.error(f"😿 Progress couldn't be saved. Ask a grown-up to check the Grown-ups tab. ({err})")
-if flash := st.session_state.pop("flash", None):
-    st.success(flash)
-    st.balloons()
+with alerts:
+    if err := st.session_state.pop("save_error", None):
+        st.error(f"😿 Progress couldn't be saved. Ask a grown-up to check the Grown-ups tab. ({err})")
+    if flash := st.session_state.pop("flash", None):
+        st.success(flash)
+        st.balloons()
+        play_sound("fanfare")
+
+
+def dismiss_message(mid):
+    def change(d):
+        for m in d.get("messages", []):
+            if m["id"] == mid:
+                m["seen"] = True
+    update(change)
+
+
+unseen = [m for m in data.get("messages", []) if not m.get("seen")]
+if unseen:
+    with alerts:
+        m = unseen[-1]
+        st.markdown(f'<div class="msg">💌 <b>A message for you!</b><br>{html_safe(m["text"])}</div>',
+                    unsafe_allow_html=True)
+        st.button("💖 Thank you!", key=f"seen_{m['id']}", on_click=dismiss_message, args=(m["id"],))
 
 # ------------------------------------ hero -----------------------------------
 dollars = dollar_status(data)
-bank = data.get("bonus_bank", 0)
-badges = (f'<span class="badge fire">🔥 {task_streak(data, today, "speak")}-day speaking streak</span>'
-          f'<span class="badge moon">🌙 {task_streak(data, today, "bed")}-night bedtime streak</span>')
-if bank:
-    badges += f'<span class="badge bank">🎶 {bank} bonus minutes saved</span>'
+pills = (f'<span class="badge fire">🔥 {task_streak(data, today, "speak")}-day speaking streak</span>'
+         f'<span class="badge moon">🌙 {task_streak(data, today, "bed")}-night bedtime streak</span>'
+         f'<span class="badge carrot">🥕 {data.get("carrots", 0)} carrots</span>')
+if data.get("toy_fund"):
+    pills += f'<span class="badge toy">🧸 Toy Fund &#36;{data["toy_fund"]}</span>'
 if dollars["paid"] or dollars["owed"]:
-    badges += f'<span class="badge money">💵 &#36;{dollars["paid"]} earned so far</span>'
+    pills += f'<span class="badge money">💵 &#36;{dollars["paid"]} earned</span>'
+if small_ws["ok"] or big_ws["ok"]:
+    pills += '<span class="badge spin">🎡 Spin waiting!</span>'
 st.markdown(
-    f"""
-<div class="hero">
-  <div class="float f1">🦄</div><div class="float f2">🐰</div>
-  <div class="float f3">🌈</div><div class="float f4">✨</div>
-  <div class="title">Hi {STUDENT_NAME}!</div>
-  <div class="sub">{today.strftime("%A, %d %B %Y")}</div>
-  {badges}
-</div>
-""",
+    f"""<div class="hero"><div class="float f1">🦄</div><div class="float f2">🐰</div>
+<div class="float f3">🌈</div><div class="float f4">✨</div>
+<div class="title">Hi {html_safe(STUDENT_NAME)}!</div>
+<div class="sub">{today.strftime("%A, %d %B %Y")}</div>
+<div class="balance">⏳ {bal["balance"]} min screen time left</div><br>{pills}</div>""",
     unsafe_allow_html=True,
 )
 
-tab_today, tab_maths, tab_rewards, tab_week, tab_parent = st.tabs(
-    ["🌈 Today", "🧮 Maths & clues", "🏆 Big rewards", "📅 My fortnight", "🔐 Grown-ups"]
-)
+# ---- celebrations queued by callbacks ----
+fx = st.container()
+celebration = st.session_state.pop("celebrate", None)
+if celebration:
+  with fx:
+    st.markdown('<div class="celebrate"><div class="thumb">👍</div><div class="burst">🎉🦄🌈⭐💖</div>'
+                f'<div class="word">{random.choice(["Great job!", "Amazing!", "Hop-tastic!", "Well done!", "Super!"])}'
+                '</div></div>', unsafe_allow_html=True)
+    play_sound("chime")
+    if celebration.get("fact") is not None:
+        st.toast(f"🧠 Fun fact: {FUN_FACTS[celebration['fact']]}", icon="👍")
+party = st.session_state.pop("new_badge_party", None)
+if party:
+  with fx:
+    names = ", ".join(next(f"{b[1]} {b[2]}" for b in BADGES if b[0] == bid) for bid in party)
+    st.success(f"🏅 NEW BADGE{'S' if len(party) > 1 else ''}! {names}")
+    st.balloons()
+    play_sound("fanfare")
+
+tab_today, tab_maths, tab_write, tab_spin, tab_pet, tab_weeks, tab_parent = st.tabs(
+    ["🌈 Today", "🧮 Maths", "✍️ My Stories", "🎡 Spin & rewards", "🐰 Bunny & badges", "📅 My weeks",
+     "🔐 Grown-ups"])
 
 
-# ------------------------------------ TODAY ----------------------------------
+# ================================== TODAY ==================================
 def toggle(tid, key):
     checked = st.session_state[key]
+    info = {}
 
     def change(d):
         s = set(d["days"].get(TODAY_KEY, []))
         (s.add if checked else s.discard)(tid)
         d["days"][TODAY_KEY] = sorted(s)
+        if checked:
+            add_fact(d, TODAY_KEY, info)
 
-    if not update(change):
+    if update(change):
+        if checked:
+            st.session_state.celebrate = {"fact": info.get("fact"), "task": tid}
+    else:
         st.session_state[key] = not checked  # put the tick back how it was
 
 
 def task_label(t):
     reward = f"  **+{t['minutes']} min**" if t["minutes"] else "  *(counts toward big rewards)*"
-    return f"{t['emoji']} {t['name']}{reward}"
+    must = "  · **must do**" if t.get("required") else ""
+    return f"{t['emoji']} {t['name']}{reward}{must}"
 
 
 def task_box(t, tip=None):
@@ -530,80 +1349,136 @@ def task_box(t, tip=None):
         st.markdown(f'<div class="tip">{tip}</div>', unsafe_allow_html=True)
 
 
-def spend_bonus():
-    def change(d):
-        step = min(BONUS_SPEND_STEP, d.get("bonus_bank", 0))
-        d["bonus_bank"] = d.get("bonus_bank", 0) - step
-        d.setdefault("bonus_used", {})[TODAY_KEY] = d.get("bonus_used", {}).get(TODAY_KEY, 0) + step
-
-    update(change)
-
-
 def next_idea():
     st.session_state.idea_shift = st.session_state.get("idea_shift", 0) + 1
 
 
-SIT_TIMER = """
-<div style="font-family:'Fredoka',sans-serif;text-align:center;padding:10px;border-radius:16px;
-  background:#f6f0ff;border:2px solid #d9c4f6">
-  <div id="t" style="font-size:2.4rem;font-weight:700;color:#5a2d66">🦢 Ready?</div>
-  <div style="margin-top:6px">
-    <button onclick="go(60)" style="font-size:1rem;padding:6px 14px;border-radius:999px;border:0;
-      background:#ff7fbf;color:white;margin:3px;cursor:pointer">Start 1 minute</button>
-    <button onclick="go(120)" style="font-size:1rem;padding:6px 14px;border-radius:999px;border:0;
-      background:#9b6bff;color:white;margin:3px;cursor:pointer">Start 2 minutes</button>
-  </div>
-</div>
-<script>
-let iv = null;
-function beep(){ try { const c = new (window.AudioContext||window.webkitAudioContext)();
-  [0,0.25,0.5].forEach(s=>{const o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);
-  o.start(c.currentTime+s);o.stop(c.currentTime+s+0.15);}); } catch(e){} }
-function go(sec){ clearInterval(iv); let left = sec; const t = document.getElementById('t');
-  const show = () => { t.textContent = '🤫 ' + Math.floor(left/60) + ':' + String(left%60).padStart(2,'0'); };
-  show(); iv = setInterval(()=>{ left--; if(left<=0){ clearInterval(iv);
-    t.textContent='🎉 Done! Show your grown-up'; beep(); } else show(); }, 1000); }
-</script>
-"""
+def confirm_use():
+    if not st.session_state.get("use_toggle"):
+        return
+    st.session_state.use_toggle = False
+    if not pin_ok("use_pin"):
+        st.session_state.use_msg = ("bad", "That PIN isn't right. Ask a grown-up! 🔐")
+        return
+    mins = int(st.session_state.get("use_mins", 0) or 0)
+    result = {}
+
+    def change(d):
+        left = balance_info(d)["balance"]
+        if mins <= 0 or mins > left:
+            result["bad"] = left
+            return False
+        d.setdefault("used", []).append({"date": TODAY_KEY, "minutes": mins,
+                                         "time": datetime.now(ZoneInfo(TIMEZONE)).strftime("%H:%M")})
+        result["left"] = left - mins
+
+    ok = update(change)
+    st.session_state.use_pin = ""
+    if ok:
+        st.session_state.use_msg = ("ok", f"✅ {mins} minutes used. {result['left']} minutes saved for later! 💾")
+    elif "bad" in result:
+        st.session_state.use_msg = ("bad", f"Only {result['bad']} minutes are left.")
+
+
+def add_mood(mid):
+    def change(d):
+        d.setdefault("moods", []).append({"date": TODAY_KEY, "time": datetime.now(ZoneInfo(TIMEZONE)).strftime("%H:%M"),
+                                          "mood": mid})
+    if update(change):
+        st.session_state.mood_reply = mid
+
 
 with tab_today:
     task_mins = task_minutes(done_today)
-    bonus_today = data.get("bonus_used", {}).get(TODAY_KEY, 0)
     pct = int(100 * task_mins / DAILY_GOAL_MINUTES)
-    extra = f" + 🎶 {bonus_today} bonus" if bonus_today else ""
     st.markdown(
-        f'<div class="minutes"><span>⭐ {task_mins} min earned{extra}</span>'
-        f'<span>🎯 goal {DAILY_GOAL_MINUTES} min</span></div>'
+        f'<div class="minutes"><span>⭐ {task_mins} min earned today</span><span>🎯 goal {DAILY_GOAL_MINUTES} min</span></div>'
         f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>',
         unsafe_allow_html=True,
     )
     required_left = [t for t in TASKS if t.get("required") and t["id"] not in done_today]
     if required_left:
-        st.warning("🔒 Do your **must do** task first to unlock screen time!")
+        names = " and ".join(f"{t['emoji']} {t['name'].lower()}" for t in required_left)
+        st.warning(f"🔒 Do your **must do** tasks first to unlock screen time: {names}")
     elif task_mins >= DAILY_GOAL_MINUTES:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
-        if st.session_state.get("celebrated") != TODAY_KEY:
-            st.balloons()
-            st.session_state.celebrated = TODAY_KEY
     else:
         st.info(f"🐰 Hop hop! {DAILY_GOAL_MINUTES - task_mins} more minutes to earn. You can do it!")
+    if small_ws["ok"] or big_ws["ok"]:
+        which = "big 🦄 AND small 🌈" if small_ws["ok"] and big_ws["ok"] else ("big 🦄" if big_ws["ok"] else "small 🌈")
+        st.markdown(f'<div class="fact">🎡 <b>You have a {which} wheel spin waiting!</b> '
+                    'Open the <b>Spin & rewards</b> tab.</div>', unsafe_allow_html=True)
+    if celebration and celebration.get("fact") is not None:
+        st.markdown(f'<div class="fact">🧠 <b>Fun fact unlocked!</b> {html_safe(FUN_FACTS[celebration["fact"]])}</div>',
+                    unsafe_allow_html=True)
 
-    if bonus_today:
-        st.markdown(f"**Total screen time today: {task_mins + bonus_today} minutes** 🎉")
-    if bank > 0:
-        with st.container(border=True):
-            st.markdown(f"🎶 **Bonus bank: {bank} minutes** — extra screen time you earned by singing!")
-            st.button(f"Use {min(BONUS_SPEND_STEP, bank)} bonus minutes today", on_click=spend_bonus,
-                      disabled=bool(required_left),
-                      help="Finish your must-do task first" if required_left else None)
+    # ---- screen-time balance ----
+    with st.container(border=True):
+        c1, c2 = st.columns([1, 1])
+        c1.markdown(f'<div style="font-size:1.1rem;color:#6b3f73;font-weight:600">⏳ Screen time balance</div>'
+                    f'<div style="font-size:2.6rem;font-weight:700;color:#ff4fa3;line-height:1.1">{bal["balance"]} min</div>'
+                    '<div style="color:#8a6a96;font-size:.9rem">Unused minutes are saved for another day 💾</div>',
+                    unsafe_allow_html=True)
+        with c2:
+            if bal["balance"] > 0:
+                st.markdown("**🧑‍🍼 Grown-up: record minutes used**")
+                if st.session_state.get("use_mins", 0) > bal["balance"] or "use_mins" not in st.session_state:
+                    st.session_state.use_mins = bal["balance"]
+                st.number_input("Minutes used", min_value=1, max_value=bal["balance"], step=5, key="use_mins")
+                st.text_input("Grown-up PIN", type="password", key="use_pin")
+                st.toggle("Slide to confirm ➡️", key="use_toggle", on_change=confirm_use)
+            else:
+                st.caption("No minutes to use yet — finish some tasks! 🐰")
+        msg = st.session_state.pop("use_msg", None)
+        if msg:
+            (st.success if msg[0] == "ok" else st.error)(msg[1])
+
+    # ---- bunny + newest badges + mood ----
+    with st.container(border=True):
+        stage, nxt = pet_stage(star_days)
+        ls = last_star_day(data)
+        sleepy = stage[1] not in ("egg", "hatching") and ls is not None and (today - ls).days >= 2 \
+            and not is_star_day(done_today)
+        pc1, pc2 = st.columns([1, 2])
+        pc1.markdown(pet_svg(stage[1], sleepy, data.get("pet", {}).get("wear", {}), size=150), unsafe_allow_html=True)
+        with pc2:
+            pet_name = data.get("pet", {}).get("name", "Bunnicorn")
+            st.markdown(f'<div class="pet-name">{html_safe(pet_name)}</div><div style="color:#8a6a96">'
+                        f'{stage[2]} · {"😴 Sleepy — earn a star day to wake me up!" if sleepy else stage[3]}</div>',
+                        unsafe_allow_html=True)
+            newest = sorted(reversed(list(earned_badges.items())), key=lambda kv: kv[1], reverse=True)[:2]
+            if newest:
+                st.markdown('<div style="margin-top:8px;color:#6b3f73;font-weight:600">🏅 My newest badges</div>'
+                            '<div class="badge-grid" style="justify-content:flex-start">'
+                            + "".join(badge_html(next(b for b in BADGES if b[0] == bid), small=True, show_desc=False)
+                                      for bid, _ in newest if any(b[0] == bid for b in BADGES)) + '</div>',
+                            unsafe_allow_html=True)
+        st.markdown("**How are you feeling right now?**")
+        mcols = st.columns(len(MOODS))
+        for col, (mid, emo, label, _reply) in zip(mcols, MOODS):
+            col.button(emo, key=f"mood_{mid}", help=label, on_click=add_mood, args=(mid,), use_container_width=True)
+        reply = st.session_state.pop("mood_reply", None)
+        if reply:
+            mood = next(m for m in MOODS if m[0] == reply)
+            st.success(f"{mood[1]} You're feeling **{mood[2].lower()}**. {mood[3]}")
+        else:
+            todays = [m for m in data.get("moods", []) if m["date"] == TODAY_KEY]
+            if todays:
+                mood = next((m for m in MOODS if m[0] == todays[-1]["mood"]), None)
+                if mood:
+                    st.caption(f"Last check-in today: {mood[1]} {mood[2]} at {todays[-1]['time']}")
 
     idea_n = today.toordinal() + st.session_state.get("idea_shift", 0)
     write_n = today.toordinal()
+    wotd = word_of_the_day(data, today)
     tips = {
+        "homework": "📒 Do today's homework from school. <b>No homework today?</b> Ask a grown-up for a 15-minute "
+                    "learning task instead, then tick this.",
         "speak": f"💡 <b>Idea for today:</b> {SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]}",
-        "write1": f"✨ Write about: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b>",
+        "write1": f"✨ Write about: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b> — write it in the "
+                  f"<b>My Stories</b> tab (50+ words ticks this for you!). Try to use the word <b>{html_safe(wotd['word'])}</b>.",
         "write2": f"✨ Write about: <b>{WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)]}</b>",
-        "maths": f"🧮 Go to the <b>Maths & clues</b> tab. This ticks itself when you solve {MATHS_TO_SOLVE} problems "
+        "maths": f"🧮 Go to the <b>Maths</b> tab. This ticks itself when you solve {MATHS_TO_SOLVE} problems "
                  f"(solved today: {data.get('maths', {}).get(TODAY_KEY, {}).get('solved', 0)}).",
         "sit1": "📣 <b>Call a grown-up to watch you first!</b> Sit cross-legged, hands resting on your knees, "
                 "back tall, eyes soft. No talking, no wiggling, no giggling. Use the timer below.",
@@ -624,14 +1499,16 @@ with tab_today:
                 if t["id"] == "speak":
                     st.button("🎲 Give me a different idea", on_click=next_idea)
             if sec_id == "body" and any(t["id"] in ("sit1", "sit2") for t in sec_tasks):
-                if hasattr(st, "iframe"):
-                    st.iframe(SIT_TIMER, height=130)
-                else:  # older Streamlit versions
-                    import streamlit.components.v1 as components
-                    components.html(SIT_TIMER, height=130)
+                _embed(SIT_TIMER, 130)
+
+    facts_today = data.get("facts", {}).get(TODAY_KEY, [])
+    if facts_today:
+        with st.expander(f"🧠 Fun facts you unlocked today ({len(facts_today)})"):
+            for i in facts_today:
+                st.markdown(f"• {md_safe(FUN_FACTS[i])}")
 
 
-# ------------------------------------ MATHS ----------------------------------
+# ================================== MATHS ==================================
 def maths_state(d):
     return d.setdefault("maths", {}).setdefault(TODAY_KEY, {"index": 0, "solved": 0, "tries": 0, "log": []})
 
@@ -654,8 +1531,10 @@ def check_answer():
             outcome["right"] = True
             if m["solved"] >= MATHS_TO_SOLVE:
                 s = set(d["days"].get(TODAY_KEY, []))
-                s.add("maths")
-                d["days"][TODAY_KEY] = sorted(s)
+                if "maths" not in s:
+                    s.add("maths")
+                    d["days"][TODAY_KEY] = sorted(s)
+                    add_fact(d, TODAY_KEY, outcome)
         else:
             m["tries"] += 1
             outcome["right"] = False
@@ -665,7 +1544,7 @@ def check_answer():
         if outcome["right"]:
             cheers = ["🎉 Brilliant!", "🦄 Magical!", "🌟 Superstar!", "🐰 Hop-tastic!", "🌈 You got it!"]
             st.session_state.maths_msg = ("ok", random.choice(cheers) + " That's correct!")
-            st.session_state.maths_party = True
+            st.session_state.celebrate = {"fact": outcome.get("fact"), "task": "maths"}
         else:
             st.session_state.maths_msg = ("bad", "Not quite — check your working and try again! 💪")
 
@@ -702,16 +1581,13 @@ with tab_maths:
                     f'<div class="question">{html_safe(prob["question"])}</div>', unsafe_allow_html=True)
         with st.form("maths_form", border=False):
             c1, c2 = st.columns([3, 1])
-            c1.text_input("Your answer", key="maths_answer", placeholder=prob["hint"],
-                          label_visibility="collapsed")
+            c1.text_input("Your answer", key="maths_answer", placeholder=prob["hint"], label_visibility="collapsed")
             c2.form_submit_button("Check ✔️", on_click=check_answer, use_container_width=True)
         st.caption(f"Tries on this problem: {tries}")
 
         msg = st.session_state.pop("maths_msg", None)
         if msg:
             {"ok": st.success, "bad": st.error, "warn": st.warning, "info": st.info}[msg[0]](msg[1])
-        if st.session_state.pop("maths_party", False):
-            st.balloons()
 
         st.markdown("#### 🔍 Clues")
         for n, need in ((1, TRIES_FOR_CLUE_1), (2, TRIES_FOR_CLUE_2)):
@@ -733,9 +1609,199 @@ with tab_maths:
                 st.markdown(f"✅ {md_safe(q)}")
 
 
-# ----------------------------------- REWARDS ---------------------------------
+# ================================ MY STORIES ================================
+def save_story():
+    title = str(st.session_state.get("story_title", "")).strip() or "My story"
+    text = str(st.session_state.get("story_text", "")).strip()
+    words = count_words(text)
+    if words == 0:
+        st.session_state.story_msg = ("warn", "Write something first! ✏️")
+        return
+    info = {}
+
+    def change(d):
+        w = word_of_the_day(d, today)
+        stories = d.setdefault("stories", [])
+        stories.append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "title": title, "text": text, "words": words,
+                        "wotd": w["word"], "wotd_count": count_word(text, w["word"]), "feedback": ""})
+        if words >= MIN_STORY_WORDS:
+            s = set(d["days"].get(TODAY_KEY, []))
+            for tid in ("write1", "write2"):
+                if tid not in s:
+                    s.add(tid)
+                    info["tick"] = tid
+                    break
+            d["days"][TODAY_KEY] = sorted(s)
+            if info.get("tick"):
+                add_fact(d, TODAY_KEY, info)
+        uses = sum(count_word(x["text"], w["word"]) for x in stories if x["date"] == TODAY_KEY)
+        if uses >= WORD_CHALLENGE_USES and TODAY_KEY not in d.setdefault("word_wins", []):
+            d["word_wins"].append(TODAY_KEY)
+            d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": WORD_CHALLENGE_MINUTES,
+                                                "reason": f"Word of the day challenge: {w['word']}"})
+            info["word_win"] = True
+
+    if update(change):
+        st.session_state.story_title = ""
+        st.session_state.story_text = ""
+        parts = [f"📖 Story saved! ({words} words)"]
+        if info.get("tick"):
+            parts.append(f"Your writing task {'1' if info['tick'] == 'write1' else '2'} is ticked! ✅")
+            st.session_state.celebrate = {"fact": info.get("fact"), "task": info["tick"]}
+        elif words < MIN_STORY_WORDS:
+            parts.append(f"Write at least {MIN_STORY_WORDS} words in a story to tick a writing task.")
+        if info.get("word_win"):
+            parts.append(f"💖 WORD WIZARD! You used the word of the day {WORD_CHALLENGE_USES} times: "
+                         f"+{WORD_CHALLENGE_MINUTES} minutes!")
+        st.session_state.story_msg = ("ok", " ".join(parts))
+
+
+with tab_write:
+    wotd = word_of_the_day(data, today)
+    todays_stories = [s for s in data.get("stories", []) if s["date"] == TODAY_KEY]
+    uses = sum(count_word(s["text"], wotd["word"]) for s in todays_stories)
+    won = TODAY_KEY in data.get("word_wins", [])
+    stars = "".join("💖" if i < min(uses, WORD_CHALLENGE_USES) else "🤍" for i in range(WORD_CHALLENGE_USES))
+    st.markdown(
+        f'<div class="card" style="text-align:center"><div style="color:#8a6a96;font-weight:600">✨ Word of the day ✨</div>'
+        f'<div class="wotd">{html_safe(wotd["word"])}</div><div style="color:#5a2d66"><i>{html_safe(wotd["meaning"])}</i></div>'
+        f'<div style="color:#8a6a96;margin-top:4px">e.g. “{html_safe(wotd.get("example", ""))}”</div>'
+        f'<div style="margin-top:10px;font-size:1.05rem"><b>Challenge:</b> use it {WORD_CHALLENGE_USES} times in your '
+        f'stories today for +{WORD_CHALLENGE_MINUTES} minutes!</div><div style="font-size:1.8rem">{stars}</div>'
+        f'<div style="color:#1f7a37;font-weight:600">{"🎉 Challenge complete!" if won else ""}</div></div>',
+        unsafe_allow_html=True)
+
+    st.markdown("### ✍️ Write a story")
+    st.caption(f"Ideas: **{md_safe(WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)])}** or "
+               f"**{md_safe(WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)])}**")
+    with st.container(border=True):
+        st.text_input("Title", key="story_title", placeholder="My amazing story")
+        st.text_area("Your story", key="story_text", height=260,
+                     placeholder="Once upon a time, a curious little bunny…")
+        draft = str(st.session_state.get("story_text", ""))
+        n_words = count_words(draft)
+        st.markdown(f'<div class="minutes"><span>📝 {n_words} words</span><span>🎯 {MIN_STORY_WORDS} words ticks a '
+                    f'writing task</span></div><div class="rbar"><div class="rfill" style="width:'
+                    f'{max(3, min(100, int(100 * n_words / MIN_STORY_WORDS)))}%"></div></div>', unsafe_allow_html=True)
+        st.caption("Tap outside the box to update the word count.")
+        st.button("💾 Save my story", on_click=save_story, type="primary")
+        msg = st.session_state.pop("story_msg", None)
+        if msg:
+            (st.success if msg[0] == "ok" else st.warning)(msg[1])
+
+    stories = list(reversed(data.get("stories", [])))
+    st.markdown(f"### 📚 My Stories ({len(stories)})")
+    if not stories:
+        st.caption("Your stories will appear here. Grown-ups can read them and leave you a note! 💌")
+    for s in stories[:30]:
+        label = f"{'💌 ' if s.get('feedback') else ''}{s['title']} · {date.fromisoformat(s['date']).strftime('%d %b')} · {s['words']} words"
+        with st.expander(md_safe(label)):
+            st.markdown(f'<div class="story">{html_safe(s["text"]).replace(chr(10), "<br>")}</div>',
+                        unsafe_allow_html=True)
+            if s.get("feedback"):
+                st.markdown(f'<div class="note">💌 <b>Note from your grown-up:</b> {html_safe(s["feedback"])}</div>',
+                            unsafe_allow_html=True)
+
+
+# ============================ SPIN & REWARDS ============================
+def do_spin(wheel):
+    prizes = BIG_PRIZES if wheel == "big" else SMALL_PRIZES
+    result = {}
+
+    def change(d):
+        status = (big_wheel_status if wheel == "big" else small_wheel_status)(d, today)
+        if not status["ok"]:
+            return False
+        idx = random.randrange(len(prizes))
+        p = prizes[idx]
+        spin = {"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "wheel": wheel, "prize_id": p["id"],
+                "name": p["name"], "emoji": p["emoji"], "status": "waiting"}
+        if p.get("auto") == "minutes":
+            d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": 30, "reason": "Wheel prize"})
+            spin["status"] = "auto"
+        elif p.get("auto") == "carrots":
+            d["carrots"] = d.get("carrots", 0) + 10
+            spin["status"] = "auto"
+        elif p.get("auto") == "toy":
+            d["toy_fund"] = d.get("toy_fund", 0) + TOY_FUND_STEP
+            spin["status"] = "auto"
+        d.setdefault("spins", []).append(spin)
+        result["idx"] = idx
+
+    if update(change):
+        st.session_state.spin_show = {"wheel": wheel, "idx": result["idx"], "n": random.random()}
+
+
+def mark_prize():
+    if not pin_ok("prize_pin"):
+        st.session_state.prize_msg = ("bad", "That PIN isn't right.")
+        return
+    sid = st.session_state.get("prize_pick")
+    result = {}
+
+    def change(d):
+        spin = next((s for s in d.get("spins", []) if s["id"] == sid and s["status"] == "waiting"), None)
+        if not spin:
+            return False
+        if spin["prize_id"] == "restaurant":
+            ready = restaurant_ready_from(d)
+            if ready and today < ready:
+                result["wait"] = ready
+                return False
+            d["last_restaurant"] = TODAY_KEY
+        if spin["prize_id"] == "bedpass":
+            s = set(d["days"].get(TODAY_KEY, []))
+            s.add("bed")
+            d["days"][TODAY_KEY] = sorted(s)
+            result["bed"] = True
+        spin["status"] = "done"
+        spin["done_date"] = TODAY_KEY
+        result["name"] = f"{spin['emoji']} {spin['name']}"
+
+    st.session_state.prize_pin = ""
+    if update(change):
+        st.session_state.flash = f"🎁 Prize enjoyed: {md_safe(result['name'])}!"
+        if result.get("bed"):
+            st.session_state[f"{TODAY_KEY}_bed"] = True
+    elif "wait" in result:
+        st.session_state.prize_msg = ("bad", f"🍽️ The restaurant prize can be used from "
+                                             f"{result['wait'].strftime('%A %d %B')} (3 weeks after the last one).")
+
+
+def swap_carrots():
+    if not pin_ok("carrot_pin"):
+        st.session_state.prize_msg = ("bad", "That PIN isn't right.")
+        return
+
+    def change(d):
+        if d.get("carrots", 0) < CARROTS_FOR_SWAP:
+            return False
+        d["carrots"] -= CARROTS_FOR_SWAP
+        d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": CARROT_SWAP_MINUTES, "reason": "Carrot swap"})
+
+    st.session_state.carrot_pin = ""
+    if update(change):
+        st.session_state.flash = f"🥕 {CARROTS_FOR_SWAP} carrots swapped for {CARROT_SWAP_MINUTES} minutes of screen time!"
+
+
+def toy_trip():
+    if not pin_ok("toy_pin"):
+        st.session_state.prize_msg = ("bad", "That PIN isn't right.")
+        return
+
+    def change(d):
+        if d.get("toy_fund", 0) < TOY_FUND_TARGET:
+            return False
+        d["toy_fund"] -= TOY_FUND_TARGET
+        d.setdefault("history", []).append({"reward": "toyshop", "date": TODAY_KEY})
+
+    st.session_state.toy_pin = ""
+    if update(change):
+        st.session_state.flash = "🧸 Toy shop trip done! Enjoy your new toys!"
+
+
 def give_reward(reward_id, pin_key):
-    if str(st.session_state.get(pin_key, "")).strip() != parent_pin():
+    if not pin_ok(pin_key):
         st.session_state[pin_key + "_bad"] = True
         return
     r = next((x for x in REWARDS if x["id"] == reward_id), None)
@@ -746,7 +1812,8 @@ def give_reward(reward_id, pin_key):
         else:
             d["claims"][reward_id] = TODAY_KEY
             if r and r.get("bonus_minutes"):
-                d["bonus_bank"] = d.get("bonus_bank", 0) + r["bonus_minutes"]
+                d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": r["bonus_minutes"],
+                                                    "reason": r["name"]})
         d["history"].append({"reward": reward_id, "date": TODAY_KEY})
 
     if update(change):
@@ -767,7 +1834,89 @@ def claim_box(reward_id, button="Give reward 🎁"):
 
 STREAK_WORDS = {"speak": "🗣️ speaking", "bed": "🌙 bedtime", "sing": "🎤 singing"}
 
-with tab_rewards:
+with tab_spin:
+    show = st.session_state.pop("spin_show", None)
+    msg = st.session_state.pop("prize_msg", None)
+    if msg:
+        st.error(msg[1])
+    st.markdown("### 🎡 Spin the wheel!")
+    wc1, wc2 = st.columns(2)
+    for col, wheel, prizes, ws, title in ((wc1, "small", SMALL_PRIZES, small_ws, "🌈 Small wheel"),
+                                         (wc2, "big", BIG_PRIZES, big_ws, "🦄 Big wheel")):
+        with col:
+            with st.container(border=True):
+                st.markdown(f'<div class="reward-head" style="text-align:center">{title}</div>', unsafe_allow_html=True)
+                if wheel == "small":
+                    st.caption("One spin on every ⭐ star day.")
+                else:
+                    st.caption(f"Unlocks after {BIG_WHEEL_STREAK} star days in a row · up to {BIG_SPINS_PER_WEEK} "
+                               f"spins a week (used this week: {big_ws['week_used']}/{BIG_SPINS_PER_WEEK}).")
+                spinning = show and show["wheel"] == wheel
+                idle = "" if spinning else ("Tap SPIN! 👇" if ws["ok"] else ws["why"])
+                _embed(wheel_html(prizes, show["idx"] if spinning else -1,
+                                  hub="🌈" if wheel == "small" else "🦄", idle=idle), 400)
+                st.button("🎡 SPIN!", key=f"spin_{wheel}", on_click=do_spin, args=(wheel,), disabled=not ws["ok"],
+                          type="primary", use_container_width=True)
+                with st.expander("What's on this wheel?"):
+                    for p in prizes:
+                        rule = f" — *{md_safe(p['rules'])}*" if p.get("rules") else ""
+                        st.markdown(f"{p['emoji']} {md_safe(p['name'])}{rule}")
+
+    # ---- my prizes ----
+    waiting = [s for s in data.get("spins", []) if s["status"] == "waiting"]
+    st.markdown(f"### 🎁 My prizes waiting ({len(waiting)})")
+    with st.container(border=True):
+        if not waiting:
+            st.caption("Prizes you win that need a grown-up will wait here until you enjoy them.")
+        for s in waiting:
+            extra = ""
+            if s["prize_id"] == "restaurant":
+                ready = restaurant_ready_from(data)
+                extra = (f" · ⏳ can use from {ready.strftime('%d %b')}" if ready and today < ready
+                         else " · ✅ ready to use (no Mexican!)")
+            st.markdown(f"{s['emoji']} **{md_safe(s['name'])}** · won {date.fromisoformat(s['date']).strftime('%d %b')}"
+                        f"{'' if s['wheel'] == 'small' else ' · 🦄 big'}{extra}")
+        if waiting:
+            with st.form("prize_form", border=False):
+                st.selectbox("Grown-up: which prize was enjoyed?", options=[s["id"] for s in waiting], key="prize_pick",
+                             format_func=lambda sid: next(f"{s['emoji']} {s['name']}" for s in waiting if s["id"] == sid))
+                pc1, pc2 = st.columns([2, 1])
+                pc1.text_input("Grown-up PIN", type="password", key="prize_pin")
+                pc2.write("")
+                pc2.form_submit_button("Mark as done ✅", on_click=mark_prize)
+
+    # ---- carrots & toy fund ----
+    cc1, cc2 = st.columns(2)
+    with cc1:
+        with st.container(border=True):
+            carrots = data.get("carrots", 0)
+            st.markdown(f'<div class="reward-head">🥕 Carrot collection</div><div style="font-size:1.6rem">'
+                        f'{"🥕" * min(carrots // 10, 6)}{"" if carrots else "—"}</div>'
+                        f'<div class="how"><b>{carrots}</b> carrots · {CARROTS_FOR_SWAP} carrots = '
+                        f'{CARROT_SWAP_MINUTES} min screen time</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="rbar"><div class="rfill" style="width:'
+                        f'{max(3, min(100, int(100 * carrots / CARROTS_FOR_SWAP)))}%"></div></div>', unsafe_allow_html=True)
+            if carrots >= CARROTS_FOR_SWAP:
+                with st.form("carrot_form", border=False):
+                    st.text_input("Grown-up PIN to approve the swap", type="password", key="carrot_pin")
+                    st.form_submit_button(f"Swap {CARROTS_FOR_SWAP} 🥕 for {CARROT_SWAP_MINUTES} min", on_click=swap_carrots)
+    with cc2:
+        with st.container(border=True):
+            fund = data.get("toy_fund", 0)
+            st.markdown(f'<div class="reward-head">🧸 Toy Fund</div><div style="font-size:1.6rem;font-weight:700;'
+                        f'color:#1d5f8a">&#36;{fund} <span style="font-size:1rem;color:#8a6a96">of &#36;{TOY_FUND_TARGET}'
+                        f'</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="rbar"><div class="rfill" style="width:'
+                        f'{max(3, min(100, int(100 * fund / TOY_FUND_TARGET)))}%"></div></div>', unsafe_allow_html=True)
+            if fund >= TOY_FUND_TARGET:
+                st.success("🎉 Ready to go toy shopping!")
+                with st.form("toy_form", border=False):
+                    st.text_input("Grown-up PIN after the trip", type="password", key="toy_pin")
+                    st.form_submit_button("We went toy shopping 🛍️", on_click=toy_trip)
+            else:
+                st.caption("Win 🧸 on the big wheel to add $10.".replace("$", "\\$"))
+
+    # ---- big streak rewards ----
     st.markdown("### 🏆 Big rewards")
     for r in REWARDS:
         s = reward_status(data, r, today)
@@ -776,27 +1925,26 @@ with tab_rewards:
         pct = int(100 * sum(parts) / len(parts))
         with st.container(border=True):
             st.markdown(f'<div class="reward-head">{r["emoji"]} {html_safe(r["name"])}</div>'
-                        f'<div class="how">{r["how"]}</div>', unsafe_allow_html=True)
+                        f'<div class="how">{html_safe(r["how"])}</div>', unsafe_allow_html=True)
             word = STREAK_WORDS.get(r["streak_task"], r["streak_task"])
-            pills = [f'<span class="pill {"ok" if s["streak"] >= r["streak_len"] else ""}">'
-                     f'{word} in a row {min(s["streak"], r["streak_len"])}/{r["streak_len"]}</span>']
+            rp = [f'<span class="pill {"ok" if s["streak"] >= r["streak_len"] else ""}">'
+                  f'{word} in a row {min(s["streak"], r["streak_len"])}/{r["streak_len"]}</span>']
             for tid, n in r["needs"].items():
                 t = TASK_BY_ID[tid]
-                pills.append(f'<span class="pill {"ok" if s["counts"][tid] >= n else ""}">'
-                             f'{t["emoji"]} {tid} {min(s["counts"][tid], n)}/{n} days</span>')
-            st.markdown("".join(pills), unsafe_allow_html=True)
+                rp.append(f'<span class="pill {"ok" if s["counts"][tid] >= n else ""}">'
+                          f'{t["emoji"]} {tid} {min(s["counts"][tid], n)}/{n} days</span>')
+            st.markdown("".join(rp), unsafe_allow_html=True)
             st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>',
                         unsafe_allow_html=True)
             if s["ok"]:
                 st.success(f"🎉 UNLOCKED! {STUDENT_NAME} has earned: {md_safe(r['name'])}!")
-                claim_box(r["id"], "Add to bank 🎶" if r.get("bonus_minutes") else "Give reward 🎁")
+                claim_box(r["id"], "Add minutes ⏳" if r.get("bonus_minutes") else "Give reward 🎁")
             elif s["streak"] == 0:
                 st.caption("🌱 Start your streak today — every day counts!")
 
     with st.container(border=True):
         st.markdown(f'<div class="reward-head">💵 Earn a dollar</div>'
-                    f'<div class="how">Every {STAR_DAYS_PER_DOLLAR} ⭐ star days (days you earn the full '
-                    f'{DAILY_GOAL_MINUTES} minutes) = &#36;1. They don\'t have to be in a row.</div>',
+                    f'<div class="how">Every {STAR_DAYS_PER_DOLLAR} ⭐ star days = &#36;1. They don\'t have to be in a row.</div>',
                     unsafe_allow_html=True)
         st.markdown(f'<span class="pill">⭐ {dollars["toward_next"]}/{STAR_DAYS_PER_DOLLAR} star days toward the next &#36;1</span>'
                     f'<span class="pill ok">💵 &#36;{dollars["paid"]} given so far</span>', unsafe_allow_html=True)
@@ -808,26 +1956,165 @@ with tab_rewards:
             claim_box("dollar")
 
 
-# ------------------------------------ WEEK -----------------------------------
-with tab_week:
+# ============================ BUNNY & BADGES ============================
+def save_pet():
+    name = str(st.session_state.get("pet_name_in", "")).strip()[:20] or "Bunnicorn"
+    wear = {slot: st.session_state.get(f"wear_{slot}") for slot in SLOT_NAMES}
+    wear = {k: v for k, v in wear.items() if v and v != "none"}
+
+    def change(d):
+        d.setdefault("pet", {})["name"] = name
+        d["pet"]["wear"] = wear
+
+    update(change)
+
+
+def set_theme(tid):
+    def change(d):
+        d["theme"] = tid
+    update(change)
+
+
+with tab_pet:
+    stage, nxt = pet_stage(star_days)
+    ls = last_star_day(data)
+    sleepy = stage[1] not in ("egg", "hatching") and ls is not None and (today - ls).days >= 2 \
+        and not is_star_day(done_today)
+    pet = data.get("pet", {})
+    with st.container(border=True):
+        bc1, bc2 = st.columns([1, 1])
+        bc1.markdown(pet_svg(stage[1], sleepy, pet.get("wear", {}), size=230), unsafe_allow_html=True)
+        with bc2:
+            st.markdown(f'<div class="pet-name">{html_safe(pet.get("name", "Bunnicorn"))}</div>'
+                        f'<div style="font-size:1.1rem;color:#5a2d66"><b>{stage[2]}</b></div>'
+                        f'<div style="color:#8a6a96">{"😴 I missed you! Earn a ⭐ star day to wake me up." if sleepy else stage[3]}</div>',
+                        unsafe_allow_html=True)
+            if nxt:
+                need = nxt[0] - star_days
+                frac = (star_days - stage[0]) / (nxt[0] - stage[0])
+                st.markdown(f'<div style="margin-top:10px;color:#6b3f73">⭐ {need} more star day{"s" if need != 1 else ""} '
+                            f'to grow into: <b>{nxt[2]}</b></div><div class="rbar"><div class="rfill" style="width:'
+                            f'{max(3, int(100 * frac))}%"></div></div>', unsafe_allow_html=True)
+            else:
+                st.markdown("🌈 Fully grown and magical!")
+            st.caption(f"⭐ Total star days: {star_days}")
+
+    st.markdown("### 👗 Dress-ups")
+    with st.container(border=True):
+        unlocked = [a for a in ACCESSORIES if stats.get(a["stat"], 0) >= a["need"]]
+        if stage[1] in ("egg", "hatching"):
+            st.caption("Dress-ups can be worn once your bunny has hatched! 🥚")
+        st.text_input("My bunny's name", value=pet.get("name", "Bunnicorn"), key="pet_name_in", max_chars=20)
+        dcols = st.columns(len(SLOT_NAMES))
+        for col, (slot, slot_label) in zip(dcols, SLOT_NAMES.items()):
+            opts = ["none"] + [a["id"] for a in unlocked if a["slot"] == slot]
+            cur = pet.get("wear", {}).get(slot, "none")
+            if f"wear_{slot}" not in st.session_state:
+                st.session_state[f"wear_{slot}"] = cur if cur in opts else "none"
+            col.selectbox(slot_label, opts, key=f"wear_{slot}",
+                          format_func=lambda a: "— nothing —" if a == "none" else
+                          next(f"{x['emoji']} {x['name']}" for x in ACCESSORIES if x["id"] == a))
+        st.button("✨ Save my bunny", on_click=save_pet, type="primary")
+        chips = []
+        for a in ACCESSORIES:
+            ok = a in unlocked
+            chips.append(f'<span class="pill {"ok" if ok else "no"}">{a["emoji"] if ok else "🔒"} {html_safe(a["name"])}'
+                         f'{"" if ok else " · " + html_safe(a["how"])}</span>')
+        st.markdown("".join(chips), unsafe_allow_html=True)
+
+    st.markdown("### 🎨 My themes")
+    with st.container(border=True):
+        tcols = st.columns(3)
+        for i, th in enumerate(THEMES):
+            ok = star_days >= th["need"]
+            label = th["name"] + (" ✔️" if th["id"] == theme_id else "") + ("" if ok else f" 🔒 {th['need']}⭐")
+            tcols[i % 3].button(label, key=f"theme_{th['id']}", disabled=not ok or th["id"] == theme_id,
+                                on_click=set_theme, args=(th["id"],), use_container_width=True)
+        st.caption("Unlock new themes by collecting ⭐ star days.")
+
+    st.markdown(f"### 🏅 My badges ({len(earned_badges)}/{len(BADGES)})")
+    with st.container(border=True):
+        got = [b for b in BADGES if b[0] in earned_badges]
+        locked = [b for b in BADGES if b[0] not in earned_badges]
+        if got:
+            st.markdown('<div class="badge-grid">' + "".join(badge_html(b) for b in got) + "</div>",
+                        unsafe_allow_html=True)
+        if locked:
+            st.markdown('<div style="text-align:center;color:#8a6a96;margin:16px 0 8px">🔒 Still to earn</div>'
+                        '<div class="badge-grid">' + "".join(badge_html(b, earned=False) for b in locked) + "</div>",
+                        unsafe_allow_html=True)
+
+
+# ================================ MY WEEKS ================================
+def week_summary(d, monday: date):
+    days = [monday + timedelta(days=i) for i in range(7)]
+    keys = {x.isoformat() for x in days}
+    star = sum(is_star_day(done_on(d, x)) for x in days)
+    tasks = sum(len(done_on(d, x)) for x in days)
+    maths = sum(len(d.get("maths", {}).get(k, {}).get("log", [])) for k in keys)
+    stories = sum(1 for s in d.get("stories", []) if s["date"] in keys)
+    speak = sum("speak" in done_on(d, x) for x in days)
+    badges = [next(b[1] for b in BADGES if b[0] == bid) for bid, dt in d.get("badges_earned", {}).items()
+              if dt in keys and any(b[0] == bid for b in BADGES)]
+    return {"star": star, "tasks": tasks, "maths": maths, "stories": stories, "speak": speak, "badges": badges}
+
+
+def cert_title(star):
+    if star >= 5:
+        return "🌟 Superstar of the Week 🌟"
+    if star >= 3:
+        return "⭐ Shining Star Award ⭐"
+    return "🌱 Rising Star Award 🌱"
+
+
+with tab_weeks:
+    st.markdown("### 🏆 My weekly certificates")
+    this_monday = today - timedelta(days=today.weekday())
+    first_day = min((date.fromisoformat(k) for k, v in data["days"].items() if v), default=today)
+    shown = 0
+    for w in range(0, 12):
+        monday = this_monday - timedelta(weeks=w)
+        if monday + timedelta(days=6) < first_day:
+            break
+        ws = week_summary(data, monday)
+        label = f"{monday.strftime('%d %b')} – {(monday + timedelta(days=6)).strftime('%d %b %Y')}"
+        pills_ = [f"⭐ {ws['star']} star days", f"✅ {ws['tasks']} tasks", f"🗣️ {ws['speak']} speaking days",
+                  f"🧮 {ws['maths']} maths problems", f"📖 {ws['stories']} stories"]
+        if w == 0:
+            st.markdown(f"**This week so far** ({label}) — finishes on Sunday")
+            st.markdown(" · ".join(pills_))
+            continue
+        if ws["star"] == 0 and ws["tasks"] == 0:
+            continue
+        shown += 1
+        if ws["star"] == 0:
+            st.caption(f"{label}: {ws['tasks']} tasks done — earn a star day to get a certificate next week! 💪")
+            continue
+        with st.expander(f"📜 {cert_title(ws['star'])} · {label}", expanded=(shown == 1)):
+            st.markdown(certificate_html(cert_title(ws["star"]), STUDENT_NAME, label, pills_, ws["badges"]),
+                        unsafe_allow_html=True)
+            st.download_button("🖨️ Download to print", data=certificate_html(
+                cert_title(ws["star"]), STUDENT_NAME, label, pills_, ws["badges"], standalone=True),
+                file_name=f"certificate_{monday.isoformat()}.html", mime="text/html", key=f"cert_{monday}")
+    if shown == 0:
+        st.caption("Your first certificate appears after your first full week. Keep going! 🐰")
+
     st.markdown("### 📅 The last 14 days")
-    days = [today - timedelta(days=i) for i in range(13, -1, -1)]
-    head = "".join(f"<th>{d.strftime('%a')}<br>{d.day}</th>" for d in days)
+    days14 = [today - timedelta(days=i) for i in range(13, -1, -1)]
+    head = "".join(f"<th>{d_.strftime('%a')}<br>{d_.day}</th>" for d_ in days14)
     rows = ""
     for t in TASKS:
-        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d) else '·'}</td>" for d in days)
+        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else '·'}</td>" for d_ in days14)
         rows += f"<tr><td class='name'>{t['emoji']} {t['id']}</td>{cells}</tr>"
-    stars = "".join(f"<td>{'⭐' if is_star_day(done_on(data, d)) else ''}</td>" for d in days)
-    mins_row = "".join(
-        f"<td>{(task_minutes(done_on(data, d)) + data.get('bonus_used', {}).get(d.isoformat(), 0)) or ''}</td>"
-        for d in days)
-    rows += f"<tr class='star'><td class='name'>⭐ star day</td>{stars}</tr>"
+    stars_row = "".join(f"<td>{'⭐' if is_star_day(done_on(data, d_)) else ''}</td>" for d_ in days14)
+    mins_row = "".join(f"<td>{task_minutes(done_on(data, d_)) or ''}</td>" for d_ in days14)
+    rows += f"<tr class='star'><td class='name'>⭐ star day</td>{stars_row}</tr>"
     rows += f"<tr><td class='name'>⏱️ minutes</td>{mins_row}</tr>"
     st.markdown(f"<div class='scroll'><table class='week'><tr><th></th>{head}</tr>{rows}</table></div>",
                 unsafe_allow_html=True)
 
 
-# ----------------------------------- PARENT ----------------------------------
+# ================================ GROWN-UPS ================================
 def save_edit():
     d_iso = st.session_state.edit_date.isoformat()
     chosen = st.session_state[f"edit_tasks_{d_iso}"]
@@ -843,14 +2130,74 @@ def save_edit():
         st.session_state.flash = "Saved ✔️"
 
 
+def send_message():
+    text = str(st.session_state.get("parent_msg", "")).strip()
+    if not text:
+        return
+
+    def change(d):
+        d.setdefault("messages", []).append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "text": text, "seen": False})
+
+    if update(change):
+        st.session_state.parent_msg = ""
+        st.session_state.parent_note = f"💌 Message sent! {STUDENT_NAME} will see it next time she opens the app."
+
+
+def save_feedback(story_id):
+    text = str(st.session_state.get(f"fb_{story_id}", "")).strip()
+
+    def change(d):
+        for s in d.get("stories", []):
+            if s["id"] == story_id:
+                s["feedback"] = text
+
+    if update(change):
+        st.session_state.parent_note = "📝 Note saved on the story."
+
+
+def set_wotd():
+    w = str(st.session_state.get("wotd_word", "")).strip()
+    meaning = str(st.session_state.get("wotd_meaning", "")).strip()
+
+    def change(d):
+        if w:
+            d.setdefault("wotd_custom", {})[TODAY_KEY] = {"word": w, "meaning": meaning or "", "example": ""}
+        else:
+            d.setdefault("wotd_custom", {}).pop(TODAY_KEY, None)
+
+    if update(change):
+        st.session_state.parent_note = "✨ Word of the day updated."
+
+
+def adjust_balance():
+    mins = int(st.session_state.get("adj_mins", 0) or 0)
+    reason = str(st.session_state.get("adj_reason", "")).strip() or "Grown-up adjustment"
+    if mins == 0:
+        return
+
+    def change(d):
+        d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": mins, "reason": reason})
+
+    if update(change):
+        st.session_state.parent_note = f"⏳ Balance {'increased' if mins > 0 else 'reduced'} by {abs(mins)} minutes."
+
+
+def ate_out():
+    def change(d):
+        d["last_restaurant"] = TODAY_KEY
+
+    if update(change):
+        st.session_state.parent_note = "🍽️ Noted — restaurant prize can be used again in 3 weeks."
+
+
 def reset_all():
     def change(d):
         d.clear()
-        d.update(default_data())
+        d.update(migrate(default_data(), today))
 
     if update(change):
         for k in list(st.session_state.keys()):
-            if k.startswith(TODAY_KEY):
+            if k.startswith(TODAY_KEY) or k.startswith("wear_"):
                 del st.session_state[k]
         st.session_state.flash = "All progress reset."
 
@@ -874,6 +2221,67 @@ with tab_parent:
                        "restarts or goes to sleep. Add the [storage] secrets to fix this.")
         if parent_pin() == "1234":
             st.info("Tip: the PIN is still the default 1234. Set PARENT_PIN in the app's Secrets.")
+        note = st.session_state.pop("parent_note", None)
+        if note:
+            st.success(note)
+
+        st.markdown("#### 💌 Send a message")
+        st.text_area("Message", key="parent_msg", placeholder="So proud of your maths today, Andal! 💖", height=80)
+        st.button("Send 💌", on_click=send_message)
+        msgs = data.get("messages", [])
+        if msgs:
+            with st.expander(f"Messages sent ({len(msgs)})"):
+                for mm in reversed(msgs[-15:]):
+                    st.markdown(f"• {mm['date']}: {md_safe(mm['text'])} {'✅ seen' if mm.get('seen') else '🕒 not seen yet'}")
+
+        st.markdown("#### 📖 Stories")
+        all_stories = list(reversed(data.get("stories", [])))
+        if not all_stories:
+            st.caption("No stories yet.")
+        for s in all_stories[:15]:
+            with st.expander(md_safe(f"{s['title']} · {s['date']} · {s['words']} words · "
+                                     f"word of the day used {s.get('wotd_count', 0)}×")):
+                st.markdown(f'<div class="story">{html_safe(s["text"]).replace(chr(10), "<br>")}</div>',
+                            unsafe_allow_html=True)
+                st.text_area("Your note or suggestion", value=s.get("feedback", ""), key=f"fb_{s['id']}", height=70)
+                st.button("Save note", key=f"fbsave_{s['id']}", on_click=save_feedback, args=(s["id"],))
+
+        st.markdown("#### ✨ Word of the day")
+        cur = word_of_the_day(data, today)
+        st.caption(f"Today's word: **{md_safe(cur['word'])}**. Type your own to replace it for today "
+                   "(leave the word empty and save to go back to the automatic one).")
+        wc1, wc2 = st.columns(2)
+        wc1.text_input("Word", key="wotd_word")
+        wc2.text_input("Meaning", key="wotd_meaning")
+        st.button("Set word of the day", on_click=set_wotd)
+
+        st.markdown("#### 😊 Mood check-ins")
+        moods = data.get("moods", [])
+        if moods:
+            st.write("  ".join(f"{next((m[1] for m in MOODS if m[0] == x['mood']), '?')} "
+                               f"{date.fromisoformat(x['date']).strftime('%d %b')} {x['time']}"
+                               for x in reversed(moods[-20:])))
+        else:
+            st.caption("No check-ins yet.")
+
+        st.markdown("#### ⏳ Screen-time balance")
+        st.write(f"Balance **{bal['balance']} min** = earned from tasks {bal['earned']} + extras {bal['credits']} "
+                 f"− used {bal['used']}.")
+        used = data.get("used", [])
+        if used:
+            with st.expander("Recent minutes used"):
+                for u in reversed(used[-15:]):
+                    st.write(f"• {u['date']} {u.get('time', '')}: {u['minutes']} min")
+        ac1, ac2 = st.columns(2)
+        ac1.number_input("Add (+) or remove (−) minutes", step=5, value=0, key="adj_mins")
+        ac2.text_input("Reason", key="adj_reason", placeholder="e.g. extra chores")
+        st.button("Adjust balance", on_click=adjust_balance)
+
+        st.markdown("#### 🍽️ Restaurant dinners")
+        last = data.get("last_restaurant")
+        st.caption(f"Last family restaurant dinner: {last or 'not recorded'}. The 🍽️ wheel prize needs "
+                   f"{RESTAURANT_GAP_DAYS // 7} weeks between dinners.")
+        st.button("We had a family restaurant dinner today", on_click=ate_out)
 
         st.markdown("#### ✏️ Fix a day")
         st.caption("Forgot to tick something on a past day? Correct it here — streaks update automatically.")
@@ -885,15 +2293,15 @@ with tab_parent:
                        key=f"edit_tasks_{d_iso}")
         st.button("Save this day", on_click=save_edit)
 
-        st.markdown("#### 🎶 Bonus bank")
-        st.write(f"{bank} minutes saved. Used today: {data.get('bonus_used', {}).get(TODAY_KEY, 0)} minutes.")
-
-        st.markdown("#### 🎁 Rewards handed over")
-        if data["history"]:
-            for h in reversed(data["history"][-20:]):
-                name = "$1" if h["reward"] == "dollar" else next(
-                    (f"{r['emoji']} {r['name']}" for r in REWARDS if r["id"] == h["reward"]), h["reward"])
-                st.markdown(f"• {date.fromisoformat(h['date']).strftime('%d %b %Y')} — {md_safe(name)}")
+        st.markdown("#### 🎁 Rewards & prizes history")
+        hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
+            (f"{r['emoji']} {r['name']}" for r in REWARDS if r["id"] == h["reward"]),
+            "🧸 Toy shop trip" if h["reward"] == "toyshop" else h["reward"])) for h in data["history"]]
+        hist += [(s.get("done_date", s["date"]), f"{s['emoji']} {s['name']} ({s['wheel']} wheel)")
+                 for s in data.get("spins", []) if s["status"] != "waiting"]
+        if hist:
+            for dt, name in sorted(hist, reverse=True)[:25]:
+                st.markdown(f"• {date.fromisoformat(dt).strftime('%d %b %Y')} — {md_safe(name)}")
         else:
             st.caption("None yet.")
 
