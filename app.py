@@ -345,6 +345,7 @@ BEADS_PER_PART = 5             # 📿 beads earned for each part learned by hear
 BEADS_FOR_MINUTES = 20         # every 20 beads ...
 BEAD_MINUTES = 30              # ... = 30 minutes of screen time (added automatically)
 CHALISA_NEEDS_PIN = False      # True = a grown-up PIN is needed to submit each part
+CHALISA_PICTURES = ["Sri1.png", "HM1.png"]   # picture files in the repo, next to app.py (names are case-sensitive)
 CHALISA_OUTINGS = [
     "🎬 Watch a movie at the cinema, then ice cream 🍦",
     "🎳 Go bowling, then ice cream 🍦",
@@ -2073,7 +2074,21 @@ def next_ch_fact():
     st.session_state.ch_fact = st.session_state.get("ch_fact", 0) + 1
 
 
+@st.cache_data(show_spinner=False)
+def picture_b64(name):
+    f = Path(__file__).parent / name
+    return base64.b64encode(f.read_bytes()).decode() if f.exists() else None
+
+
 with tab_chalisa:
+    pics = [(n, picture_b64(n)) for n in CHALISA_PICTURES]
+    pics = [(n, b) for n, b in pics if b]
+    if pics:
+        imgs = "".join(f'<img src="data:image/png;base64,{b}" alt="{html_safe(n)}" style="height:min(42vh,340px);'
+                       'width:auto;max-width:48%;object-fit:contain;border-radius:16px;border:3px solid #ffc98a;'
+                       'box-shadow:0 6px 18px rgba(169,79,0,.18);background:#fff">' for n, b in pics)
+        st.markdown(f'<div style="display:flex;gap:12px;justify-content:center;align-items:center;margin:4px 0 10px">'
+                    f'{imgs}</div>', unsafe_allow_html=True)
     ch_done = data.get("chalisa", {})
     bs = bead_status(data)
     if "ch_fact" not in st.session_state:
