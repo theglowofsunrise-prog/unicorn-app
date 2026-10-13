@@ -22,7 +22,7 @@ TRIES_FOR_CLUE_1 = 2           # wrong tries before clue 1 appears
 TRIES_FOR_CLUE_2 = 4           # wrong tries before clue 2 appears
 TRIES_BEFORE_SKIP = 3          # wrong tries before she may swap to a different problem
 MIN_STORY_WORDS = 50           # words a saved story needs to tick a writing task
-WORD_CHALLENGE_USES = 3        # times to use the word of the day
+WORD_CHALLENGE_USES = 3        # sentences / uses of the word of the day needed
 WORD_CHALLENGE_MINUTES = 5     # screen-time minutes for completing the word challenge
 BIG_WHEEL_STREAK = 4           # star days in a row needed for a big-wheel spin
 BIG_SPINS_PER_WEEK = 2         # most big-wheel spins per week (Mon–Sun)
@@ -78,6 +78,9 @@ REWARDS = [
      "streak_len": 30, "window": 30, "needs": {}, "bonus_minutes": 60,
      "how": "Practise singing 15 minutes every day for 30 days in a row. The minutes go into your balance."},
 ]
+# Only these prizes are shown as a "sneak peek" — the rest stay a surprise until she spins.
+SMALL_TEASERS = ["milkshake", "stickers"]
+BIG_TEASERS = ["timezone", "movie_night"]
 STAR_DAYS_PER_DOLLAR = 14      # a "star day" = she earned the full daily screen time
 
 # Spin-the-wheel prizes. "auto" prizes are added straight away; the rest wait in "My prizes"
@@ -144,37 +147,51 @@ WRITING_PROMPTS = [
     "A story that starts with 'The door creaked open…'",
     "How to be a good friend",
 ]
-WORDS_OF_THE_DAY = [
-    ("curious", "wanting to know or learn about something", "The curious bunny peeked inside the box."),
-    ("enormous", "very, very big", "The elephant had enormous ears."),
-    ("delighted", "very happy and pleased", "I was delighted to see the rainbow."),
-    ("whisper", "to speak very softly", "She whispered a secret to her friend."),
-    ("glimmer", "a faint, flickering light", "A glimmer of moonlight shone through the window."),
-    ("brave", "ready to face danger or fear", "The brave girl climbed the tall tree."),
-    ("fragile", "easily broken", "Be gentle — the egg is fragile."),
-    ("peculiar", "strange or unusual", "The cat made a peculiar noise."),
-    ("cautious", "careful to avoid danger", "The rabbit was cautious near the fox's den."),
-    ("generous", "happy to give and share", "My generous friend shared her lunch."),
-    ("magnificent", "very beautiful and impressive", "The castle looked magnificent at sunset."),
-    ("nervous", "a bit worried or scared", "I felt nervous before my concert."),
-    ("exhausted", "extremely tired", "After the race, I was exhausted."),
-    ("furious", "very, very angry", "The dragon was furious when someone took its treasure."),
-    ("cheerful", "happy and bright", "Her cheerful song made everyone smile."),
-    ("mysterious", "strange and hard to explain", "A mysterious map was hidden under the bed."),
-    ("scurry", "to move quickly with small steps", "The mice scurry across the floor."),
-    ("astonished", "very surprised", "We were astonished by the magic trick."),
-    ("gentle", "kind, soft and calm", "Be gentle when you pat the bunny."),
-    ("sparkle", "to shine with little flashes of light", "The stars sparkle in the night sky."),
-    ("ancient", "very, very old", "We visited an ancient castle."),
-    ("determined", "not giving up", "She was determined to finish the puzzle."),
-    ("tremble", "to shake a little", "My knees began to tremble on the stage."),
-    ("wander", "to walk around without hurrying", "We like to wander through the park."),
-    ("grateful", "thankful", "I am grateful for my family."),
-    ("mischievous", "playfully naughty", "The mischievous puppy hid my shoe."),
-    ("swift", "very fast", "The swift rabbit raced across the field."),
-    ("vivid", "bright and strong (colours) or very clear", "She painted a vivid sunset."),
-    ("adventure", "an exciting journey or experience", "Our camping trip was a big adventure."),
-    ("imagine", "to make a picture in your mind", "Imagine a unicorn made of clouds."),
+WORDS_OF_THE_DAY = [   # roughly Year 6 / age-11 vocabulary
+    ("meticulous", "showing great attention to detail; very careful and precise",
+     "She was meticulous when copying the map, checking every line twice."),
+    ("resilient", "able to recover quickly from difficulties", "The resilient seedling kept growing after the storm."),
+    ("eloquent", "able to speak or write in a clear, powerful way", "His eloquent speech moved the whole audience."),
+    ("ominous", "giving the feeling that something bad is about to happen", "Ominous clouds gathered over the hills."),
+    ("benevolent", "kind and wanting to help others", "The benevolent queen opened her gardens to everyone."),
+    ("tenacious", "holding on firmly; refusing to give up", "The tenacious puppy refused to let go of the rope."),
+    ("serene", "calm, peaceful and untroubled", "The lake looked serene at sunrise."),
+    ("conspicuous", "easy to notice; standing out", "Her bright yellow raincoat was conspicuous in the crowd."),
+    ("reluctant", "unwilling or hesitant to do something", "Tom was reluctant to jump into the icy pool."),
+    ("vibrant", "full of energy and life; bright and strong (colours)", "The market was bursting with vibrant colours."),
+    ("ingenious", "clever, original and inventive", "She invented an ingenious way to reach the top shelf."),
+    ("melancholy", "a deep, thoughtful sadness", "A melancholy tune drifted from the old piano."),
+    ("exquisite", "extremely beautiful and delicate", "The butterfly's wings had an exquisite pattern."),
+    ("diligent", "working hard and carefully", "The diligent student checked every answer."),
+    ("audacious", "bold and willing to take risks", "The audacious explorer sailed into unknown waters."),
+    ("perplexed", "confused and puzzled", "I was perplexed by the tricky riddle."),
+    ("formidable", "impressive and powerful, sometimes a little frightening", "The castle walls were formidable."),
+    ("luminous", "giving off light; glowing", "Luminous jellyfish lit up the dark sea."),
+    ("compassionate", "feeling and showing care for others who are suffering",
+     "The compassionate nurse held the scared child's hand."),
+    ("inquisitive", "curious and eager to learn", "The inquisitive kitten explored every cupboard."),
+    ("dilapidated", "old, broken and falling to pieces", "They tiptoed into the dilapidated old barn."),
+    ("exuberant", "full of energy, excitement and cheerfulness", "The exuberant crowd cheered for the team."),
+    ("tranquil", "quiet and peaceful", "We spent a tranquil afternoon by the river."),
+    ("vigilant", "watchful and alert to danger", "The vigilant meerkat kept watch for eagles."),
+    ("intrepid", "fearless and adventurous", "The intrepid climbers finally reached the summit."),
+    ("spontaneous", "happening suddenly, without planning", "We had a spontaneous picnic in the park."),
+    ("cascade", "to fall or pour down in large amounts, like a waterfall", "Her curls cascaded over her shoulders."),
+    ("gregarious", "enjoying being with other people; sociable", "Our gregarious neighbour knows everyone on the street."),
+    ("immaculate", "perfectly clean and tidy", "Her bedroom was immaculate after the big clean-up."),
+    ("whimsical", "playful and fanciful in an unusual way", "The book had whimsical drawings of dancing teapots."),
+    ("persevere", "to keep trying even when something is difficult", "If you persevere, you will master the piano piece."),
+    ("magnanimous", "generous and forgiving, especially towards a rival",
+     "The magnanimous winner shook hands with every player."),
+    ("labyrinth", "a complicated maze of paths or passages", "The old library felt like a labyrinth of shelves."),
+    ("nonchalant", "calm and relaxed, as if not worried at all", "He gave a nonchalant shrug and kept reading."),
+    ("radiant", "shining brightly; glowing with happiness", "She gave a radiant smile when she saw the puppy."),
+    ("predicament", "a difficult or awkward situation", "Locked out in the rain, we were in a real predicament."),
+    ("jubilant", "feeling or showing great joy, especially after success", "The jubilant team lifted the trophy."),
+    ("scrutinise", "to examine something very carefully", "The detective scrutinised every clue."),
+    ("ethereal", "extremely light and delicate, almost magical", "An ethereal mist floated over the valley."),
+    ("ambitious", "having a strong wish to succeed or do something big",
+     "She has an ambitious plan to write a whole novel."),
 ]
 FUN_FACTS = [
     "Rabbits' teeth never stop growing — that's why they love to chew! 🐰",
@@ -300,6 +317,8 @@ BADGES = [
     ("bouncy", "🤸", "Bouncy Bunny", "Exercise on 10 days", "exercise_days", 10, "#dcfff4", "#2ec4a6"),
     ("lucky", "🎡", "Lucky Spinner", "Spin a prize wheel", "spins", 1, "#fff3e0", "#ff8a3d"),
     ("feelings", "😊", "Feelings Friend", "Share your mood 5 times", "moods", 5, "#fffbe0", "#f2c200"),
+    ("chalisa_start", "🙏", "Little Devotee", "Learn your first Chalisa part", "chalisa_parts", 1, "#fff0db", "#ff9933"),
+    ("chalisa_champion", "📿", "Chalisa Champion", "Learn the whole Hanuman Chalisa", "chalisa_parts", 8, "#ffe6cc", "#e66b00"),
 ]
 # ================================================================================
 
@@ -318,6 +337,157 @@ def html_safe(text) -> str:
 
 
 st.set_page_config(page_title=f"{STUDENT_NAME} Earns Stars", page_icon="🦄", layout="centered")
+
+# ============================ HANUMAN CHALISA ============================
+# The Hanuman Chalisa (by Goswami Tulsidas, 16th century) has 2 opening dohas, 40 chaupais and
+# 1 closing doha. Here it is split into 8 parts of about 6 lines (3 couplets) each.
+BEADS_PER_PART = 5             # 📿 beads earned for each part learned by heart
+BEADS_FOR_MINUTES = 20         # every 20 beads ...
+BEAD_MINUTES = 30              # ... = 30 minutes of screen time (added automatically)
+CHALISA_NEEDS_PIN = False      # True = a grown-up PIN is needed to submit each part
+CHALISA_OUTINGS = [
+    "🎬 Watch a movie at the cinema, then ice cream 🍦",
+    "🎳 Go bowling, then ice cream 🍦",
+    "🍽️ Dinner at my favourite restaurant, then ice cream 🍦",
+]
+CHALISA_PARTS = [
+    {"title": "Opening prayer (Dohas) + verses 1–2", "lines": [
+        "Sri Guru Charan Saroj Raj, Nij Mann Mukuru Sudhaari.",
+        "Barnaun Raghuvar Bimal Jasu, Jo Daayaku Phal Chaari.",
+        "Buddhiheen Tanu Janike, Sumiraun Pawan-Kumar.",
+        "Bal Buddhi Vidya Dehu Mohi, Harahu Kalesh Bikaar.",
+        "Jai Hanuman Gyan Gunn Sagar. Jai Kapees Tihun Lok Ujaagar.",
+        "Ramdoot Atulit Baldhama. Anjani-Putra Pawansut Naama."],
+     "meaning": "With my heart made clean by my Guru's blessing, I sing the glory of Lord Rama. Knowing I still have "
+                "a lot to learn, I think of Hanuman, the Son of the Wind, and ask for strength, wisdom and knowledge, "
+                "and for my troubles to go away. Victory to Hanuman, an ocean of wisdom and goodness! He is Rama's "
+                "messenger, mightier than anyone, the son of Mother Anjani."},
+    {"title": "Verses 3–8 · Hanuman the mighty hero", "lines": [
+        "Mahaveer Vikram Bajrangi. Kumati Nivaar Sumati Ke Sangi.",
+        "Kanchan Baran Biraj Subesa. Kaanan Kundal Kunchit Kesa.",
+        "Haath Braj Au Dhwaja Biraaje. Kaandhe Moonj Janeu Saaje.",
+        "Shankar Suvan Kesarinandan. Tej Prataap Maha Jag Vandan.",
+        "Vidyavaan Guni Ati Chaatur. Ram Kaaj Karibe Ko Aatur.",
+        "Prabhu Charitra Sunibe Ko Rasiya. Ram Lakhan Sita Mann Basiya."],
+     "meaning": "Hanuman is a brave hero, strong as a thunderbolt. He chases away bad thoughts and stays close to good "
+                "ones. He shines like gold, with earrings and curly hair, holding a mace and a flag. The whole world "
+                "honours him. He is wise, kind and clever, always keen to help Rama, and he loves hearing Rama's "
+                "stories. Rama, Lakshmana and Sita live in his heart."},
+    {"title": "Verses 9–14 · Adventures for Lord Rama", "lines": [
+        "Sukshma Roop Dhari Siyanhi Dikhawa. Bikat Roop Dhari Lanka Jarawa.",
+        "Bheem Roop Dhari Asura Sanghare. Ramchandra Ke Kaaj Sanware.",
+        "Laaye Sanjeevan Lakhana Jiyaaye. Sri Raghuveer Harashi Urr Laaye.",
+        "Raghupati Keenhi Bahut Badai. Tum Mum Priya, Bhartahi Sum Bhai.",
+        "Sahas Badan Tumharo Jas Gaave. Asa Kahi Sripati Kanth Lagaave.",
+        "Sankaadik Brahmadi Munisa. Narad Sarad Sahit Aheesa."],
+     "meaning": "Hanuman became tiny to visit Sita, and enormous to set Lanka on fire. In a mighty form he defeated "
+                "the demons and finished Rama's work. He brought the Sanjeevani herb to save Lakshmana, and Rama "
+                "hugged him with joy, saying: 'You are as dear to me as my brother Bharat!' Great sages, gods and "
+                "even the thousand-headed serpent sing his praises."},
+    {"title": "Verses 15–20 · Nothing is too hard", "lines": [
+        "Jam Kuber Digpal Jahan Te. Kabi Kobid Kahi Sake Kahan Te.",
+        "Tum Upkaar Sugreevahi Keenha. Ram Milaaye Raj-Pad Deenha.",
+        "Tumharo Mantra Bibhishan Maana. Lankeshwar Bhaye Sab Jag Jaana.",
+        "Yug Sahastra Jojan Par Bhanu. Leelyo Taahi Madhur Phal Jaanu.",
+        "Prabhu Mudrika Meli Mukh Maahi. Jaladhi Laanghi Gaye Achraj Naahi.",
+        "Durgam Kaaj Jagat Ke Jete. Sugam Anugrah Tumhare Tete."],
+     "meaning": "Not even gods, poets or scholars can fully describe Hanuman's greatness. He helped Sugriva meet Rama "
+                "and get his kingdom back, and Vibhishana followed his advice and became King of Lanka. As a baby, "
+                "Hanuman tried to swallow the faraway Sun, thinking it was a sweet fruit! Holding Rama's ring in his "
+                "mouth, he leapt across the ocean. With his blessing, every hard job becomes easy."},
+    {"title": "Verses 21–26 · Our brave protector", "lines": [
+        "Ram Duaare Tum Rakhvare. Hott Na Aagya Binu Paisare.",
+        "Sab Sukh Lahe Tumhari Sarna. Tum Rakshak Kahu Ko Dar Na.",
+        "Aapan Tej Samharo Aape. Teeno Lok Haank Te Kaampe.",
+        "Bhoot Pishaach Nikat Nahi Aavein. Mahaveer Jab Naam Sunaave.",
+        "Naase Rog Hare Sab Peera. Japat Nirantar Hanumat Beera.",
+        "Sankat Te Hanuman Churave. Mann Kram Vachan Dhyaan Jo Laave."],
+     "meaning": "Hanuman guards Rama's door. Everyone who comes to him finds happiness, and with him as our protector "
+                "we don't need to be afraid of anything. Only he can hold his own amazing power, and the three worlds "
+                "tremble when he roars. Bad things stay away when his name is said, and pain fades for those who keep "
+                "remembering him. He rescues anyone who thinks of him with their mind, words and actions."},
+    {"title": "Verses 27–32 · Glory through the ages", "lines": [
+        "Sab Par Ram Tapasvi Raja. Tin Ke Kaaj Sakal Tum Saaja.",
+        "Aur Manorath Jo Koi Laave. Soi Amit Jivan Phal Paave.",
+        "Chaaron Yug Partap Tumhara. Hai Parsidh Jagat Ujiyara.",
+        "Saadhu-Sant Ke Tum Rakhvare. Asur Nikandan Ram Dulaare.",
+        "Ashta Siddhi Nau Nidhi Ke Daata. As Var Deen Janaki Mata.",
+        "Ram Rasayan Tumhare Paasa. Sadaa Raho Raghupati Ke Daasa."],
+     "meaning": "Rama is the greatest king, and Hanuman carried out all his work. Anyone who comes to Hanuman with a "
+                "sincere wish receives its fruit. His glory shines through all four ages and lights up the world. He "
+                "protects good people, defeats demons and is dearly loved by Rama. Mother Sita blessed him to give "
+                "eight special powers and nine treasures. He holds devotion to Rama in his heart and is always Rama's "
+                "humble helper."},
+    {"title": "Verses 33–38 · Blessings for everyone", "lines": [
+        "Tumhare Bhajan Ram Ko Paave. Janam Janam Ke Dukh Bisraave.",
+        "Antkaal Raghuvar Pur Jaayi. Jahan Janam Hari-Bhakt Kahayi.",
+        "Aur Devta Chitta Na Dharai. Hanumat Sei Sarva Sukh Karai.",
+        "Sankat Kate, Mite Sab Peera. Jo Sumire Hanumat Balbeera.",
+        "Jai Jai Jai Hanuman Gosain. Krupa Karahu Gurudev Ki Naai.",
+        "Jo Sat Baar Paath Kar Koi. Chutahi Bandhi Maha Sukh Hoyi."],
+     "meaning": "By singing Hanuman's praises, people reach Rama and forget old sorrows, and are remembered as Rama's "
+                "devotees. Serving Hanuman brings every kind of comfort. Troubles end and pain goes away for those "
+                "who remember mighty Hanuman. Victory, victory, victory to Hanuman! Please bless us like a kind "
+                "teacher. Whoever recites this a hundred times becomes free and very happy."},
+    {"title": "Verses 39–40 + closing Doha", "lines": [
+        "Jo Yeh Padhe Hanuman Chalisa. Hoye Siddhi Saakhi Gaurisa.",
+        "Tulsidas Sada Hari Chera. Keeje Nath Hriday Mah Dera.",
+        "Pawan Tanay Sankat Haran, Mangal Murti Roop.",
+        "Ram Lakhan Sita Sahit, Hriday Basahu Sur Bhoop."],
+     "meaning": "Whoever reads the Hanuman Chalisa will succeed, and Lord Shiva himself is the witness. Tulsidas, who "
+                "wrote it, says: 'I am always the Lord's servant. Please live in my heart.' O Son of the Wind, remover "
+                "of troubles, full of blessings: please live in our hearts, together with Rama, Lakshmana and Sita."},
+]
+CHALISA_FACTS = [
+    "The Hanuman Chalisa was written by the poet-saint Goswami Tulsidas about 450 years ago, in the 1500s. 🪶",
+    "'Chalisa' comes from 'chalis', which means forty. It has 40 verses called chaupais! 🔢",
+    "As well as the 40 chaupais, there are 2 short verses (dohas) at the start and 1 at the end. 📜",
+    "It is written in Awadhi, an old form of Hindi spoken around the city of Ayodhya. 🗣️",
+    "Tulsidas also wrote the Ramcharitmanas, a famous retelling of the Ramayana. 📖",
+    "One verse says baby Hanuman tried to swallow the Sun, thinking it was a sweet fruit! ☀️🍑",
+    "Some people like to multiply the numbers in that Sun verse (yug × sahasra × yojan) and get close to the real "
+    "distance from the Earth to the Sun! 🌍☀️",
+    "'Bajrangi' means someone whose body is as strong as a thunderbolt (vajra). ⚡",
+    "Hanuman is called 'Pawan-putra', the Son of the Wind god, Vayu. 🌬️",
+    "In the Ramayana, Hanuman couldn't tell which herb was Sanjeevani, so he carried the whole mountain! ⛰️",
+    "Many families recite the Hanuman Chalisa on Tuesdays and Saturdays, the days linked with Hanuman. 📅",
+    "Millions of people around the world know the Hanuman Chalisa by heart, and recordings of it have been played "
+    "billions of times online. 🌏",
+    "Hanuman is loved for being strong, brave, humble, and a loyal friend who always helps. 💪💖",
+    "A prayer bead string (mala) usually has 108 beads, used to count prayers. 📿",
+]
+ICON_JOKES = {
+    "unicorn": [
+        "What do you call a unicorn with no horn? A horse! 🐴",
+        "Fact: The unicorn is the national animal of Scotland! 🦄",
+        "Fact: Narwhals are called 'unicorns of the sea'. Their horn is really a super-long tooth! 🐋",
+        "Why don't unicorns get lost? They follow their horn-pass! 🧭",
+        "What's a unicorn's favourite treat? Rainbow sprinkles, of course! 🍩",
+    ],
+    "bunny": [
+        "How do bunnies keep fit? Hare-obics! 🤸",
+        "Fact: A happy bunny jumps and twists in the air. It's called a 'binky'! 🐰",
+        "What's a bunny's favourite music? Hip-hop! 🎵",
+        "Fact: A rabbit's teeth never stop growing! 🦷",
+        "Fact: Rabbits can turn their ears to listen in different directions. 👂",
+        "Why are bunnies so lucky? They have four rabbit's feet! 🍀",
+    ],
+    "rainbow": [
+        "Fact: A rainbow is really a full circle. From the ground we only see half! 🌈",
+        "Fact: You can only see a rainbow when the Sun is behind you. ☀️",
+        "Fact: In a double rainbow, the second one has its colours in reverse order! 🌈🌈",
+        "Rainbow colours: Red, Orange, Yellow, Green, Blue, Indigo, Violet (ROYGBIV)! 🎨",
+        "Why did the rainbow go to school? To get a little brighter! 🎓",
+    ],
+    "star": [
+        "How do you throw a space party? You planet! 🪐",
+        "Fact: Our Sun is a star! ☀️",
+        "Fact: Stars twinkle because their light wobbles through Earth's air. ✨",
+        "Fact: There are more stars in space than grains of sand on all Earth's beaches! 🏖️",
+        "Why did the star go to school? To get brighter! ⭐",
+    ],
+}
+ANIMATED_FRIENDS = True        # a bunny and a unicorn hop across the screen now and then
 
 BASE_CSS = """
 <style>
@@ -422,6 +592,25 @@ table.week tr.star td { font-weight: 600; background: #fffbe6; }
 .celebrate .word { font-size: 2.4rem; font-weight: 700; color: #ff4fa3; text-shadow: 0 3px 0 #fff, 0 6px 12px rgba(0,0,0,.15); }
 @keyframes popin { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes fadeaway { 0%, 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.float { cursor: pointer; z-index: 3; user-select: none; -webkit-tap-highlight-color: transparent; }
+.chalisa { background: linear-gradient(135deg,#fff7ec,#ffefd9); border: 2px solid #ffc98a; border-radius: 18px;
+  padding: 14px 18px; color: #5a2d00; font-size: 1.12rem; line-height: 1.85; }
+.chalisa .ln { display: block; }
+.chalisa .ln b { color: #c25400; }
+.chalisa-head { font-size: 1.15rem; font-weight: 700; color: #a34700; }
+.beads { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin: 6px 0; }
+.bead { width: 20px; height: 20px; border-radius: 50%; background: #f1e6da; border: 2px solid #e5d3bf; }
+.bead.on { background: radial-gradient(circle at 35% 30%, #ffd9a8, #e07b1f 60%, #a94f00);
+  border-color: #a94f00; box-shadow: 0 2px 4px rgba(169,79,0,.35); }
+.critter { position: fixed; left: 0; z-index: 4; pointer-events: none; font-size: 36px; will-change: transform; }
+.critter span { display: inline-block; }
+.critter.bunny { bottom: 10px; animation: run-across 38s linear 5s infinite; transform: translateX(110vw); }
+.critter.bunny span { animation: hop-small .45s ease-in-out infinite; }
+.critter.unicorn { bottom: 64px; font-size: 40px; animation: run-across 55s linear 26s infinite; transform: translateX(110vw); }
+.critter.unicorn span { animation: hop-big .8s ease-in-out infinite; }
+@keyframes run-across { 0% { transform: translateX(110vw); } 16% { transform: translateX(-80px); } 100% { transform: translateX(-80px); } }
+@keyframes hop-small { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes hop-big { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-26px) rotate(-8deg); } }
 </style>
 """
 
@@ -600,18 +789,32 @@ def default_data():
             "credits": [], "used": [], "balance_start": None, "spins": [], "carrots": 0, "toy_fund": 0,
             "last_restaurant": None, "pet": {"name": "Bunnicorn", "wear": {}}, "theme": "rainbow",
             "badges_earned": {}, "stories": [], "wotd_custom": {}, "word_wins": [], "moods": [],
-            "messages": [], "facts": {}}
+            "messages": [], "facts": {}, "chalisa": {}, "bead_rewards_given": 0, "chalisa_reward": None}
 
 
 def migrate(data, today: date):
     """Bring older saved progress up to date (safe to run every time)."""
     if not data.get("balance_start"):
-        data["balance_start"] = today.isoformat()   # minutes from before this version were already used
+        data["balance_start"] = today.isoformat()
         if data.get("bonus_bank"):
             data["credits"].append({"date": today.isoformat(), "minutes": int(data["bonus_bank"]),
                                     "reason": "Singing bonus minutes moved into balance"})
     data.pop("bonus_bank", None)
     data.pop("bonus_used", None)
+    # One-time: carry forward unused minutes earned before the balance started (old rules: only
+    # speaking was a must-do back then). Grown-ups can still adjust the balance by hand if needed.
+    if not data.get("carried_over"):
+        start = data["balance_start"]
+        for k in sorted(data["days"]):
+            if k < start:
+                done = set(data["days"][k])
+                old_mins = min(sum(TASK_BY_ID[t]["minutes"] for t in done if t in TASK_BY_ID and t != "homework"),
+                               DAILY_GOAL_MINUTES) if "speak" in done else 0
+                if old_mins:
+                    data["credits"].append({"date": k, "minutes": old_mins,
+                                            "reason": f"Unused minutes carried over from {k}"})
+        data["carried_over"] = True
+    data.setdefault("earned", {})
     data.setdefault("pet", {}).setdefault("wear", {})
     data["pet"].setdefault("name", "Bunnicorn")
     return data
@@ -633,7 +836,8 @@ def is_star_day(done: set) -> bool:
 
 def balance_info(data):
     start = data.get("balance_start") or "0000"
-    earned = sum(task_minutes(set(v)) for k, v in data["days"].items() if k >= start)
+    locked = data.get("earned", {})   # each day's minutes are locked in, so later rule changes don't alter them
+    earned = sum(locked.get(k, task_minutes(set(v))) for k, v in data["days"].items() if k >= start)
     credits = sum(int(c["minutes"]) for c in data.get("credits", []))
     used = sum(int(u["minutes"]) for u in data.get("used", []))
     return {"earned": earned, "credits": credits, "used": used, "balance": max(earned + credits - used, 0)}
@@ -756,6 +960,7 @@ def compute_stats(data):
         "decimal_solved": sum(1 for q in logs if DECIMAL_RE.search(q) and "$" not in q),
         "stories": len(data.get("stories", [])), "word_wins": len(data.get("word_wins", [])),
         "spins": len(data.get("spins", [])), "moods": len(data.get("moods", [])),
+        "chalisa_parts": len(data.get("chalisa", {})),
     }
 
 
@@ -785,6 +990,28 @@ def count_word(text: str, word: str) -> int:
     if not word:
         return 0
     return len(re.findall(r"\b" + re.escape(word.lower()) + r"\w*", text.lower()))
+
+
+def bead_status(d):
+    beads = BEADS_PER_PART * len(d.get("chalisa", {}))
+    return {"beads": beads, "toward": beads % BEADS_FOR_MINUTES, "rewards_due": beads // BEADS_FOR_MINUTES,
+            "all_done": len(d.get("chalisa", {})) >= len(CHALISA_PARTS)}
+
+
+def wotd_uses(d, day_key: str, word: str) -> int:
+    """Uses of the word today: good sentences in the word box + times used in today's stories."""
+    sents = d.get("wotd_sentences", {}).get(day_key, [])
+    in_sentences = sum(1 for x in sents if count_word(x, word) > 0 and count_words(x) >= 4)
+    in_stories = sum(count_word(x["text"], word) for x in d.get("stories", []) if x["date"] == day_key)
+    return in_sentences + in_stories
+
+
+def award_word_win(d, day_key: str, word: str, info: dict):
+    if wotd_uses(d, day_key, word) >= WORD_CHALLENGE_USES and day_key not in d.setdefault("word_wins", []):
+        d["word_wins"].append(day_key)
+        d.setdefault("credits", []).append({"date": day_key, "minutes": WORD_CHALLENGE_MINUTES,
+                                            "reason": f"Word of the day challenge: {word}"})
+        info["word_win"] = True
 
 
 def count_words(text: str) -> int:
@@ -868,6 +1095,8 @@ def update(change) -> bool:
             if change(data) is False:      # the change decided not to save
                 st.session_state.data, st.session_state.sha = data, sha
                 return False
+            tk = today_local().isoformat()
+            data.setdefault("earned", {})[tk] = task_minutes(set(data["days"].get(tk, [])))
             sha = save_data(data, sha)
             st.session_state.data, st.session_state.sha = data, sha
             return True
@@ -1067,6 +1296,23 @@ SOUND_ENGINE = r"""
     tick:    [[1800,0,.03]],
     pop:     [[880,0,.08],[1320,.05,.12]]
   };
+  var JOKES = __JOKES__;
+  document.addEventListener('click', function(e){
+    var f = e.target && e.target.closest ? e.target.closest('.float[data-joke]') : null; if(!f) return;
+    var list = JOKES[f.getAttribute('data-joke')] || []; if(!list.length) return;
+    var old = document.getElementById('andal-bubble'); if(old) old.remove();
+    var r = f.getBoundingClientRect(), b = document.createElement('div'); b.id = 'andal-bubble';
+    b.textContent = list[Math.floor(Math.random()*list.length)];
+    b.style.cssText = 'position:fixed;z-index:100000;max-width:260px;padding:12px 16px;border-radius:18px;'
+      + 'background:#fff;border:3px solid #ff9ccc;color:#5a2d66;font:600 16px Fredoka,system-ui,sans-serif;'
+      + 'box-shadow:0 8px 24px rgba(255,105,180,.3);transition:opacity .3s, transform .3s;opacity:0;transform:scale(.6)';
+    document.body.appendChild(b);
+    var left = Math.min(Math.max(8, r.left + r.width/2 - 130), window.innerWidth - 276);
+    b.style.left = left + 'px'; b.style.top = Math.min(r.bottom + 8, window.innerHeight - 120) + 'px';
+    requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'scale(1)'; });
+    try { window.__andalPlay('pop'); } catch(err) {}
+    setTimeout(function(){ b.style.opacity = '0'; b.style.transform = 'scale(.8)'; setTimeout(function(){ b.remove(); }, 350); }, 4500);
+  }, true);
   window.__andalPlay = function(kind){ var c = ensure(); if(!c) return; var t = c.currentTime + 0.03;
     (SONGS[kind]||SONGS.chime).forEach(function(n){ note(c, n[0], t+n[1], n[2], kind==='tick'?'square':'triangle', kind==='tick'?0.08:0.22); }); };
 })();
@@ -1082,7 +1328,7 @@ def _embed(html_doc, height):
 
 
 def install_sound_engine():
-    code = json.dumps(SOUND_ENGINE)
+    code = json.dumps(SOUND_ENGINE.replace("__JOKES__", json.dumps(ICON_JOKES)))
     _embed("<script>try{var P=window.parent;if(!P.__andalSound){var s=P.document.createElement('script');"
            f"s.textContent={code};P.document.head.appendChild(s);}}}}catch(e){{}}</script>", 1)
 
@@ -1128,7 +1374,7 @@ if(target>=0){
 </script></body></html>"""
 
 
-def wheel_html(prizes, target=-1, hub="🎡", idle=""):
+def wheel_html(prizes, target=-1, hub="🎡", idle="", mystery=True):
     import math
     n = len(prizes)
     seg = 360 / n
@@ -1144,7 +1390,7 @@ def wheel_html(prizes, target=-1, hub="🎡", idle=""):
         mid = (i + .5) * seg
         tx, ty = 70 * math.sin(math.radians(mid)), -70 * math.cos(math.radians(mid))
         segs.append(f'<text x="{tx:.2f}" y="{ty:.2f}" font-size="19" text-anchor="middle" dominant-baseline="central" '
-                    f'transform="rotate({mid:.1f} {tx:.2f} {ty:.2f})">{p["emoji"]}</text>')
+                    f'transform="rotate({mid:.1f} {tx:.2f} {ty:.2f})">{("🎁" if i % 2 == 0 else "❓") if mystery else p["emoji"]}</text>')
     segs.append('<circle r="104" fill="none" stroke="#ff8cc6" stroke-width="7"/>')
     prize_text = html_safe(f'{prizes[target]["emoji"]} {prizes[target]["name"]}') if target >= 0 else ""
     return (WHEEL_HTML.replace("__SEGS__", "".join(segs)).replace("__HUB__", hub)
@@ -1279,8 +1525,9 @@ if dollars["paid"] or dollars["owed"]:
 if small_ws["ok"] or big_ws["ok"]:
     pills += '<span class="badge spin">🎡 Spin waiting!</span>'
 st.markdown(
-    f"""<div class="hero"><div class="float f1">🦄</div><div class="float f2">🐰</div>
-<div class="float f3">🌈</div><div class="float f4">✨</div>
+    f"""<div class="hero"><div class="float f1" data-joke="unicorn" title="Tap me!">🦄</div>
+<div class="float f2" data-joke="bunny" title="Tap me!">🐰</div>
+<div class="float f3" data-joke="rainbow" title="Tap me!">🌈</div><div class="float f4" data-joke="star" title="Tap me!">✨</div>
 <div class="title">Hi {html_safe(STUDENT_NAME)}!</div>
 <div class="sub">{today.strftime("%A, %d %B %Y")}</div>
 <div class="balance">⏳ {bal["balance"]} min screen time left</div><br>{pills}</div>""",
@@ -1306,9 +1553,9 @@ if party:
     st.balloons()
     play_sound("fanfare")
 
-tab_today, tab_maths, tab_write, tab_spin, tab_pet, tab_weeks, tab_parent = st.tabs(
-    ["🌈 Today", "🧮 Maths", "✍️ My Stories", "🎡 Spin & rewards", "🐰 Bunny & badges", "📅 My weeks",
-     "🔐 Grown-ups"])
+tab_today, tab_maths, tab_write, tab_chalisa, tab_spin, tab_pet, tab_weeks, tab_parent = st.tabs(
+    ["🌈 Today", "🧮 Maths", "✍️ My Stories", "🙏 Chalisa", "🎡 Spin & rewards", "🐰 Bunny & badges",
+     "📅 My weeks", "🔐 Grown-ups"])
 
 
 # ================================== TODAY ==================================
@@ -1353,14 +1600,11 @@ def next_idea():
     st.session_state.idea_shift = st.session_state.get("idea_shift", 0) + 1
 
 
-def confirm_use():
-    if not st.session_state.get("use_toggle"):
-        return
-    st.session_state.use_toggle = False
+def record_used(mins):
+    """Take minutes off the balance (needs the grown-up PIN)."""
     if not pin_ok("use_pin"):
         st.session_state.use_msg = ("bad", "That PIN isn't right. Ask a grown-up! 🔐")
         return
-    mins = int(st.session_state.get("use_mins", 0) or 0)
     result = {}
 
     def change(d):
@@ -1375,9 +1619,22 @@ def confirm_use():
     ok = update(change)
     st.session_state.use_pin = ""
     if ok:
-        st.session_state.use_msg = ("ok", f"✅ {mins} minutes used. {result['left']} minutes saved for later! 💾")
+        st.session_state.use_msg = ("ok", f"✅ {mins} minutes used. {result['left']} minutes left, saved for later! 💾")
     elif "bad" in result:
         st.session_state.use_msg = ("bad", f"Only {result['bad']} minutes are left.")
+
+
+def use_quick():
+    """Option 1: slide switch."""
+    if not st.session_state.get("use_toggle"):
+        return
+    st.session_state.use_toggle = False
+    record_used(min(DAILY_GOAL_MINUTES, balance_info(st.session_state.data)["balance"]))
+
+
+def use_custom():
+    """Option 2: typed number of minutes."""
+    record_used(int(st.session_state.get("use_mins", 0) or 0))
 
 
 def add_mood(mid):
@@ -1422,11 +1679,17 @@ with tab_today:
         with c2:
             if bal["balance"] > 0:
                 st.markdown("**🧑‍🍼 Grown-up: record minutes used**")
-                if st.session_state.get("use_mins", 0) > bal["balance"] or "use_mins" not in st.session_state:
-                    st.session_state.use_mins = bal["balance"]
-                st.number_input("Minutes used", min_value=1, max_value=bal["balance"], step=5, key="use_mins")
                 st.text_input("Grown-up PIN", type="password", key="use_pin")
-                st.toggle("Slide to confirm ➡️", key="use_toggle", on_change=confirm_use)
+                quick = min(DAILY_GOAL_MINUTES, bal["balance"])
+                st.markdown(f"**Option 1** · used the full {quick} minutes")
+                st.toggle(f"Slide ➡️ {quick} minutes used", key="use_toggle", on_change=use_quick)
+                st.markdown("**Option 2** · used fewer minutes")
+                if st.session_state.get("use_mins", 0) > bal["balance"] or "use_mins" not in st.session_state:
+                    st.session_state.use_mins = min(15, bal["balance"])
+                oc1, oc2 = st.columns([3, 2])
+                oc1.number_input("Minutes used", min_value=1, max_value=bal["balance"], step=5, key="use_mins",
+                                 label_visibility="collapsed")
+                oc2.button("💾 Save", on_click=use_custom, use_container_width=True)
             else:
                 st.caption("No minutes to use yet — finish some tasks! 🐰")
         msg = st.session_state.pop("use_msg", None)
@@ -1634,12 +1897,7 @@ def save_story():
             d["days"][TODAY_KEY] = sorted(s)
             if info.get("tick"):
                 add_fact(d, TODAY_KEY, info)
-        uses = sum(count_word(x["text"], w["word"]) for x in stories if x["date"] == TODAY_KEY)
-        if uses >= WORD_CHALLENGE_USES and TODAY_KEY not in d.setdefault("word_wins", []):
-            d["word_wins"].append(TODAY_KEY)
-            d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": WORD_CHALLENGE_MINUTES,
-                                                "reason": f"Word of the day challenge: {w['word']}"})
-            info["word_win"] = True
+        award_word_win(d, TODAY_KEY, w["word"], info)
 
     if update(change):
         st.session_state.story_title = ""
@@ -1656,20 +1914,67 @@ def save_story():
         st.session_state.story_msg = ("ok", " ".join(parts))
 
 
+def save_sentences():
+    sents = [str(st.session_state.get(f"wsent_{i}", "")).strip() for i in range(WORD_CHALLENGE_USES)]
+    if not any(sents):
+        st.session_state.sent_msg = ("warn", "Write at least one sentence first! ✏️")
+        return
+    info = {}
+
+    def change(d):
+        w = word_of_the_day(d, today)
+        d.setdefault("wotd_sentences", {})[TODAY_KEY] = sents
+        award_word_win(d, TODAY_KEY, w["word"], info)
+        info["word"] = w["word"]
+
+    if update(change):
+        good = sum(1 for x in sents if count_word(x, info["word"]) > 0 and count_words(x) >= 4)
+        if info.get("word_win"):
+            st.session_state.sent_msg = ("ok", f"💖 WORD WIZARD! Brilliant sentences — +{WORD_CHALLENGE_MINUTES} minutes!")
+            st.session_state.celebrate = {"fact": None, "task": "wotd"}
+        else:
+            st.session_state.sent_msg = ("ok", f"💾 Saved! {good} of {WORD_CHALLENGE_USES} sentences use the word.")
+
+
 with tab_write:
     wotd = word_of_the_day(data, today)
-    todays_stories = [s for s in data.get("stories", []) if s["date"] == TODAY_KEY]
-    uses = sum(count_word(s["text"], wotd["word"]) for s in todays_stories)
+    uses = wotd_uses(data, TODAY_KEY, wotd["word"])
     won = TODAY_KEY in data.get("word_wins", [])
     stars = "".join("💖" if i < min(uses, WORD_CHALLENGE_USES) else "🤍" for i in range(WORD_CHALLENGE_USES))
     st.markdown(
         f'<div class="card" style="text-align:center"><div style="color:#8a6a96;font-weight:600">✨ Word of the day ✨</div>'
         f'<div class="wotd">{html_safe(wotd["word"])}</div><div style="color:#5a2d66"><i>{html_safe(wotd["meaning"])}</i></div>'
         f'<div style="color:#8a6a96;margin-top:4px">e.g. “{html_safe(wotd.get("example", ""))}”</div>'
-        f'<div style="margin-top:10px;font-size:1.05rem"><b>Challenge:</b> use it {WORD_CHALLENGE_USES} times in your '
-        f'stories today for +{WORD_CHALLENGE_MINUTES} minutes!</div><div style="font-size:1.8rem">{stars}</div>'
+        f'<div style="margin-top:10px;font-size:1.05rem"><b>Challenge:</b> write {WORD_CHALLENGE_USES} sentences using '
+        f'this word (or use it in your stories) for +{WORD_CHALLENGE_MINUTES} minutes!</div>'
+        f'<div style="font-size:1.8rem">{stars}</div>'
         f'<div style="color:#1f7a37;font-weight:600">{"🎉 Challenge complete!" if won else ""}</div></div>',
         unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(f"**✏️ My {WORD_CHALLENGE_USES} sentences using “{md_safe(wotd['word'])}”**")
+        st.markdown('<div class="tip" style="margin-left:0">📖 <b>Tip:</b> use your dictionary to explore the meaning. '
+                    'Look for similar words (synonyms), opposites, and other forms of the word, '
+                    'like <i>-ly</i>, <i>-ness</i> or <i>-ed</i>.</div>', unsafe_allow_html=True)
+        saved = data.get("wotd_sentences", {}).get(TODAY_KEY, [])
+        for i in range(WORD_CHALLENGE_USES):
+            key = f"wsent_{i}"
+            if key not in st.session_state:
+                st.session_state[key] = saved[i] if i < len(saved) else ""
+            val = str(st.session_state[key]).strip()
+            mark = ""
+            if val:
+                if count_word(val, wotd["word"]) == 0:
+                    mark = f"  ❌ use the word “{wotd['word']}”"
+                elif count_words(val) < 4:
+                    mark = "  ❌ make it a full sentence"
+                else:
+                    mark = "  ✅"
+            st.text_input(f"Sentence {i + 1}{md_safe(mark)}", key=key,
+                          placeholder=f"Write a sentence with “{wotd['word']}”…")
+        st.button("💾 Save my sentences", on_click=save_sentences)
+        smsg = st.session_state.pop("sent_msg", None)
+        if smsg:
+            (st.success if smsg[0] == "ok" else st.warning)(smsg[1])
 
     st.markdown("### ✍️ Write a story")
     st.caption(f"Ideas: **{md_safe(WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)])}** or "
@@ -1701,6 +2006,155 @@ with tab_write:
             if s.get("feedback"):
                 st.markdown(f'<div class="note">💌 <b>Note from your grown-up:</b> {html_safe(s["feedback"])}</div>',
                             unsafe_allow_html=True)
+
+
+# ============================== HANUMAN CHALISA ==============================
+def learn_part(i):
+    if CHALISA_NEEDS_PIN and not pin_ok(f"ch_pin_{i}"):
+        st.session_state.ch_msg = ("bad", "That PIN isn't right. Ask a grown-up! 🔐")
+        return
+    info = {}
+
+    def change(d):
+        ch = d.setdefault("chalisa", {})
+        if str(i) in ch or (i > 0 and str(i - 1) not in ch):
+            return False
+        ch[str(i)] = TODAY_KEY
+        bs = bead_status(d)
+        while d.get("bead_rewards_given", 0) < bs["rewards_due"]:
+            d["bead_rewards_given"] = d.get("bead_rewards_given", 0) + 1
+            d.setdefault("credits", []).append({"date": TODAY_KEY, "minutes": BEAD_MINUTES,
+                                                "reason": f"{BEADS_FOR_MINUTES} prayer beads 📿"})
+            info["minutes"] = info.get("minutes", 0) + BEAD_MINUTES
+        info["all"] = bs["all_done"]
+
+    if update(change):
+        parts = [f"🙏 Wonderful! Part {i + 1} learned: +{BEADS_PER_PART} 📿 beads!"]
+        if info.get("minutes"):
+            parts.append(f"You reached {BEADS_FOR_MINUTES} beads: +{info['minutes']} minutes of screen time! ⏳")
+        if info.get("all"):
+            parts.append("🎉 You learned the WHOLE Hanuman Chalisa! Choose your special outing below!")
+        st.session_state.ch_msg = ("ok", " ".join(parts))
+        st.session_state.celebrate = {"fact": None, "task": "chalisa"}
+        st.session_state[f"ch_ready_{i}"] = False
+
+
+def choose_outing():
+    choice = st.session_state.get("outing_pick")
+
+    def change(d):
+        if not bead_status(d)["all_done"]:
+            return False
+        d["chalisa_reward"] = {"choice": choice, "status": "chosen", "date": TODAY_KEY}
+
+    if update(change):
+        st.session_state.ch_msg = ("ok", f"✨ Great choice! A grown-up will plan: {choice}")
+
+
+def give_outing():
+    if not pin_ok("outing_pin"):
+        st.session_state.ch_msg = ("bad", "That PIN isn't right.")
+        return
+
+    def change(d):
+        r = d.get("chalisa_reward")
+        if not r:
+            return False
+        r["status"] = "done"
+        r["done_date"] = TODAY_KEY
+        d.setdefault("history", []).append({"reward": "chalisa_outing", "date": TODAY_KEY})
+
+    st.session_state.outing_pin = ""
+    if update(change):
+        st.session_state.flash = "🎉 Chalisa outing enjoyed! So proud of you!"
+
+
+def next_ch_fact():
+    st.session_state.ch_fact = st.session_state.get("ch_fact", 0) + 1
+
+
+with tab_chalisa:
+    ch_done = data.get("chalisa", {})
+    bs = bead_status(data)
+    if "ch_fact" not in st.session_state:
+        st.session_state.ch_fact = random.randrange(len(CHALISA_FACTS))
+    st.markdown(f'<div class="fact">🌟 <b>Did you know?</b> {html_safe(CHALISA_FACTS[st.session_state.ch_fact % len(CHALISA_FACTS)])}</div>',
+                unsafe_allow_html=True)
+    st.button("✨ Another fact", on_click=next_ch_fact, key="ch_fact_btn")
+
+    st.markdown("### 🙏 Learn the Hanuman Chalisa")
+    with st.container(border=True):
+        beads_html = "".join(f'<span class="bead{" on" if j < bs["toward"] else ""}"></span>' for j in range(BEADS_FOR_MINUTES))
+        st.markdown(f'<div style="text-align:center"><div class="chalisa-head">📿 My prayer beads: {bs["beads"]}</div>'
+                    f'<div class="beads">{beads_html}</div><div class="how">{bs["toward"]}/{BEADS_FOR_MINUTES} beads toward '
+                    f'+{BEAD_MINUTES} minutes of screen time · Parts learned: {len(ch_done)}/{len(CHALISA_PARTS)}</div></div>',
+                    unsafe_allow_html=True)
+        pct = int(100 * len(ch_done) / len(CHALISA_PARTS))
+        st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>', unsafe_allow_html=True)
+        st.caption(f"Each part you learn by heart = {BEADS_PER_PART} 📿 beads. Every {BEADS_FOR_MINUTES} beads = "
+                   f"{BEAD_MINUTES} minutes. Learn ALL {len(CHALISA_PARTS)} parts for a special weekend outing! 🎉")
+    msg = st.session_state.pop("ch_msg", None)
+    if msg:
+        (st.success if msg[0] == "ok" else st.error)(msg[1])
+
+    # ---- big reward ----
+    reward = data.get("chalisa_reward")
+    if bs["all_done"]:
+        with st.container(border=True):
+            st.markdown('<div class="reward-head">🏆 Chalisa Champion! Choose your weekend outing</div>', unsafe_allow_html=True)
+            if reward and reward.get("status") == "done":
+                st.success(f"🎉 Enjoyed on {reward.get('done_date')}: {md_safe(reward['choice'])}")
+            else:
+                if reward:
+                    st.info(f"Your choice: **{md_safe(reward['choice'])}** — a grown-up will plan it! You can still change it.")
+                st.radio("Pick one:", CHALISA_OUTINGS, key="outing_pick",
+                         index=CHALISA_OUTINGS.index(reward["choice"]) if reward and reward["choice"] in CHALISA_OUTINGS else 0)
+                st.button("💖 This is my choice", on_click=choose_outing)
+                if reward:
+                    with st.form("outing_form", border=False):
+                        oc1, oc2 = st.columns([2, 1])
+                        oc1.text_input("Grown-up PIN after the outing", type="password", key="outing_pin")
+                        oc2.write("")
+                        oc2.form_submit_button("We went! ✅", on_click=give_outing)
+
+    # ---- the parts ----
+    next_part = next((i for i in range(len(CHALISA_PARTS)) if str(i) not in ch_done), None)
+    for i, part in enumerate(CHALISA_PARTS):
+        learned = str(i) in ch_done
+        locked = not learned and i != next_part
+        icon = "✅" if learned else ("🔒" if locked else "📿")
+        label = f"{icon} Part {i + 1} of {len(CHALISA_PARTS)} · {part['title']}"
+        if learned:
+            label += f" · learned {date.fromisoformat(ch_done[str(i)]).strftime('%d %b')}"
+        with st.expander(label, expanded=(i == next_part)):
+            if locked:
+                st.caption(f"🔒 Learn Part {i} first, then this part unlocks.")
+                continue
+            hide = st.toggle("🙈 Hide the words to test myself", key=f"ch_hide_{i}")
+            lines_html = ""
+            for ln in part["lines"]:
+                if hide:
+                    first = ln.split()[0]
+                    lines_html += f'<span class="ln"><b>{html_safe(first)}</b> …</span>'
+                else:
+                    lines_html += f'<span class="ln">{html_safe(ln)}</span>'
+            st.markdown(f'<div class="chalisa">{lines_html}</div>', unsafe_allow_html=True)
+            with st.expander("💡 What does it mean?"):
+                st.markdown(md_safe(part["meaning"]))
+            if learned:
+                st.success(f"✅ You learned this part! +{BEADS_PER_PART} 📿")
+                continue
+            st.markdown(f'<div class="tip" style="margin-left:0">🎙️ <b>Before you submit:</b> record yourself saying all '
+                        f'{len(part["lines"])} lines from memory (use the recorder below or the iPad\'s Voice Memos app), '
+                        'then play the recording to a grown-up.</div>', unsafe_allow_html=True)
+            if hasattr(st, "audio_input"):
+                st.audio_input("🎙️ Practice recorder (tap to record, then play it back)", key=f"ch_rec_{i}")
+            st.checkbox(f"I said all {len(part['lines'])} lines from memory, recorded it and played it to a grown-up",
+                        key=f"ch_ready_{i}")
+            if CHALISA_NEEDS_PIN:
+                st.text_input("Grown-up PIN", type="password", key=f"ch_pin_{i}")
+            st.button(f"🙏 I've learned Part {i + 1}! (+{BEADS_PER_PART} 📿)", key=f"ch_submit_{i}", type="primary",
+                      on_click=learn_part, args=(i,), disabled=not st.session_state.get(f"ch_ready_{i}"))
 
 
 # ============================ SPIN & REWARDS ============================
@@ -1857,10 +2311,10 @@ with tab_spin:
                                   hub="🌈" if wheel == "small" else "🦄", idle=idle), 400)
                 st.button("🎡 SPIN!", key=f"spin_{wheel}", on_click=do_spin, args=(wheel,), disabled=not ws["ok"],
                           type="primary", use_container_width=True)
-                with st.expander("What's on this wheel?"):
-                    for p in prizes:
-                        rule = f" — *{md_safe(p['rules'])}*" if p.get("rules") else ""
-                        st.markdown(f"{p['emoji']} {md_safe(p['name'])}{rule}")
+                teasers = [PRIZE_BY_ID[t] for t in (SMALL_TEASERS if wheel == "small" else BIG_TEASERS) if t in PRIZE_BY_ID]
+                st.markdown(f'<div class="tip" style="margin-left:0">👀 <b>Sneak peek:</b> {html_safe(" · ".join(p["emoji"] + " " + p["name"] for p in teasers))} '
+                            f'… and {len(prizes) - len(teasers)} more <b>secret surprises</b>! 🤫</div>',
+                            unsafe_allow_html=True)
 
     # ---- my prizes ----
     waiting = [s for s in data.get("spins", []) if s["status"] == "waiting"]
@@ -2121,6 +2575,7 @@ def save_edit():
 
     def change(d):
         d["days"][d_iso] = sorted(chosen)
+        d.setdefault("earned", {})[d_iso] = task_minutes(set(chosen))
 
     if update(change):
         if d_iso == TODAY_KEY:
@@ -2190,6 +2645,14 @@ def ate_out():
         st.session_state.parent_note = "🍽️ Noted — restaurant prize can be used again in 3 weeks."
 
 
+def undo_part(i):
+    def change(d):
+        d.get("chalisa", {}).pop(str(i), None)
+
+    if update(change):
+        st.session_state.parent_note = f"↩️ Part {i + 1} marked as not learned yet. (Minutes already given stay.)"
+
+
 def reset_all():
     def change(d):
         d.clear()
@@ -2254,6 +2717,23 @@ with tab_parent:
         wc1.text_input("Word", key="wotd_word")
         wc2.text_input("Meaning", key="wotd_meaning")
         st.button("Set word of the day", on_click=set_wotd)
+        sents = [x for x in data.get("wotd_sentences", {}).get(TODAY_KEY, []) if x]
+        if sents:
+            st.markdown(f"**{STUDENT_NAME}'s sentences today:**")
+            for x in sents:
+                st.markdown(f"• {md_safe(x)}")
+
+        st.markdown("#### 🙏 Hanuman Chalisa")
+        chd = data.get("chalisa", {})
+        bsx = bead_status(data)
+        st.write(f"Parts learned: **{len(chd)}/{len(CHALISA_PARTS)}** · beads: **{bsx['beads']}** · "
+                 f"screen-time rewards given: {data.get('bead_rewards_given', 0)} × {BEAD_MINUTES} min")
+        if data.get("chalisa_reward"):
+            r_ = data["chalisa_reward"]
+            st.write(f"Outing choice: {md_safe(r_['choice'])} ({r_['status']})")
+        if chd:
+            last_i = max(int(k) for k in chd)
+            st.button(f"↩️ Undo Part {last_i + 1} (needs more practice)", on_click=undo_part, args=(last_i,))
 
         st.markdown("#### 😊 Mood check-ins")
         moods = data.get("moods", [])
@@ -2296,7 +2776,8 @@ with tab_parent:
         st.markdown("#### 🎁 Rewards & prizes history")
         hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
             (f"{r['emoji']} {r['name']}" for r in REWARDS if r["id"] == h["reward"]),
-            "🧸 Toy shop trip" if h["reward"] == "toyshop" else h["reward"])) for h in data["history"]]
+            "🧸 Toy shop trip" if h["reward"] == "toyshop" else
+            ("🙏 Chalisa outing" if h["reward"] == "chalisa_outing" else h["reward"]))) for h in data["history"]]
         hist += [(s.get("done_date", s["date"]), f"{s['emoji']} {s['name']} ({s['wheel']} wheel)")
                  for s in data.get("spins", []) if s["status"] != "waiting"]
         if hist:
@@ -2312,3 +2793,9 @@ with tab_parent:
         if st.button("🔒 Lock"):
             st.session_state.parent_ok = False
             st.rerun()
+
+
+# ---- hopping friends (purely decorative, never block taps) ----
+if ANIMATED_FRIENDS:
+    st.markdown('<div class="critter bunny"><span>🐇</span></div><div class="critter unicorn"><span>🦄</span></div>',
+                unsafe_allow_html=True)
