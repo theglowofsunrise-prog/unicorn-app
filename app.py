@@ -647,17 +647,6 @@ TAMIL_WORDS = {
         "maths": ("kanakku", ""), "picture": ("padam", ""), "name": ("peyar", "spoken: 'per'"),
         "language": ("mozhi", ""), "tamil": ("thamizh", ""),
     },
-    "🏃 Doing words": {
-        "eat": ("saapidu", ""), "drink": ("kudi", ""), "sleep": ("thoongu", ""), "walk": ("nada", ""), "run": ("odu", ""),
-        "come": ("vaa", "to an elder: 'vaanga'"), "go": ("po", "to an elder: 'ponga'"), "sit": ("utkaaru", ""),
-        "stand": ("nillu", ""), "play": ("vilaiyaadu", ""), "read": ("padi", ""), "write": ("ezhudhu", ""),
-        "speak": ("pesu", ""), "talk": ("pesu", ""), "listen": ("kelu", ""), "look": ("paaru", ""), "see": ("paaru", ""),
-        "give": ("kodu", ""), "take": ("edu", ""), "open": ("thira", ""), "close": ("moodu", ""), "wash": ("kazhuvu", ""),
-        "cook": ("samai", ""), "sing": ("paadu", ""), "dance": ("aadu", ""), "jump": ("kudhi", ""), "laugh": ("siri", ""),
-        "cry": ("azhu", ""), "wait": ("kaaththiru", ""), "buy": ("vaangu", ""), "think": ("yosi", ""),
-        "swim": ("neenthu", ""), "draw": ("varai", ""), "climb": ("eru", ""), "learn": ("kaththukko", ""),
-        "bathe": ("kuli", ""), "help": ("udhavi", "this means 'help' (the noun); 'help me' = 'enakku udhavi pannu'"),
-    },
     "✨ Describing words": {
         "big": ("periya", ""), "small": ("chinna", ""), "good": ("nalla", ""), "bad": ("ketta", ""),
         "hot": ("soodu", ""), "cold": ("kulir", "cold drink/water: 'jillunu'"), "happy": ("sandhosham", ""),
@@ -693,6 +682,278 @@ TAMIL_TIPS = [
     "Adding 'nga' makes words polite for elders: 'vaa' → 'vaanga' (please come). 🙏",
     "Add 'um' to join words: 'amma' + 'appa' → 'ammavum appavum' (mum and dad). 🔗",
 ]
+
+# ============================ TAMIL DOING WORDS (VERBS) ============================
+# (english, english past, english past participle, tamil command, I do/am doing, I did, I will, note)
+# Spoken Tamil, "I" forms. The app builds the you/he/she/we/they forms from these automatically.
+TAMIL_VERBS = [
+    ("eat", "ate", "eaten", "saapidu", "saapidren", "saapten", "saapiduven", ""),
+    ("drink", "drank", "drunk", "kudi", "kudikkiren", "kudichen", "kudippen", ""),
+    ("sleep", "slept", "slept", "thoongu", "thoongaren", "thoonginen", "thoonguven", ""),
+    ("walk", "walked", "walked", "nada", "nadakkiren", "nadandhen", "nadappen", ""),
+    ("run", "ran", "run", "odu", "odaren", "odinen", "oduven", ""),
+    ("come", "came", "come", "vaa", "varen", "vandhen", "varuven", ""),
+    ("go", "went", "gone", "po", "poren", "ponen", "poven", ""),
+    ("sit", "sat", "sat", "utkaaru", "utkaaren", "utkaandhen", "utkaaruven", ""),
+    ("stand", "stood", "stood", "nillu", "nikkiren", "ninnen", "nippen", ""),
+    ("play", "played", "played", "vilaiyaadu", "vilaiyaadaren", "vilaiyaadinen", "vilaiyaaduven", ""),
+    ("read", "read", "read", "padi", "padikkiren", "padichen", "padippen", "'padi' also means study"),
+    ("study", "studied", "studied", "padi", "padikkiren", "padichen", "padippen", ""),
+    ("write", "wrote", "written", "ezhudhu", "ezhudharen", "ezhudhinen", "ezhudhuven", ""),
+    ("speak", "spoke", "spoken", "pesu", "pesaren", "pesinen", "pesuven", ""),
+    ("talk", "talked", "talked", "pesu", "pesaren", "pesinen", "pesuven", ""),
+    ("listen", "listened", "listened", "kelu", "kekkiren", "ketten", "keppen", "the same word means 'ask'"),
+    ("ask", "asked", "asked", "kelu", "kekkiren", "ketten", "keppen", "the same word means 'listen'"),
+    ("see", "saw", "seen", "paaru", "paakkiren", "paaththen", "paappen", ""),
+    ("look", "looked", "looked", "paaru", "paakkiren", "paaththen", "paappen", ""),
+    ("watch", "watched", "watched", "paaru", "paakkiren", "paaththen", "paappen", "watch TV = 'TV paaru'"),
+    ("give", "gave", "given", "kodu", "kudukkiren", "kuduththen", "kuduppen", ""),
+    ("take", "took", "taken", "edu", "edukkiren", "eduththen", "eduppen", ""),
+    ("open", "opened", "opened", "thira", "thirakkiren", "thirandhen", "thirappen", ""),
+    ("close", "closed", "closed", "moodu", "moodaren", "moodinen", "mooduven", ""),
+    ("wash", "washed", "washed", "kazhuvu", "kazhuvaren", "kazhuvinen", "kazhuvuven", "wash clothes = 'thuni thovai'"),
+    ("cook", "cooked", "cooked", "samai", "samaikkiren", "samaichen", "samaippen", ""),
+    ("sing", "sang", "sung", "paadu", "paadaren", "paadinen", "paaduven", ""),
+    ("dance", "danced", "danced", "aadu", "aadaren", "aadinen", "aaduven", ""),
+    ("jump", "jumped", "jumped", "kudhi", "kudhikkiren", "kudhichen", "kudhippen", ""),
+    ("laugh", "laughed", "laughed", "siri", "sirikkiren", "sirichen", "sirippen", "also means 'smile'"),
+    ("smile", "smiled", "smiled", "siri", "sirikkiren", "sirichen", "sirippen", ""),
+    ("cry", "cried", "cried", "azhu", "azharen", "azhudhen", "azhuven", ""),
+    ("wait", "waited", "waited", "kaaththiru", "kaaththirukkiren", "kaaththirundhen", "kaaththiruppen",
+     "quick 'wait!' = 'iru!'"),
+    ("buy", "bought", "bought", "vaangu", "vaangaren", "vaanginen", "vaanguven", ""),
+    ("think", "thought", "thought", "yosi", "yosikkiren", "yosichen", "yosippen", ""),
+    ("swim", "swam", "swum", "neendhu", "neendharen", "neendhinen", "neendhuven", ""),
+    ("draw", "drew", "drawn", "padam varai", "padam varaiyaren", "padam varainjen", "padam varaiven", ""),
+    ("climb", "climbed", "climbed", "eru", "eraren", "erinen", "eruven", ""),
+    ("learn", "learned", "learned", "kaththukko", "kaththukkaren", "kaththukitten", "kaththukkuven", ""),
+    ("teach", "taught", "taught", "sollikudu", "sollikudukkiren", "sollikuduththen", "sollikuduppen", ""),
+    ("bathe", "bathed", "bathed", "kuli", "kulikkiren", "kulichen", "kulippen", "have a bath/shower"),
+    ("help", "helped", "helped", "udhavi pannu", "udhavi panren", "udhavi pannen", "udhavi pannuven", ""),
+    ("do", "did", "done", "pannu", "panren", "pannen", "pannuven", "formal: 'sei'"),
+    ("make", "made", "made", "pannu", "panren", "pannen", "pannuven", "make food = 'samai'"),
+    ("say", "said", "said", "sollu", "solren", "sonnen", "solluven", ""),
+    ("tell", "told", "told", "sollu", "solren", "sonnen", "solluven", ""),
+    ("call", "called", "called", "koopidu", "koopidren", "koopten", "koopiduven", ""),
+    ("catch", "caught", "caught", "pudi", "pudikkiren", "pudichen", "pudippen", "also 'hold'"),
+    ("hold", "held", "held", "pudi", "pudikkiren", "pudichen", "pudippen", ""),
+    ("throw", "threw", "thrown", "veesu", "veesaren", "veesinen", "veesuven", ""),
+    ("push", "pushed", "pushed", "thallu", "thallaren", "thallinen", "thalluven", ""),
+    ("pull", "pulled", "pulled", "izhu", "izhukkiren", "izhuththen", "izhuppen", ""),
+    ("cut", "cut", "cut", "vettu", "vettaren", "vettinen", "vettuven", ""),
+    ("break", "broke", "broken", "udai", "udaikkiren", "udaichen", "udaippen", ""),
+    ("fall", "fell", "fallen", "vizhu", "vizharen", "vizhundhen", "vizhuven", ""),
+    ("carry", "carried", "carried", "thookku", "thookkaren", "thookkinen", "thookkuven", "also 'lift'"),
+    ("lift", "lifted", "lifted", "thookku", "thookkaren", "thookkinen", "thookkuven", ""),
+    ("search", "searched", "searched", "thedu", "thedaren", "thedinen", "theduven", ""),
+    ("find", "found", "found", "kandupudi", "kandupudikkiren", "kandupudichen", "kandupudippen", ""),
+    ("lose", "lost", "lost", "tholai", "tholaikkiren", "tholaichen", "tholaippen", "lose a thing"),
+    ("forget", "forgot", "forgotten", "maranthudu", "marakkiren", "maranthutten", "maranthuduven",
+     "'Don't forget!' = 'marakkaadhe!'"),
+    ("wake up", "woke up", "woken up", "ezhundhiru", "ezhundhirikkiren", "ezhundhen", "ezhundhirippen", ""),
+    ("get up", "got up", "got up", "ezhundhiru", "ezhundhirikkiren", "ezhundhen", "ezhundhirippen", ""),
+    ("brush teeth", "brushed teeth", "brushed teeth", "pal theyi", "pal theykkiren", "pal theychen", "pal theyppen", ""),
+    ("wear", "wore", "worn", "podu", "poduren", "potten", "poduven", "e.g. 'sattai podu' = put on a shirt"),
+    ("put", "put", "put", "vai", "vaikkiren", "vechen", "vaippen", ""),
+    ("clean", "cleaned", "cleaned", "suththam pannu", "suththam panren", "suththam pannen", "suththam pannuven", ""),
+    ("finish", "finished", "finished", "mudi", "mudikkiren", "mudichen", "mudippen", "'It's finished' = 'mudinjudhu'"),
+    ("start", "started", "started", "aarambi", "aarambikkiren", "aarambichen", "aarambippen", ""),
+    ("begin", "began", "begun", "aarambi", "aarambikkiren", "aarambichen", "aarambippen", ""),
+    ("stop", "stopped", "stopped", "niruththu", "niruththaren", "niruththinen", "niruththuven", ""),
+    ("win", "won", "won", "jeyi", "jeyikkiren", "jeyichen", "jeyippen", ""),
+    ("fly", "flew", "flown", "para", "parakkiren", "parandhen", "parappen", ""),
+    ("ride", "rode", "ridden", "ottu", "ottaren", "ottinen", "ottuven", "ride a bike = 'cycle ottu'"),
+    ("drive", "drove", "driven", "ottu", "ottaren", "ottinen", "ottuven", ""),
+    ("show", "showed", "shown", "kaattu", "kaattaren", "kaattinen", "kaattuven", ""),
+    ("send", "sent", "sent", "anuppu", "anupparen", "anuppinen", "anuppuven", ""),
+    ("bring", "brought", "brought", "kondu vaa", "kondu varen", "kondu vandhen", "kondu varuven", ""),
+    ("count", "counted", "counted", "ennu", "ennaren", "enninen", "ennuven", ""),
+    ("hug", "hugged", "hugged", "katti pudi", "katti pudikkiren", "katti pudichen", "katti pudippen", ""),
+    ("kiss", "kissed", "kissed", "muththam kodu", "muththam kudukkiren", "muththam kuduththen", "muththam kuduppen", ""),
+    ("stay", "stayed", "stayed", "iru", "irukken", "irundhen", "iruppen", "also means 'be'"),
+    ("fight", "fought", "fought", "sandai podu", "sandai poduren", "sandai potten", "sandai poduven", ""),
+    ("shout", "shouted", "shouted", "kaththu", "kaththaren", "kaththinen", "kaththuven", ""),
+    ("hide", "hid", "hidden", "olinjukko", "olinjukkaren", "olinjukitten", "olinjukkuven", "hide yourself"),
+    ("sell", "sold", "sold", "vil", "vikkiren", "vitthen", "vippen", ""),
+    ("tie", "tied", "tied", "kattu", "kattaren", "kattinen", "kattuven", ""),
+    ("fill", "filled", "filled", "nirappu", "nirapparen", "nirappinen", "nirappuven", ""),
+    ("pour", "poured", "poured", "oothu", "oothaaren", "oothinen", "oothuven", ""),
+    ("touch", "touched", "touched", "thodu", "thodaren", "thotten", "thoduven", ""),
+    ("grow", "grew", "grown", "valar", "valaren", "valarndhen", "valaruven", ""),
+    ("change", "changed", "changed", "maaththu", "maaththaren", "maaththinen", "maaththuven", ""),
+    ("kick", "kicked", "kicked", "udhai", "udhaikkiren", "udhaichen", "udhaippen", ""),
+    ("bite", "bit", "bitten", "kadi", "kadikkiren", "kadichen", "kadippen", ""),
+    ("blow", "blew", "blown", "oodhu", "oodharen", "oodhinen", "oodhuven", "blow candles = 'mezhuguvarththi oodhu'"),
+    ("turn", "turned", "turned", "thiruppu", "thirupparen", "thiruppinen", "thiruppuven", ""),
+    ("dig", "dug", "dug", "thondu", "thondaren", "thondinen", "thonduven", ""),
+    ("lie down", "lay down", "lain down", "padu", "padukkiren", "paduththen", "paduppen", ""),
+    ("try", "tried", "tried", "try pannu", "try panren", "try pannen", "try pannuven", "formal: 'muyarchi pannu'"),
+    ("pray", "prayed", "prayed", "kumbidu", "kumbidren", "kumbitten", "kumbiduven", "also 'saami kumbidu'"),
+    ("practise", "practised", "practised", "practice pannu", "practice panren", "practice pannen", "practice pannuven",
+     "formal: 'payirchi sei'"),
+    ("tidy", "tidied", "tidied", "olungaa vai", "olungaa vaikkiren", "olungaa vechen", "olungaa vaippen", "put things neatly"),
+    ("share", "shared", "shared", "share pannu", "share panren", "share pannen", "share pannuven", "formal: 'pagirndhu kodu'"),
+    ("pack", "packed", "packed", "pack pannu", "pack panren", "pack pannen", "pack pannuven", ""),
+    ("visit", "visited", "visited", "paakka po", "paakka poren", "paakka ponen", "paakka poven",
+     "e.g. 'paatti-a paakka poren' = I'm going to visit grandma"),
+    ("live", "lived", "lived", "vaazhu", "vaazhaaren", "vaazhndhen", "vaazhuven", "where I live = 'naan irukkira idam'"),
+    ("feed", "fed", "fed", "saapadu kodu", "saapadu kudukkiren", "saapadu kuduththen", "saapadu kuduppen", ""),
+    ("fold", "folded", "folded", "madi", "madikkiren", "madichen", "madippen", ""),
+    ("paint", "painted", "painted", "colour adi", "colour adikkiren", "colour adichen", "colour adippen", ""),
+    ("spill", "spilled", "spilled", "kottu", "kottaren", "kottinen", "kottuven", ""),
+    ("borrow", "borrowed", "borrowed", "kadan vaangu", "kadan vaangaren", "kadan vaanginen", "kadan vaanguven", ""),
+    ("hurry", "hurried", "hurried", "seekiram pannu", "seekiram panren", "seekiram pannen", "seekiram pannuven",
+     "'Hurry up!' = 'seekiram!'"),
+]
+# Feeling verbs work differently in Tamil ("to me it is …"), so they get their own simple card.
+TAMIL_SPECIAL_VERBS = [
+    ("know", "knew", "known", "enakku theriyum", "enakku therinjudhu", "enakku theriyum",
+     "'I don't know' = 'enakku theriyaadhu'"),
+    ("like", "liked", "liked", "enakku pidikkum", "enakku pidichudhu", "enakku pidikkum",
+     "'I don't like it' = 'enakku pidikkaadhu'"),
+    ("want", "wanted", "wanted", "enakku venum", "enakku venum-nu irundhudhu", "enakku venum",
+     "'I don't want' = 'enakku venaam'"),
+    ("understand", "understood", "understood", "enakku puriyudhu", "enakku purinjudhu", "enakku puriyum",
+     "'I don't understand' = 'enakku puriyala'"),
+    ("remember", "remembered", "remembered", "enakku nyaabagam irukku", "enakku nyaabagam vandhudhu",
+     "enakku nyaabagam irukkum", ""),
+    ("feel hungry", "felt hungry", "felt hungry", "enakku pasikkudhu", "enakku pasichudhu", "enakku pasikkum", ""),
+    ("feel sleepy", "felt sleepy", "felt sleepy", "enakku thookkam varudhu", "enakku thookkam vandhudhu",
+     "enakku thookkam varum", ""),
+    ("hurt", "hurt", "hurt", "valikkudhu", "valichudhu", "valikkum", "'My leg hurts' = 'kaal valikkudhu'"),
+]
+PRONOUNS = [("I", "naan", "en"), ("you", "nee", "a"), ("he", "avan", "aan"), ("she", "ava", "aa"),
+            ("we", "naanga", "om"), ("they / polite you", "avanga", "aanga")]
+
+TAMIL_WORDS.update({
+    "🧩 Describing words from verbs": {
+        "broken": ("udainja", "e.g. 'udainja bommai' = broken toy"), "cooked": ("samaicha", ""),
+        "boiled": ("kodhicha", "boiled water = 'kodhicha thanni'"), "frozen": ("urainja", ""),
+        "lost": ("tholanja", "a lost toy = 'tholanja bommai'"), "washed": ("thovaicha", "for clothes"),
+        "fallen": ("vizhundha", ""), "written": ("ezhudhina", ""), "spoken": ("pesina", ""),
+        "closed": ("moodina", ""), "opened": ("thirandha", ""), "burnt": ("karinja", ""), "torn": ("kizhinja", ""),
+        "dried": ("kaanja", ""), "wet": ("nanainja", ""), "folded": ("madicha", ""), "fried": ("poricha", ""),
+        "grown": ("valarndha", ""), "finished": ("mudinja", ""), "started": ("aarambicha", ""),
+        "filled": ("nirambina", ""), "painted": ("colour adicha", ""), "tied": ("kattina", ""),
+        "bought": ("vaangina", "e.g. 'vaangina dress' = the dress I bought"), "sleeping": ("thoongara", ""),
+        "running": ("odara", ""), "crying": ("azhara", "e.g. 'azhara paapaa' = crying baby"),
+        "smiling": ("sirikkira", ""), "flying": ("parakkira", ""), "boiling": ("kodhikkira", ""),
+        "shining": ("minnara", ""), "melting": ("urugara", ""), "spinning": ("sutthara", ""),
+        "tired": ("kalaippaana", "'I'm tired' = 'kalaippaa irukku'"),
+        "excited": ("aarvamaana", "'I'm excited!' = 'romba aarvamaa irukku!'"),
+        "scared": ("bayandha", "'I'm scared' = 'bayamaa irukku'"),
+        "surprised": ("aachariyamaana", ""), "bored": ("bore adikkira", "'I'm bored' = 'bore adikkudhu'"),
+        "interesting": ("suvaarasyamaana", ""), "amazing": ("arumaiyaana", "also 'super'"),
+        "boring": ("bore-aana", ""), "loving": ("anbaana", ""), "caring": ("akkaraiyaana", ""),
+        "missing": ("kaanaama pona", "something you can't find"), "worried": ("kavalaiyaana", ""),
+    },
+    "😊 Feelings & health": {
+        "feelings": ("unarvugal", ""), "fun": ("jolly", "also 'sandhosham'"), "love": ("anbu", "also 'paasam'"),
+        "proud": ("perumai", ""), "shy": ("vetkam", ""), "jealous": ("poraamai", ""), "worry": ("kavalai", ""),
+        "surprise": ("aachariyam", ""), "calm": ("amaidhi", ""), "brave": ("dhairiyam", ""), "fear": ("bayam", ""),
+        "lonely": ("thanimai", ""), "pain": ("vali", ""), "sick": ("udambu sariyilla", "'I'm sick' = 'enakku udambu sariyilla'"),
+        "fever": ("kaaychal", ""), "cough": ("irumal", ""), "a cold": ("jaladhosham", ""), "headache": ("thalai vali", ""),
+        "stomach ache": ("vayiru vali", ""), "medicine": ("marundhu", ""), "hospital": ("aaspathiri", ""),
+        "injury": ("adi", "'I got hurt' = 'adi pattudhu'"), "sleepy": ("thookkam", ""), "thirsty": ("thaagam", ""),
+    },
+    "🎒 School & stationery": {
+        "pencil": ("pencil", ""), "eraser": ("rubber", ""), "ruler": ("scale", ""), "notebook": ("notebook", "formal: 'kuripedu'"),
+        "paper": ("kaagidham", "also 'paper'"), "scissors": ("kaththarikkol", ""), "glue": ("pasai", ""),
+        "blackboard": ("karumbalagai", ""), "bell": ("mani", ""), "playground": ("vilaiyaattu maidhaanam", ""),
+        "library": ("noolagam", ""), "prize": ("parisu", ""), "holiday": ("vidumurai", "also 'leave'"),
+        "bus": ("bus", "formal: 'perundhu'"), "lunchbox": ("tiffin box", ""), "uniform": ("seerudai", "also 'uniform'"),
+        "marks": ("madhippen", "kids say 'mark'"), "friendship": ("natpu", ""),
+    },
+    "👗 Clothes & getting ready": {
+        "dress": ("frock", "also 'gown'"), "socks": ("socks", ""), "shoes": ("shoe", ""), "hat": ("thoppi", ""),
+        "glasses": ("kannaadi", ""), "bangles": ("valaiyal", ""), "earrings": ("kammal", ""), "necklace": ("maalai", "also 'chain'"),
+        "bindi": ("pottu", ""), "saree": ("pudavai", "also 'saree'"), "ribbon": ("ribbon", ""), "pocket": ("pai", "also 'pocket'"),
+        "button": ("button", ""), "jacket": ("jacket", ""), "pyjamas": ("night dress", ""),
+    },
+    "🏡 More at home": {
+        "stove": ("aduppu", ""), "pot": ("paanai", ""), "knife": ("kaththi", ""), "glass (cup)": ("tumbler", ""),
+        "rubbish": ("kuppai", ""), "bin": ("kuppai thotti", ""), "broom": ("vilakkumaaru", ""), "stairs": ("padi", ""),
+        "entrance": ("vaasal", ""), "toilet": ("toilet", "formal: 'kazhivarai'"), "bathroom": ("bathroom", ""),
+        "photo": ("photo", "formal: 'pugaipadam'"), "god's room / prayer room": ("saami arai", ""),
+        "rangoli / kolam": ("kolam", ""), "swing": ("oonjal", ""), "garden plant": ("chedi", ""), "pet": ("chella praani", ""),
+    },
+    "📍 Places": {
+        "shop": ("kadai", ""), "market": ("sandhai", "also 'market'"), "temple": ("kovil", ""), "park": ("poonga", "also 'park'"),
+        "beach": ("kadarkarai", "also 'beach'"), "city": ("nagaram", ""), "country": ("naadu", ""), "india": ("Indhiyaa", ""),
+        "hometown": ("ooru", ""), "bridge": ("paalam", ""), "zoo": ("mirugakkaatchi saalai", "kids say 'zoo'"),
+        "house of grandparents": ("paatti veedu", ""), "airport": ("vimaana nilaiyam", "also 'airport'"),
+        "aeroplane": ("vimaanam", "also 'flight'"), "train": ("rayil", ""), "bicycle": ("cycle", ""),
+    },
+    "🍛 More food": {
+        "idli": ("idli", ""), "dosa": ("dosai", ""), "sambar": ("saambaar", ""), "rasam": ("rasam", ""),
+        "chutney": ("chutney", ""), "curry": ("kuzhambu", "dry vegetable dish = 'poriyal'"), "pickle": ("oorugaai", ""),
+        "sweets": ("inippu", "also 'sweet'"), "laddu": ("laddu", ""), "payasam": ("paayasam", ""),
+        "ice cream": ("ice cream", ""), "chocolate": ("chocolate", ""), "cake": ("cake", ""), "juice": ("juice", ""),
+        "snacks": ("thinpandam", "kids say 'snacks'"), "lentils": ("paruppu", ""), "spinach": ("keerai", ""),
+        "peanuts": ("verkadalai", ""), "cucumber": ("vellarikkaai", ""), "pumpkin": ("poosanikkaai", ""),
+        "brinjal": ("kaththarikkaai", ""), "beans": ("beans", ""), "corn": ("cholam", ""), "papaya": ("pappaali", ""),
+        "pomegranate": ("maadhulai", ""), "guava": ("koyyaa", ""), "watermelon": ("tharpoosani", ""),
+        "strawberry": ("strawberry", ""), "pineapple": ("annaasi", ""),
+    },
+    "🦘 More animals": {
+        "puppy": ("naaikutti", ""), "kitten": ("poonaikutti", ""), "calf": ("kannukutti", ""), "chick": ("kozhikunju", ""),
+        "lamb": ("aattukutti", ""), "nest": ("koodu", ""), "feather": ("iragu", "also means 'wing'"), "tail": ("vaal", ""),
+        "horn": ("kombu", ""), "sparrow": ("kuruvi", ""), "pigeon": ("puraa", ""), "bat": ("vavvaal", ""),
+        "whale": ("thimingalam", ""), "dolphin": ("dolphin", "formal: 'oongil'"), "shark": ("sura", ""),
+        "cockroach": ("karappaan poochi", ""), "worm": ("puzhu", ""), "snail": ("naththai", ""), "kangaroo": ("kangaroo", ""),
+        "koala": ("koala", ""), "penguin": ("penguin", ""), "zebra": ("varikkudhirai", ""), "giraffe": ("ottagachivingi", ""),
+    },
+    "🌍 More nature & weather": {
+        "earth": ("bhoomi", ""), "planet": ("graham", ""), "wave": ("alai", ""), "island": ("theevu", ""),
+        "lake": ("yeri", ""), "pond": ("kulam", ""), "well": ("kinaru", ""), "seed": ("vidhai", ""), "root": ("ver", ""),
+        "branch": ("kilai", ""), "rock": ("paarai", ""), "ice": ("ice", "also 'panikkatti'"), "smoke": ("pugai", ""),
+        "shadow": ("nizhal", ""), "sunshine": ("veyil", ""), "summer": ("kodaikaalam", ""), "winter": ("kulirkaalam", ""),
+        "storm": ("puyal", ""), "thunder": ("idi", ""), "lightning": ("minnal", ""), "fog": ("pani", "also dew/snow"),
+    },
+    "🧭 Where & when": {
+        "up": ("mela", ""), "down": ("keezha", ""), "inside": ("ulla", ""), "outside": ("veliya", ""),
+        "near": ("pakkaththula", "also 'next to'"), "far": ("dhooram", ""), "front": ("munnaadi", "also 'before'"),
+        "behind": ("pinnaadi", ""), "left": ("idadhu", ""), "right (side)": ("valadhu", ""), "middle": ("naduvula", ""),
+        "always": ("eppavum", ""), "sometimes": ("sila neram", ""), "never": ("eppavume illa", ""), "again": ("thirumba", ""),
+        "soon": ("seekiram", "also 'quickly' / 'early'"), "late": ("lettu", "formal: 'thaamadham'"), "first": ("mudhal", ""),
+        "last": ("kadaisi", ""), "after": ("appuram", ""), "before": ("munnaadi", ""), "together": ("onnaa", "also 'serndhu'"),
+        "alone": ("thaniyaa", ""), "everyone": ("ellaarum", ""), "everything": ("ellaam", ""), "nothing": ("onnum illa", ""),
+        "something": ("edhaavadhu", ""), "but": ("aanaa", ""), "because": ("yennaa", ""), "so": ("adhanaala", ""),
+        "or": ("illa", "also 'alladhu'"), "also": ("kooda", ""), "only": ("mattum", ""),
+    },
+    "🔁 Opposites": {
+        "full": ("niraiya", ""), "empty": ("kaali", ""), "light (weight)": ("lesaa", ""), "dark": ("iruttu", ""),
+        "bright": ("velichchamaa", ""), "loud": ("saththamaa", ""), "quiet": ("amaidhiyaa", ""), "soft": ("medhuvaana", ""),
+        "hard": ("kadinamaana", ""), "easy": ("sulabam", ""), "difficult": ("kashtam", ""), "right (correct)": ("sari", ""),
+        "wrong": ("thappu", ""), "true": ("unmai", ""), "lie": ("poi", ""), "same": ("ore maadhiri", ""),
+        "different": ("vera", ""), "rich": ("panakkaaran", ""), "poor": ("ezhai", ""), "dry": ("kaanja", ""),
+        "sharp": ("koormaiyaana", ""), "round": ("vattamaana", ""), "long": ("neelamaana", ""), "thick": ("thadimana", ""),
+        "thin": ("olliyaana", ""), "strong": ("balamaana", ""), "weak": ("balaveenamaana", ""), "young": ("chinna vayasu", ""),
+    },
+    "🔢 More numbers": {
+        "thirteen": ("padhimoonu", ""), "fourteen": ("padhinaalu", ""), "fifteen": ("padhinanju", ""),
+        "sixteen": ("padhinaaru", ""), "seventeen": ("padhinezhu", ""), "eighteen": ("padhinettu", ""),
+        "nineteen": ("paththonbadhu", ""), "thirty": ("muppadhu", ""), "forty": ("naarpadhu", ""), "sixty": ("arubadhu", ""),
+        "seventy": ("ezhubadhu", ""), "eighty": ("embadhu", ""), "ninety": ("thonnooru", ""), "half": ("paadhi", ""),
+        "second (2nd)": ("rendaavadhu", ""), "third (3rd)": ("moonaavadhu", ""), "first (1st)": ("mudhalaavadhu", ""),
+    },
+    "💬 Everyday sentences": {
+        "i'm coming": ("naan varen", ""), "wait a minute": ("oru nimisham iru", ""), "come quickly": ("seekiram vaa", ""),
+        "i'm done": ("mudinjudhu", ""), "let's go": ("polaam", ""), "i'm bored": ("bore adikkudhu", ""),
+        "i'm sleepy": ("thookkam varudhu", ""), "i'm tired": ("kalaippaa irukku", ""), "it hurts": ("valikkudhu", ""),
+        "i'm scared": ("bayamaa irukku", ""), "i want water": ("enakku thanni venum", ""), "i don't want": ("enakku venaam", ""),
+        "it's okay": ("paravaayilla", ""), "good job": ("shabaash", ""), "happy birthday": ("piranthanaal vaazhthukkal", ""),
+        "happy deepavali": ("Deepavali vaazhthukkal", ""), "happy pongal": ("Pongal vaazhthukkal", ""),
+        "how old are you": ("unakku enna vayasu?", ""), "i am nine years old": ("enakku onbadhu vayasu", ""),
+        "where are you going": ("enga pora?", ""), "what are you doing": ("enna panra?", ""), "did you eat": ("saaptiyaa?", ""),
+        "very tasty": ("romba rusiyaa irukku", ""), "can i play": ("naan vilaiyaadalaamaa?", ""),
+        "can i have it": ("enakku kidaikkumaa?", ""), "i miss you": ("unna miss panren", "'Paatti, unga nyaabagamaa irukku'"),
+        "i love you": ("enakku unga mela romba paasam", "a warm way to say it to family"), "come and eat": ("saapida vaa", ""),
+        "what happened": ("enna aachu?", ""), "nothing happened": ("onnum aagala", ""), "is it true": ("unmaiyaa?", ""),
+        "of course": ("kandippaa", ""), "no problem": ("prachanai illa", ""), "be careful": ("jaakkiradhaiyaa iru", ""),
+        "well done amma": ("super amma!", ""), "good night": ("iniya iravu", ""), "bless me": ("aasirvaadham pannunga", "said to elders"),
+    },
+})
 
 BASE_CSS = """
 <style>
@@ -2422,35 +2683,133 @@ with tab_write:
 
 
 # ============================== TAMIL WORDS ==============================
+DOUBLE_ING = {"run", "swim", "sit", "cut", "put", "stop", "dig", "hug", "win", "begin", "get", "shop", "hit", "spin"}
+
+
+def ing_form(phrase):
+    w, *rest = phrase.split(" ")
+    if w.endswith("ie"):
+        g = w[:-2] + "ying"
+    elif w in DOUBLE_ING:
+        g = w + w[-1] + "ing"
+    elif w.endswith("e") and not w.endswith("ee"):
+        g = w[:-1] + "ing"
+    else:
+        g = w + "ing"
+    return " ".join([g] + rest)
+
+
+def s_form(phrase):
+    w, *rest = phrase.split(" ")
+    if w.endswith(("s", "sh", "ch", "x", "o")):
+        g = w + "es"
+    elif w.endswith("y") and w[-2] not in "aeiou":
+        g = w[:-1] + "ies"
+    else:
+        g = w + "s"
+    return " ".join([g] + rest)
+
+
+@st.cache_data(show_spinner=False)
+def verb_index():
+    idx = {}
+    for kind, table in (("verb", TAMIL_VERBS), ("special", TAMIL_SPECIAL_VERBS)):
+        for i, v in enumerate(table):
+            base, past, part = v[0], v[1], v[2]
+            for form, label in ((base, "base"), (past, "past"), (part, "past"), (ing_form(base), "now"),
+                                (s_form(base), "now")):
+                idx.setdefault(form.lower(), (kind, i, label))
+    return idx
+
+
 def all_tamil_words(d):
     words = {}
     for cat, items in TAMIL_WORDS.items():
         for en, (ta, note) in items.items():
             words[en.lower()] = (ta, note, cat)
+    for v in TAMIL_VERBS:
+        words.setdefault(v[0], (v[3], v[7], "🏃 Doing words"))
     for en, v in d.get("tamil_custom", {}).items():
         words[en.lower()] = (v.get("tamil", ""), v.get("note", ""), "⭐ Added by a grown-up")
     return words
 
 
 def lookup_tamil(query, words):
+    """Returns (results, suggestions). result = ('word', en, ta, note, cat) or ('verb'/'special', i, label)."""
     q = re.sub(r"[^a-z' ]", " ", query.lower()).strip()
     q = re.sub(r"\s+", " ", q)
     if not q:
         return [], []
-    if q in words:
-        return [(q, *words[q])], []
-    for cand in (q.rstrip("s"), q[:-2] if q.endswith("es") else None, "the " + q):
+    vidx = verb_index()
+    if q in words and q not in vidx:
+        return [("word", q, *words[q])], []
+    stripped = re.sub(r"^(to|i|i'll|i will|will|you|he|she|we|they|am|is|are|was|were|i am|i'm|did) ", "", q)
+    stripped = re.sub(r"^(will|am|is|are|was|were) ", "", stripped)
+    stripped = re.sub(r"^(going to|gonna) ", "", stripped)
+    out = []
+    future = re.match(r"^(i will|i.ll|will|you will|he will|she will|we will|they will|going to|i.m going to|i am going to|gonna) ", q) is not None
+    for cand in (q, stripped):
+        if cand in vidx:
+            kind, i, label = vidx[cand]
+            out.append((kind, i, "future" if future else label))
+            if cand in words and words[cand][2] != "🏃 Doing words":
+                out.append(("word", cand, *words[cand]))
+            return out, []
+    for cand in (q.rstrip("s"), q[:-2] if q.endswith("es") else None, stripped):
         if cand and cand in words:
-            return [(cand, *words[cand])], []
-    found = []
+            return [("word", cand, *words[cand])], []
     for w in q.split():
+        if w in vidx:
+            out.append(vidx[w])
+            continue
         for cand in (w, w.rstrip("s")):
             if cand in words:
-                found.append((cand, *words[cand]))
+                out.append(("word", cand, *words[cand]))
                 break
+    if out:
+        return out, []
     import difflib
-    sugg = difflib.get_close_matches(q, list(words), n=5, cutoff=.72) if not found else []
-    return found, sugg
+    return [], difflib.get_close_matches(q, list(words) + list(vidx), n=5, cutoff=.72)
+
+
+def pronoun_forms(i_form):
+    """Spoken Tamil: swap the 'I' ending (-en) for the other people."""
+    if not i_form.endswith("en"):
+        return [(p[0], f"{p[1]} {i_form}") for p in PRONOUNS]
+    stem = i_form[:-2]
+    return [(p[0], f"{p[1]} {stem}{p[2]}") for p in PRONOUNS]
+
+
+def verb_card(kind, i, label):
+    if kind == "special":
+        en, past, _p, now, did, will, note = TAMIL_SPECIAL_VERBS[i]
+        rows = [("Now / every day", f"I {en}", now), ("Before (past)", f"I {past}", did), ("Later (future)", f"I will {en}", will)]
+        pick = {"past": "Before (past)", "future": "Later (future)"}.get(label, "Now / every day")
+        body = "".join(f'<tr{" class=star" if lbl == pick else ""}>'
+                       f'<td class="name">{lbl}</td><td>{html_safe(e)}</td><td><b>{html_safe(t)}</b></td></tr>' for lbl, e, t in rows)
+        st.markdown(f'<div class="card"><div style="color:#8a6a96">{html_safe(en)} · {html_safe(past)}</div>'
+                    f'<div class="scroll"><table class="week">{body}</table></div>'
+                    f'{"<div class=note>" + html_safe(note) + "</div>" if note else ""}</div>', unsafe_allow_html=True)
+        return
+    en, past, part, cmd, now, did, will, note = TAMIL_VERBS[i]
+    head = (f'<div style="color:#8a6a96">{html_safe(en)} · {html_safe(past)} · {html_safe(part)} · {html_safe(ing_form(en))}</div>'
+            f'<div class="wotd">{html_safe(cmd)}!</div><div style="color:#5a2d66">= “{html_safe(en)}!” (to a friend) · '
+            f'to an elder: <b>{html_safe(cmd)}nga</b></div>')
+    sel = {"now": 0, "base": 0, "past": 1, "future": 2}.get(label, 0)
+    cols = [("Now / every day", now), ("Before (past)", did), ("Later (future)", will)]
+    head_row = "<tr><th></th>" + "".join(f"<th>{c}</th>" for c, _ in cols) + "</tr>"
+    forms = [pronoun_forms(f) for _, f in cols]
+    rows = ""
+    for r, (who, _ta, _end) in enumerate(PRONOUNS):
+        rows += f"<tr{' class=star' if r == 0 else ''}><td class='name'>{who}</td>" + "".join(
+            f"<td>{'<b>' if c == sel else ''}{html_safe(forms[c][r][1])}{'</b>' if c == sel else ''}</td>"
+            for c in range(3)) + "</tr>"
+    eng = (f'<div style="margin-top:6px;color:#6b3f73">I {html_safe(en)} → '
+           f'<b>{html_safe(now)}</b> · I {html_safe(past)} → <b>{html_safe(did)}</b> · I will {html_safe(en)} → '
+           f'<b>{html_safe(will)}</b></div>')
+    st.markdown(f'<div class="card">{head}<div class="scroll" style="margin-top:8px"><table class="week">{head_row}{rows}'
+                f'</table></div>{eng}{"<div class=note>💡 " + html_safe(note) + "</div>" if note else ""}</div>',
+                unsafe_allow_html=True)
 
 
 def save_my_word(en):
@@ -2464,20 +2823,28 @@ def save_my_word(en):
 with tab_tamil:
     words = all_tamil_words(data)
     st.markdown("### 🗣️ English → Tamil words")
-    st.caption("Type an English word to find the Tamil word, written in English letters so you can say it. "
-               "Then use it when you speak Tamil today! 🦜")
+    st.caption(f"Type an English word or short sentence to find it in Tamil, written in English letters. Try a doing "
+               f"word like 'eat', 'ate' or 'will eat' to see all its forms! ({len(words) + len(TAMIL_SPECIAL_VERBS)}+ words)")
     with st.container(border=True):
-        q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, water, thank you")
+        q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, went, I'm tired, broken")
         if q.strip():
             found, sugg = lookup_tamil(q, words)
             if found:
-                for en, ta, note, cat in found:
-                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(en)}</div>'
-                                f'<div class="wotd">{html_safe(ta)}</div>'
-                                f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
-                                f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
-                                unsafe_allow_html=True)
-                    st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
+                for res in found:
+                    if res[0] == "word":
+                        _k, en, ta, note, cat = res
+                        st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(en)}</div>'
+                                    f'<div class="wotd">{html_safe(ta)}</div>'
+                                    f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
+                                    f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
+                                    unsafe_allow_html=True)
+                        st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
+                    else:
+                        verb_card(*res)
+                        base = (TAMIL_VERBS if res[0] == "verb" else TAMIL_SPECIAL_VERBS)[res[1]][0]
+                        if res[0] == "verb":
+                            st.button(f"⭐ Save '{base}' to My Tamil words", key=f"tsave_v_{base}", on_click=save_my_word,
+                                      args=(base,))
             else:
                 st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
                 if sugg:
@@ -2490,11 +2857,26 @@ with tab_tamil:
         st.markdown("".join(f'<span class="pill">{html_safe(w)} → <b>{html_safe(words[w][0])}</b></span>' for w in saved),
                     unsafe_allow_html=True)
     st.markdown("### 📚 Browse words by topic")
-    cats = list(TAMIL_WORDS) + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else [])
+    cats = (["🏃 Doing words (verb table)", "💛 Feeling words (I know, I like…)"] + list(TAMIL_WORDS)
+            + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else []))
     cat = st.selectbox("Topic", cats, key="tamil_cat")
-    rows = [(en, ta) for en, (ta, _n, c) in sorted(words.items()) if c == cat]
-    st.markdown("".join(f'<span class="pill">{html_safe(en)} → <b>{html_safe(ta)}</b></span>' for en, ta in rows),
-                unsafe_allow_html=True)
+    if cat.startswith("🏃"):
+        rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
+                       f"<td>{html_safe(v[5])}</td><td>{html_safe(v[6])}</td></tr>" for v in sorted(TAMIL_VERBS))
+        st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Command</th><th>I do / am doing</th>"
+                    f"<th>I did</th><th>I will</th></tr>{rows}</table></div>", unsafe_allow_html=True)
+        st.caption("💡 Swap the ending for other people: -en (I) → -a (you), -aan (he), -aa (she), -om (we), -aanga (they). "
+                   "e.g. saapten (I ate) → ava saaptaa (she ate).")
+    elif cat.startswith("💛"):
+        rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
+                       f"<td>{html_safe(v[5])}</td></tr>" for v in TAMIL_SPECIAL_VERBS)
+        st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Now</th><th>Past</th><th>Future</th></tr>"
+                    f"{rows}</table></div>", unsafe_allow_html=True)
+        st.caption("These start with 'enakku' (= to me) because in Tamil you say 'to me it is known', 'to me it is liked'.")
+    else:
+        rows = [(en, ta) for en, (ta, _n, c) in sorted(words.items()) if c == cat]
+        st.markdown("".join(f'<span class="pill">{html_safe(en)} → <b>{html_safe(ta)}</b></span>' for en, ta in rows),
+                    unsafe_allow_html=True)
     st.caption("Spoken Tamil can be a little different in each family — check with a grown-up how your family says it. 💗")
 
 
