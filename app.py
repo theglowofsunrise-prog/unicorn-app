@@ -14,7 +14,7 @@ import streamlit as st
 
 # ============================ SETTINGS (edit these) ============================
 STUDENT_NAME = "Andal"
-LANGUAGE = "your language"     # e.g. replace with the name of the language
+LANGUAGE = "Tamil"             # the language she practises speaking
 DAILY_GOAL_MINUTES = 30        # most screen time she can earn from tasks in one day
 TIMEZONE = "Australia/Brisbane"
 MATHS_TO_SOLVE = 3             # maths problems to solve to tick the maths task
@@ -488,7 +488,211 @@ ICON_JOKES = {
         "Why did the star go to school? To get brighter! ⭐",
     ],
 }
-ANIMATED_FRIENDS = True        # a bunny and a unicorn hop across the screen now and then
+ANIMATED_FRIENDS = True        # friendly characters cross the screen now and then (tap them!)
+# Each friend: emoji, row (pixels from the bottom), seconds per full cycle, start delay, style, sound, sayings
+FRIENDS = [
+    {"id": "bunny", "emoji": "🐇", "bottom": 10, "cycle": 70, "delay": 4, "move": "hop", "sound": "boing", "says": [
+        "Hop hop! I'm late for a carrot party! 🥕",
+        "Boing! I'm practising my binky! 🐰",
+        "Did you do your homework? I ate mine… it was a carrot! 🥕",
+        "Catch me if you can! 🏃‍♀️",
+        "I've got 99 carrots and I want one more! 🥕"]},
+    {"id": "unicorn", "emoji": "🦄", "bottom": 70, "cycle": 95, "delay": 26, "move": "gallop", "sound": "sparkle", "says": [
+        "Neigh-ver give up! 🦄",
+        "I'm off to find the end of the rainbow! 🌈",
+        "Sparkle mode: ON ✨",
+        "My horn is for scratching itchy clouds! ☁️",
+        "Have you earned your star today? ⭐"]},
+    {"id": "koala", "emoji": "🐨", "bottom": 30, "cycle": 110, "delay": 50, "move": "waddle", "sound": "grunt", "says": [
+        "G'day, mate! 🐨",
+        "Shh… I need my 20-hour nap 😴",
+        "Got any gum leaves? I'm starving! 🌿",
+        "I'm not a bear, I'm a marsupial! 👶",
+        "Walking is hard work… time for a snooze 💤"]},
+    {"id": "parrot", "emoji": "🦜", "bottom": 140, "cycle": 85, "delay": 38, "move": "fly", "sound": "tweet", "says": [
+        "Squawk! Pretty bird! 🦜",
+        "Tweet tweet! Have you done your maths? 🔢",
+        "I'm a rainbow of feathers! 🌈",
+        "Polly wants a fun fact! 🧠",
+        "Say Vanakkam! Va-nak-kam! 🙏"]},
+    {"id": "kangaroo", "emoji": "🦘", "bottom": 14, "cycle": 120, "delay": 75, "move": "bound", "sound": "boing", "says": [
+        "Boing! Boing! Kangaroos can't hop backwards very well! 🦘",
+        "Want a ride in my pouch? 👜",
+        "I can jump higher than a car! 🚗",
+        "Hop to it, champ! 🏆"]},
+    {"id": "butterfly", "emoji": "🦋", "bottom": 190, "cycle": 100, "delay": 62, "move": "flutter", "sound": "sparkle", "says": [
+        "I taste with my feet! 👣",
+        "I used to be a caterpillar! 🐛",
+        "Flutter flutter… you're doing great! 💖",
+        "My wings are like stained glass! 🌈"]},
+]
+
+# Days that should count as star days even though the rules were different back then
+STAR_DAY_FIXES = ["2026-10-12"]
+
+# Bonus maths (optional): each correct answer = 1 carrot
+EXTRA_MATHS_TOPICS = [
+    ("fractions", "🍕 Fractions"),
+    ("mult3", "✖️ Multiplying 3-digit numbers"),
+    ("compare4", "⚖️ Comparing 4-digit numbers (<, >, =)"),
+    ("add4", "➕ Adding 4-digit numbers"),
+    ("sub4", "➖ Subtracting 4-digit numbers"),
+    ("decimals", "🔟 Decimal adding & subtracting"),
+    ("div3", "➗ Dividing up to 3-digit numbers"),
+]
+EXTRA_MATHS_CARROTS = 1        # carrots per correct bonus answer
+
+# ============================ ENGLISH → TAMIL WORDS ============================
+# Spoken Tamil written in English letters. Format: "english": ("tamil", "optional note")
+# Grown-ups can add more words from the Grown-ups tab without editing this file.
+TAMIL_WORDS = {
+    "👪 Family & people": {
+        "mother": ("amma", ""), "mum": ("amma", ""), "father": ("appa", ""), "dad": ("appa", ""),
+        "grandmother": ("paati", "also 'aaya'"), "grandma": ("paati", ""), "grandfather": ("thaatha", ""),
+        "grandpa": ("thaatha", ""), "elder sister": ("akka", ""), "younger sister": ("thangachi", "also 'thangai'"),
+        "elder brother": ("anna", ""), "younger brother": ("thambi", ""),
+        "sister": ("akka / thangachi", "akka = older sister, thangachi = younger sister"),
+        "brother": ("anna / thambi", "anna = older brother, thambi = younger brother"),
+        "uncle": ("maama", "mum's brother; dad's brothers are 'periyappa' (older) / 'chithappa' (younger)"),
+        "aunt": ("athai", "dad's sister; mum's sisters are 'periyamma' (older) / 'chithi' (younger)"),
+        "baby": ("kuzhandhai", "also 'paapaa'"), "child": ("kuzhandhai", ""), "family": ("kudumbam", ""),
+        "friend": ("nanban", "a boy friend; a girl friend is 'thozhi'"), "son": ("magan", ""), "daughter": ("magal", ""),
+        "boy": ("paiyan", ""), "girl": ("ponnu", "formal: 'penn'"), "teacher": ("aasiriyar", "kids often just say 'teacher'"),
+        "student": ("maanavi", "a girl student; a boy is 'maanavan'"), "people": ("makkal", ""),
+        "king": ("raja", "also 'arasan'"), "queen": ("raani", ""), "doctor": ("maruththuvar", "often just 'doctor'"),
+    },
+    "🧍 Body": {
+        "head": ("thalai", ""), "hair": ("mudi", ""), "eye": ("kann", ""), "eyes": ("kangal", ""), "ear": ("kaadhu", ""),
+        "nose": ("mooku", ""), "mouth": ("vaai", ""), "tooth": ("pal", ""), "teeth": ("pal", ""), "tongue": ("naakku", ""),
+        "face": ("mugam", ""), "hand": ("kai", ""), "leg": ("kaal", ""), "foot": ("paadham", "also 'kaal'"),
+        "finger": ("viral", ""), "nail": ("nagam", ""), "stomach": ("vayiru", ""), "tummy": ("vayiru", ""),
+        "back": ("mudhugu", ""), "neck": ("kazhuththu", ""), "shoulder": ("thol", ""), "knee": ("muzhangaal", ""),
+        "heart": ("idhayam", ""), "skin": ("thol", "sounds like 'shoulder' but is a different letter in Tamil"),
+        "blood": ("ratham", ""), "body": ("udambu", ""),
+    },
+    "🏠 Home & things": {
+        "house": ("veedu", ""), "home": ("veedu", ""), "door": ("kadhavu", ""), "window": ("jannal", ""),
+        "room": ("arai", ""), "kitchen": ("samaiyal arai", ""), "bed": ("padukkai", "a cot/bed frame is 'kattil'"),
+        "chair": ("naarkaali", ""), "table": ("mesai", ""), "floor": ("tharai", ""), "wall": ("suvar", ""),
+        "roof": ("koorai", ""), "key": ("saavi", ""), "lamp": ("vilakku", ""), "light": ("velichcham", ""),
+        "clock": ("kadigaaram", ""), "book": ("puththagam", ""), "bag": ("pai", ""), "cup": ("koppai", ""),
+        "plate": ("thattu", ""), "spoon": ("karandi", ""), "bowl": ("kinnam", ""), "bucket": ("vaali", ""),
+        "soap": ("sopu", ""), "towel": ("thundu", ""), "pillow": ("thalaiyanai", ""), "blanket": ("porvai", ""),
+        "mirror": ("kannaadi", "also means 'glasses'"), "comb": ("seepu", ""), "clothes": ("thuni", "also 'udai'"),
+        "shirt": ("sattai", ""), "skirt": ("paavaadai", ""), "umbrella": ("kudai", ""), "sandals": ("seruppu", ""),
+        "box": ("petti", ""), "ball": ("pandhu", ""), "toy": ("bommai", ""), "doll": ("bommai", ""),
+        "money": ("panam", "also 'kaasu'"), "car": ("car", "formal: 'mahizhundhu'"), "boat": ("padagu", ""),
+    },
+    "🍛 Food & drink": {
+        "food": ("saapaadu", "formal: 'unavu'"), "rice": ("saadham", "uncooked rice is 'arisi'"),
+        "water": ("thanni", "formal: 'neer'"), "milk": ("paal", ""), "yogurt": ("thayir", ""), "curd": ("thayir", ""),
+        "butter": ("vennai", ""), "ghee": ("nei", ""), "sugar": ("sakkarai", ""), "salt": ("uppu", ""),
+        "egg": ("muttai", ""), "fruit": ("pazham", ""), "apple": ("aappil", "often just 'apple'"), "orange": ("aaranju", ""),
+        "bread": ("rotti", ""), "tea": ("tea", "formal: 'theneer'"), "banana": ("vaazhaippazham", ""), "mango": ("maampazham", ""),
+        "grapes": ("thiraatchai", ""), "coconut": ("thengaai", ""), "lemon": ("elumichai", ""),
+        "jackfruit": ("palaappazham", ""), "vegetable": ("kaaikari", ""), "tomato": ("thakkaali", ""),
+        "onion": ("vengaayam", ""), "potato": ("urulaikizhangu", ""), "garlic": ("poondu", ""), "ginger": ("inji", ""),
+        "chilli": ("milagaai", ""), "pepper": ("milagu", ""), "coffee": ("kaapi", ""), "sweet": ("inippu", ""),
+        "honey": ("then", ""), "oil": ("ennai", ""), "chicken": ("kozhi", ""), "fish": ("meen", ""),
+        "breakfast": ("kaalai saapaadu", "also 'tiffin'"), "lunch": ("madhiya saapaadu", ""),
+        "dinner": ("iravu saapaadu", ""), "tasty": ("rusi", "'It's tasty' = 'rusiyaa irukku'"),
+    },
+    "🐾 Animals": {
+        "dog": ("naai", ""), "cat": ("poonai", ""), "cow": ("pasu", "also 'maadu'"), "goat": ("aadu", ""),
+        "horse": ("kudhirai", ""), "elephant": ("yaanai", ""), "lion": ("singam", ""), "tiger": ("puli", ""),
+        "monkey": ("kurangu", ""), "bird": ("paravai", ""), "crow": ("kaakkaa", ""), "parrot": ("kili", ""),
+        "peacock": ("mayil", ""), "hen": ("kozhi", ""), "duck": ("vaaththu", ""), "snake": ("paambu", ""),
+        "frog": ("thavalai", ""), "rabbit": ("muyal", ""), "bunny": ("muyal", ""), "mouse": ("eli", ""), "rat": ("eli", ""),
+        "squirrel": ("anil", ""), "ant": ("erumbu", ""), "butterfly": ("pattaampoochi", ""), "bee": ("theni", ""),
+        "mosquito": ("kosu", ""), "deer": ("maan", ""), "bear": ("karadi", ""), "fox": ("nari", ""),
+        "donkey": ("kazhudhai", ""), "camel": ("ottagam", ""), "owl": ("aandhai", ""), "spider": ("silandhi", ""),
+        "turtle": ("aamai", ""), "crocodile": ("mudhalai", ""), "lizard": ("palli", ""), "eagle": ("kazhugu", ""),
+        "insect": ("poochi", ""), "animal": ("vilangu", ""),
+    },
+    "🌈 Colours": {
+        "red": ("sivappu", ""), "blue": ("neelam", ""), "green": ("pachai", ""), "yellow": ("manjal", ""),
+        "white": ("vellai", ""), "black": ("karuppu", ""), "orange (colour)": ("aaranju niram", ""),
+        "pink": ("ilanchivappu", "many people just say 'pink'"), "purple": ("oodhaa", ""),
+        "brown": ("pazhuppu niram", ""), "grey": ("saambal niram", ""), "gold": ("thangam", ""), "colour": ("niram", ""),
+    },
+    "🔢 Numbers": {
+        "zero": ("poojiyam", ""), "one": ("onnu", "formal: 'ondru'"), "two": ("rendu", "formal: 'irandu'"),
+        "three": ("moonu", "formal: 'moondru'"), "four": ("naalu", "formal: 'naangu'"),
+        "five": ("anju", "formal: 'aindhu'"), "six": ("aaru", ""), "seven": ("ezhu", ""), "eight": ("ettu", ""),
+        "nine": ("onbadhu", ""), "ten": ("paththu", ""), "eleven": ("padhinonnu", ""), "twelve": ("pannendu", ""),
+        "twenty": ("irubadhu", ""), "fifty": ("aimbadhu", ""), "hundred": ("nooru", ""), "thousand": ("aayiram", ""),
+    },
+    "📅 Days & time": {
+        "sunday": ("nyaayiru", "Sunday = 'nyaayitru kizhamai'"), "monday": ("thingal", "+ 'kizhamai' = day"),
+        "tuesday": ("sevvaai", ""), "wednesday": ("pudhan", ""), "thursday": ("vyaazhan", ""),
+        "friday": ("velli", ""), "saturday": ("sani", ""), "day": ("naal", ""), "week": ("vaaram", ""),
+        "month": ("maadham", ""), "year": ("varusham", ""), "today": ("innaikku", "formal: 'indru'"),
+        "tomorrow": ("naalaikku", "formal: 'naalai'"), "yesterday": ("nethu", "formal: 'netru'"),
+        "morning": ("kaalai", ""), "afternoon": ("madhiyam", ""), "evening": ("saayangaalam", ""),
+        "night": ("raaththiri", "also 'iravu'"), "time": ("neram", ""), "now": ("ippo", ""), "later": ("appuram", ""),
+    },
+    "🌳 Nature": {
+        "sun": ("sooriyan", ""), "moon": ("nilaa", ""), "star": ("natchaththiram", ""), "sky": ("vaanam", ""),
+        "cloud": ("megam", ""), "rain": ("mazhai", ""), "wind": ("kaaththu", "formal: 'kaatru'"), "tree": ("maram", ""),
+        "flower": ("poo", ""), "leaf": ("ilai", ""), "grass": ("pul", ""), "river": ("aaru", ""), "sea": ("kadal", ""),
+        "mountain": ("malai", ""), "stone": ("kal", ""), "sand": ("manal", ""), "fire": ("neruppu", ""),
+        "soil": ("mann", ""), "world": ("ulagam", ""), "rainbow": ("vaanavil", ""), "garden": ("thottam", ""),
+        "forest": ("kaadu", ""), "street": ("theru", ""), "village": ("graamam", "also 'ooru'"),
+    },
+    "🏫 School": {
+        "school": ("palli", "most people say 'school'"), "class": ("vagupu", ""), "homework": ("veettu paadam", ""),
+        "lesson": ("paadam", ""), "letter": ("ezhuththu", "a letter of the alphabet"), "word": ("vaarththai", "also 'sol'"),
+        "sentence": ("vaakkiyam", ""), "story": ("kadhai", ""), "song": ("paattu", ""), "game": ("vilaiyaattu", ""),
+        "question": ("kelvi", ""), "answer": ("badhil", ""), "exam": ("thervu", "also 'pareetchai'"),
+        "maths": ("kanakku", ""), "picture": ("padam", ""), "name": ("peyar", "spoken: 'per'"),
+        "language": ("mozhi", ""), "tamil": ("thamizh", ""),
+    },
+    "🏃 Doing words": {
+        "eat": ("saapidu", ""), "drink": ("kudi", ""), "sleep": ("thoongu", ""), "walk": ("nada", ""), "run": ("odu", ""),
+        "come": ("vaa", "to an elder: 'vaanga'"), "go": ("po", "to an elder: 'ponga'"), "sit": ("utkaaru", ""),
+        "stand": ("nillu", ""), "play": ("vilaiyaadu", ""), "read": ("padi", ""), "write": ("ezhudhu", ""),
+        "speak": ("pesu", ""), "talk": ("pesu", ""), "listen": ("kelu", ""), "look": ("paaru", ""), "see": ("paaru", ""),
+        "give": ("kodu", ""), "take": ("edu", ""), "open": ("thira", ""), "close": ("moodu", ""), "wash": ("kazhuvu", ""),
+        "cook": ("samai", ""), "sing": ("paadu", ""), "dance": ("aadu", ""), "jump": ("kudhi", ""), "laugh": ("siri", ""),
+        "cry": ("azhu", ""), "wait": ("kaaththiru", ""), "buy": ("vaangu", ""), "think": ("yosi", ""),
+        "swim": ("neenthu", ""), "draw": ("varai", ""), "climb": ("eru", ""), "learn": ("kaththukko", ""),
+        "bathe": ("kuli", ""), "help": ("udhavi", "this means 'help' (the noun); 'help me' = 'enakku udhavi pannu'"),
+    },
+    "✨ Describing words": {
+        "big": ("periya", ""), "small": ("chinna", ""), "good": ("nalla", ""), "bad": ("ketta", ""),
+        "hot": ("soodu", ""), "cold": ("kulir", "cold drink/water: 'jillunu'"), "happy": ("sandhosham", ""),
+        "sad": ("varuththam", ""), "beautiful": ("azhagu", ""), "pretty": ("azhagu", ""), "new": ("pudhu", ""),
+        "old": ("pazhaya", "for things; an old person is 'vayasaana'"), "fast": ("vegam", ""), "slow": ("medhuvaa", ""),
+        "clean": ("suththam", ""), "dirty": ("azhukku", ""), "a lot": ("niraiya", ""), "a little": ("konjam", ""),
+        "very": ("romba", ""), "heavy": ("ganamaa", ""), "tired": ("kalaippu", ""), "hungry": ("pasi", ""),
+        "angry": ("kobam", ""), "scared": ("bayam", ""), "sour": ("pulippu", ""), "spicy": ("kaaram", ""),
+        "bitter": ("kasappu", ""), "tall": ("uyaram", ""), "short": ("kuttai", ""),
+    },
+    "💬 Useful phrases": {
+        "hello": ("vanakkam", ""), "thank you": ("nandri", ""), "yes": ("aamaa", ""), "no": ("illa", "formal: 'illai'"),
+        "please": ("thayavu seydhu", ""), "sorry": ("mannichidunga", "formal: 'mannikkavum'"),
+        "good morning": ("kaalai vanakkam", ""), "how are you": ("eppadi irukkeenga?", "to a friend: 'eppadi irukka?'"),
+        "i am fine": ("naan nallaa irukken", ""), "what is your name": ("unga per enna?", ""),
+        "my name is": ("en per …", "e.g. 'en per Andal'"), "come here": ("inga vaa", ""), "go there": ("anga po", ""),
+        "let's play": ("vilaiyaadalaam", ""), "i am hungry": ("enakku pasikkudhu", ""),
+        "i am thirsty": ("enakku thaagamaa irukku", ""), "give me water": ("thanni kudunga", ""),
+        "i like it": ("enakku pidikkum", ""), "i don't know": ("theriyaadhu", ""), "i know": ("theriyum", ""),
+        "very good": ("romba nalla", ""), "well done": ("shabaash", ""), "what": ("enna", ""), "where": ("enga", ""),
+        "when": ("eppo", ""), "why": ("yen", ""), "who": ("yaaru", ""), "how": ("eppadi", ""), "how much": ("evvalavu", ""),
+        "this": ("idhu", ""), "that": ("adhu", ""), "here": ("inga", ""), "there": ("anga", ""), "i": ("naan", ""),
+        "you": ("nee", "polite: 'neenga'"), "he": ("avan", "polite: 'avar'"), "she": ("ava", "polite: 'avanga'"),
+        "we": ("naanga", ""), "they": ("avanga", ""), "my": ("en", ""), "your": ("un", "polite: 'unga'"),
+        "and": ("um", "added to the end of words, e.g. 'ammavum appavum'"), "see you later": ("appuram paakkalaam", ""),
+        "good night": ("iniya iravu", "many families just say 'good night'"),
+    },
+}
+TAMIL_TIPS = [
+    "'zh' (as in thamizh, mazhai) is a special Tamil sound — curl your tongue back and say a soft 'l/r'. 👅",
+    "'th' in Tamil words (like thanni, thambi) is soft, like the 'th' in 'the'. 🗣️",
+    "Double letters (like paththu, kappal) mean you hold that sound a little longer. ⏱️",
+    "Adding 'nga' makes words polite for elders: 'vaa' → 'vaanga' (please come). 🙏",
+    "Add 'um' to join words: 'amma' + 'appa' → 'ammavum appavum' (mum and dad). 🔗",
+]
 
 BASE_CSS = """
 <style>
@@ -603,6 +807,9 @@ table.week tr.star td { font-weight: 600; background: #fffbe6; }
 .bead { width: 20px; height: 20px; border-radius: 50%; background: #f1e6da; border: 2px solid #e5d3bf; }
 .bead.on { background: radial-gradient(circle at 35% 30%, #ffd9a8, #e07b1f 60%, #a94f00);
   border-color: #a94f00; box-shadow: 0 2px 4px rgba(169,79,0,.35); }
+.friend { position: fixed; left: 0; z-index: 6; pointer-events: none; font-size: 38px; transform: translateX(110vw); }
+.friend span { display: inline-block; pointer-events: auto; cursor: pointer; padding: 6px;
+  -webkit-tap-highlight-color: transparent; user-select: none; }
 .critter { position: fixed; left: 0; z-index: 4; pointer-events: none; font-size: 36px; will-change: transform; }
 .critter span { display: inline-block; }
 .critter.bunny { bottom: 10px; animation: run-across 38s linear 5s infinite; transform: translateX(110vw); }
@@ -780,6 +987,77 @@ def parse_answer(text: str):
         return None
 
 
+# ----------------------- bonus maths (optional, earns carrots) -----------------------
+def make_extra_problem(topic: str, day: date, index: int):
+    """dict(question, answer (Fraction or '<'/'>'/'='), hint, clue). Same topic+day+index = same problem."""
+    rng = random.Random(f"{day.isoformat()}-{topic}-{index}")
+    if topic == "fractions":
+        kind = rng.choice(["add", "sub", "of", "equiv", "bigger"])
+        if kind == "add":
+            d = rng.choice([4, 5, 6, 8, 10, 12]); a = rng.randint(1, d - 2); b = rng.randint(1, d - 1 - a)
+            return dict(question=f"{a}/{d} + {b}/{d} = ?", answer=Fraction(a + b, d), hint="Type a fraction, like 3/8",
+                        clue=f"Same bottom number? Keep {d} and add the tops: {a} + {b}.")
+        if kind == "sub":
+            d = rng.choice([4, 5, 6, 8, 10, 12]); a = rng.randint(2, d - 1); b = rng.randint(1, a - 1)
+            return dict(question=f"{a}/{d} − {b}/{d} = ?", answer=Fraction(a - b, d), hint="Type a fraction, like 2/5",
+                        clue=f"Keep {d} on the bottom and take away the tops: {a} − {b}.")
+        if kind == "of":
+            d = rng.choice([2, 3, 4, 5, 8, 10]); a = rng.randint(1, d - 1); n = d * rng.randint(3, 12)
+            return dict(question=f"What is {a}/{d} of {n}?", answer=Fraction(a * n, d), hint="Type a whole number",
+                        clue=f"Find 1/{d} first: {n} ÷ {d}. Then multiply by {a}.")
+        if kind == "equiv":
+            d = rng.choice([2, 3, 4, 5, 6]); a = rng.randint(1, d - 1); m = rng.choice([2, 3, 4, 5])
+            return dict(question=f"{a}/{d} = ?/{d * m}", answer=Fraction(a * m), hint="Type the missing top number",
+                        clue=f"{d} × {m} = {d * m}, so do the same to the top: {a} × {m}.")
+        d = rng.choice([5, 6, 8, 10, 12]); a, b = rng.sample(range(1, d), 2)
+        return dict(question=f"Which is bigger: {a}/{d} or {b}/{d}?", answer=Fraction(max(a, b), d),
+                    hint="Type the bigger fraction", clue="Same bottom number? The bigger top number is the bigger fraction.")
+    if topic == "mult3":
+        n, m = rng.randint(102, 499), rng.randint(2, 9)
+        h, t, o = n // 100 * 100, n // 10 % 10 * 10, n % 10
+        return dict(question=f"{n} × {m} = ?", answer=Fraction(n * m), hint="Type a whole number",
+                    clue=f"Split {n} into {h} + {t} + {o}. Multiply each by {m}, then add them up.")
+    if topic == "compare4":
+        a = rng.randint(1000, 9999)
+        style = rng.random()
+        if style < .15:
+            b = a
+        elif style < .6:   # close numbers to make it tricky
+            b = a + rng.choice([-1, 1]) * rng.choice([1, 9, 10, 90, 100, 900])
+            b = min(max(b, 1000), 9999)
+            if b == a:
+                b = a + 1 if a < 9999 else a - 1
+        else:
+            b = rng.randint(1000, 9999)
+        ans = "=" if a == b else (">" if a > b else "<")
+        return dict(question=f"{a:,}  ☐  {b:,}", answer=ans, hint="Choose <, > or =",
+                    clue="Compare the thousands first. If they're the same, compare the hundreds, then tens, then ones.")
+    if topic == "add4":
+        a, b = rng.randint(1000, 6999), rng.randint(1000, 2999)
+        return dict(question=f"{a:,} + {b:,} = ?", answer=Fraction(a + b), hint="Type a whole number",
+                    clue="Add ones, then tens, then hundreds, then thousands. Carry 1 when a column makes 10 or more.")
+    if topic == "sub4":
+        a = rng.randint(3000, 9999); b = rng.randint(1000, a - 500)
+        return dict(question=f"{a:,} − {b:,} = ?", answer=Fraction(a - b), hint="Type a whole number",
+                    clue="Start with the ones. If the top digit is smaller, borrow 1 from the next column.")
+    if topic == "decimals":
+        kind = rng.choice(["add1", "sub1", "add2", "sub2"])
+        places = 1 if kind.endswith("1") else 2
+        scale = 10 ** places
+        if kind.startswith("add"):
+            a, b = rng.randint(11, 9 * scale), rng.randint(11, 9 * scale)
+            q, ans = f"{a / scale:.{places}f} + {b / scale:.{places}f} = ?", Fraction(a + b, scale)
+        else:
+            a = rng.randint(2 * scale, 15 * scale); b = rng.randint(1, a - 1)
+            q, ans = f"{a / scale:.{places}f} − {b / scale:.{places}f} = ?", Fraction(a - b, scale)
+        return dict(question=q, answer=ans, hint=f"Type a decimal, like {'3.4' if places == 1 else '3.45'}",
+                    clue="Line up the decimal points, then add or subtract column by column, just like whole numbers.")
+    # div3: up to 3-digit ÷ 1-digit, always exact
+    dv = rng.randint(2, 9); q = rng.randint(12, 999 // dv)
+    return dict(question=f"{dv * q} ÷ {dv} = ?", answer=Fraction(q), hint="Type a whole number",
+                clue=f"How many {dv}s fit into {dv * q}? Try dividing the hundreds first, then tens, then ones.")
+
+
 # ------------------------------- dates & rules -------------------------------
 def today_local() -> date:
     return datetime.now(ZoneInfo(TIMEZONE)).date()
@@ -816,6 +1094,14 @@ def migrate(data, today: date):
                                             "reason": f"Unused minutes carried over from {k}"})
         data["carried_over"] = True
     data.setdefault("earned", {})
+    # One-time: days that must count as star days (e.g. the first day, before the rules changed)
+    fixed = data.setdefault("star_fixes_done", [])
+    for k in STAR_DAY_FIXES:
+        if k not in fixed:
+            day = set(data["days"].get(k, []))
+            day.add("star")
+            data["days"][k] = sorted(day)
+            fixed.append(k)
     data.setdefault("pet", {}).setdefault("wear", {})
     data["pet"].setdefault("name", "Bunnicorn")
     return data
@@ -826,12 +1112,16 @@ def done_on(data, d: date) -> set:
 
 
 def task_minutes(done: set) -> int:
+    if "star" in done:          # a day a grown-up marked as a star day
+        return DAILY_GOAL_MINUTES
     if not all(t["id"] in done for t in TASKS if t.get("required")):
         return 0
     return min(sum(TASK_BY_ID[t]["minutes"] for t in done if t in TASK_BY_ID), DAILY_GOAL_MINUTES)
 
 
 def is_star_day(done: set) -> bool:
+    if "star" in done:
+        return True
     return task_minutes(done) >= DAILY_GOAL_MINUTES
 
 
@@ -1295,11 +1585,18 @@ SOUND_ENGINE = r"""
     fanfare: [[523,0,.18],[659,.14,.18],[784,.28,.18],[1047,.44,.5],[784,.62,.15],[1047,.76,.6]],
     win:     [[784,0,.15],[988,.1,.15],[1175,.2,.15],[1568,.32,.55],[1319,.5,.2],[1568,.62,.7]],
     tick:    [[1800,0,.03]],
-    pop:     [[880,0,.08],[1320,.05,.12]]
+    pop:     [[880,0,.08],[1320,.05,.12]],
+    sparkle: [[1568,0,.08],[1976,.07,.08],[2349,.14,.08],[3136,.21,.25]],
+    tweet:   [[2600,0,.05],[3200,.07,.05],[2600,.16,.05],[3400,.23,.08]],
+    grunt:   [[180,0,.18],[150,.2,.25]]
   };
+  function slide(c, f1, f2, t, d, type, vol){ var o=c.createOscillator(), g=c.createGain(); o.type=type;
+    o.frequency.setValueAtTime(f1,t); o.frequency.exponentialRampToValueAtTime(f2,t+d);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+0.05); }
   var JOKES = __JOKES__;
   document.addEventListener('click', function(e){
-    var f = e.target && e.target.closest ? e.target.closest('.float[data-joke]') : null; if(!f) return;
+    var f = e.target && e.target.closest ? e.target.closest('[data-joke]') : null; if(!f) return;
     var list = JOKES[f.getAttribute('data-joke')] || []; if(!list.length) return;
     var old = document.getElementById('andal-bubble'); if(old) old.remove();
     var r = f.getBoundingClientRect(), b = document.createElement('div'); b.id = 'andal-bubble';
@@ -1311,10 +1608,11 @@ SOUND_ENGINE = r"""
     var left = Math.min(Math.max(8, r.left + r.width/2 - 130), window.innerWidth - 276);
     b.style.left = left + 'px'; b.style.top = Math.min(r.bottom + 8, window.innerHeight - 120) + 'px';
     requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'scale(1)'; });
-    try { window.__andalPlay('pop'); } catch(err) {}
+    try { window.__andalPlay(f.getAttribute('data-sound') || 'pop'); } catch(err) {}
     setTimeout(function(){ b.style.opacity = '0'; b.style.transform = 'scale(.8)'; setTimeout(function(){ b.remove(); }, 350); }, 4500);
   }, true);
   window.__andalPlay = function(kind){ var c = ensure(); if(!c) return; var t = c.currentTime + 0.03;
+    if (kind === 'boing') { slide(c, 220, 880, t, .18, 'sine', .3); slide(c, 330, 990, t+.2, .15, 'sine', .22); return; }
     (SONGS[kind]||SONGS.chime).forEach(function(n){ note(c, n[0], t+n[1], n[2], kind==='tick'?'square':'triangle', kind==='tick'?0.08:0.22); }); };
 })();
 """
@@ -1329,7 +1627,8 @@ def _embed(html_doc, height):
 
 
 def install_sound_engine():
-    code = json.dumps(SOUND_ENGINE.replace("__JOKES__", json.dumps(ICON_JOKES)))
+    jokes = dict(ICON_JOKES, **{f["id"]: f["says"] for f in FRIENDS})
+    code = json.dumps(SOUND_ENGINE.replace("__JOKES__", json.dumps(jokes)))
     _embed("<script>try{var P=window.parent;if(!P.__andalSound){var s=P.document.createElement('script');"
            f"s.textContent={code};P.document.head.appendChild(s);}}}}catch(e){{}}</script>", 1)
 
@@ -1448,6 +1747,31 @@ def certificate_html(title, name, week_label, stats_pills, badges, standalone=Fa
             f'{body}</body></html>')
 
 
+FRIEND_MOVES = {
+    "hop": "0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}",
+    "gallop": "0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-24px) rotate(-8deg)}",
+    "waddle": "0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg) translateY(-3px)}",
+    "fly": "0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-30px) rotate(4deg)}",
+    "bound": "0%,100%{transform:translateY(0) scaleY(1)}40%{transform:translateY(-36px) scaleY(1.05)}80%{transform:translateY(0) scaleY(.92)}",
+    "flutter": "0%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-18px) scale(.9)}50%{transform:translateY(-6px) scale(1)}75%{transform:translateY(-24px) scale(.9)}",
+}
+MOVE_SPEED = {"hop": .45, "gallop": .8, "waddle": .7, "fly": 1.4, "bound": .9, "flutter": .6}
+
+
+def friends_html():
+    css, divs = [], []
+    for f in FRIENDS:
+        cross = 9.0  # seconds to cross the screen
+        pct = max(2.0, min(60.0, 100 * cross / f["cycle"]))
+        css.append(f"@keyframes run-{f['id']}{{0%{{transform:translateX(110vw)}}{pct:.2f}%{{transform:translateX(-90px)}}"
+                   f"100%{{transform:translateX(-90px)}}}}@keyframes mv-{f['id']}{{{FRIEND_MOVES[f['move']]}}}"
+                   f".fr-{f['id']}{{bottom:{f['bottom']}px;animation:run-{f['id']} {f['cycle']}s linear {f['delay']}s infinite}}"
+                   f".fr-{f['id']} span{{animation:mv-{f['id']} {MOVE_SPEED[f['move']]}s ease-in-out infinite}}")
+        divs.append(f'<div class="friend fr-{f["id"]}"><span data-joke="{f["id"]}" data-sound="{f["sound"]}" '
+                    f'title="Tap me!">{f["emoji"]}</span></div>')
+    return "<style>" + "".join(css) + "</style>" + "".join(divs)
+
+
 # =================================== APP ===================================
 if "data" not in st.session_state:
     try:
@@ -1554,9 +1878,9 @@ if party:
     st.balloons()
     play_sound("fanfare")
 
-tab_today, tab_maths, tab_write, tab_chalisa, tab_spin, tab_pet, tab_weeks, tab_parent = st.tabs(
-    ["🌈 Today", "🧮 Maths", "✍️ My Stories", "🙏 Chalisa", "🎡 Spin & rewards", "🐰 Bunny & badges",
-     "📅 My weeks", "🔐 Grown-ups"])
+(tab_today, tab_maths, tab_write, tab_tamil, tab_chalisa, tab_spin, tab_rewards, tab_pet, tab_weeks,
+ tab_parent) = st.tabs(["🌈 Today", "🧮 Maths", "✍️ Stories", "🗣️ Tamil words", "🙏 Chalisa", "🎡 Spin",
+                        "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks", "🔐 Grown-ups"])
 
 
 # ================================== TODAY ==================================
@@ -1656,7 +1980,7 @@ with tab_today:
     )
     required_left = [t for t in TASKS if t.get("required") and t["id"] not in done_today]
     if required_left:
-        names = " and ".join(f"{t['emoji']} {t['name'].lower()}" for t in required_left)
+        names = " and ".join(f"{t['emoji']} {t['name'][0].lower() + t['name'][1:]}" for t in required_left)
         st.warning(f"🔒 Do your **must do** tasks first to unlock screen time: {names}")
     elif task_mins >= DAILY_GOAL_MINUTES:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
@@ -1738,7 +2062,8 @@ with tab_today:
     tips = {
         "homework": "📒 Do today's homework from school. <b>No homework today?</b> Ask a grown-up for a 15-minute "
                     "learning task instead, then tick this.",
-        "speak": f"💡 <b>Idea for today:</b> {SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]}",
+        "speak": f"💡 <b>Idea for today:</b> {SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]} "
+                 "· Need a word? Look it up in the <b>🗣️ Tamil words</b> tab!",
         "write1": f"✨ Write about: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b> — write it in the "
                   f"<b>My Stories</b> tab (50+ words ticks this for you!). Try to use the word <b>{html_safe(wotd['word'])}</b>.",
         "write2": f"✨ Write about: <b>{WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)]}</b>",
@@ -1824,6 +2149,56 @@ def skip_problem():
         st.session_state.maths_msg = ("info", "Here's a different problem. You've got this!")
 
 
+def _xm_state(d, topic):
+    return d.setdefault("extra_maths", {}).setdefault(TODAY_KEY, {}).setdefault(
+        topic, {"index": 0, "tries": 0, "correct": 0})
+
+
+def check_extra(topic, symbol):
+    if symbol is None:
+        given = parse_answer(st.session_state.get("xm_answer", ""))
+        if given is None:
+            st.session_state.xm_msg = ("warn", "Hmm, I can't read that. Try a number like 1234, 3.4 or 5/8.")
+            return
+    else:
+        given = symbol
+    out = {}
+
+    def change(d):
+        xs = _xm_state(d, topic)
+        prob = make_extra_problem(topic, today, xs["index"])
+        if given == prob["answer"]:
+            xs["index"] += 1
+            xs["tries"] = 0
+            xs["correct"] += 1
+            d["carrots"] = d.get("carrots", 0) + EXTRA_MATHS_CARROTS
+            out["right"] = True
+            out["carrots"] = d["carrots"]
+        else:
+            xs["tries"] += 1
+            out["right"] = False
+
+    if update(change):
+        st.session_state.xm_answer = ""
+        if out["right"]:
+            extra = (f" You have {out['carrots']} carrots — ask a grown-up to swap them for "
+                     f"{CARROT_SWAP_MINUTES} minutes! 🎉" if out["carrots"] >= CARROTS_FOR_SWAP else "")
+            st.session_state.xm_msg = ("ok", f"🥕 Correct! +{EXTRA_MATHS_CARROTS} carrot.{extra}")
+            st.session_state.celebrate = {"fact": None, "task": "bonus"}
+        else:
+            st.session_state.xm_msg = ("bad", "Not quite — have another go! 💪")
+
+
+def skip_extra(topic):
+    def change(d):
+        xs = _xm_state(d, topic)
+        xs["index"] += 1
+        xs["tries"] = 0
+
+    if update(change):
+        st.session_state.xm_answer = ""
+
+
 with tab_maths:
     m = data.get("maths", {}).get(TODAY_KEY, {"index": 0, "solved": 0, "tries": 0, "log": []})
     st.markdown("### 🧮 Year 4 maths challenge")
@@ -1871,6 +2246,43 @@ with tab_maths:
         with st.expander(f"⭐ Problems you solved today ({len(m['log'])})"):
             for q in m["log"]:
                 st.markdown(f"✅ {md_safe(q)}")
+
+    # ---------------- bonus maths (optional) ----------------
+    st.markdown("### ⭐ Bonus maths challenges")
+    st.caption(f"Optional extra practice! Every correct answer = {EXTRA_MATHS_CARROTS} 🥕 carrot. "
+               f"{CARROTS_FOR_SWAP} carrots = {CARROT_SWAP_MINUTES} minutes of screen time (a grown-up approves the swap "
+               "in the 🎡 Spin tab).")
+    with st.container(border=True):
+        topic_ids = [t for t, _ in EXTRA_MATHS_TOPICS]
+        topic_names = dict(EXTRA_MATHS_TOPICS)
+        st.selectbox("Choose a topic", topic_ids, key="xm_topic", format_func=lambda t: topic_names[t])
+        topic = st.session_state.xm_topic
+        xs = data.get("extra_maths", {}).get(TODAY_KEY, {}).get(topic, {"index": 0, "tries": 0, "correct": 0})
+        carrots_now = data.get("carrots", 0)
+        today_correct = sum(v.get("correct", 0) for v in data.get("extra_maths", {}).get(TODAY_KEY, {}).values())
+        st.markdown(f'<div class="minutes"><span>🥕 {carrots_now} carrots</span>'
+                    f'<span>✅ {today_correct} bonus answers right today</span></div>'
+                    f'<div class="rbar"><div class="rfill" style="width:'
+                    f'{max(3, min(100, int(100 * carrots_now / CARROTS_FOR_SWAP)))}%"></div></div>', unsafe_allow_html=True)
+        xp = make_extra_problem(topic, today, xs["index"])
+        st.markdown(f'<span class="topic">{topic_names[topic]}</span>'
+                    f'<div class="question">{html_safe(xp["question"])}</div>', unsafe_allow_html=True)
+        if topic == "compare4":
+            bc = st.columns(3)
+            for col, sym in zip(bc, ["<", "=", ">"]):
+                col.button(f"  {sym}  ", key=f"xm_cmp_{sym}", on_click=check_extra, args=(topic, sym),
+                           use_container_width=True)
+        else:
+            with st.form("xm_form", border=False):
+                f1, f2 = st.columns([3, 1])
+                f1.text_input("Answer", key="xm_answer", placeholder=xp["hint"], label_visibility="collapsed")
+                f2.form_submit_button("Check ✔️", on_click=check_extra, args=(topic, None), use_container_width=True)
+        xmsg = st.session_state.pop("xm_msg", None)
+        if xmsg:
+            {"ok": st.success, "bad": st.error, "warn": st.warning}[xmsg[0]](xmsg[1])
+        if xs["tries"] >= 2:
+            st.markdown(f'<div class="clue">💡 <b>Clue:</b> {html_safe(xp["clue"])}</div>', unsafe_allow_html=True)
+        st.button("⏭️ Skip to a new question", key="xm_skip", on_click=skip_extra, args=(topic,))
 
 
 # ================================ MY STORIES ================================
@@ -2007,6 +2419,83 @@ with tab_write:
             if s.get("feedback"):
                 st.markdown(f'<div class="note">💌 <b>Note from your grown-up:</b> {html_safe(s["feedback"])}</div>',
                             unsafe_allow_html=True)
+
+
+# ============================== TAMIL WORDS ==============================
+def all_tamil_words(d):
+    words = {}
+    for cat, items in TAMIL_WORDS.items():
+        for en, (ta, note) in items.items():
+            words[en.lower()] = (ta, note, cat)
+    for en, v in d.get("tamil_custom", {}).items():
+        words[en.lower()] = (v.get("tamil", ""), v.get("note", ""), "⭐ Added by a grown-up")
+    return words
+
+
+def lookup_tamil(query, words):
+    q = re.sub(r"[^a-z' ]", " ", query.lower()).strip()
+    q = re.sub(r"\s+", " ", q)
+    if not q:
+        return [], []
+    if q in words:
+        return [(q, *words[q])], []
+    for cand in (q.rstrip("s"), q[:-2] if q.endswith("es") else None, "the " + q):
+        if cand and cand in words:
+            return [(cand, *words[cand])], []
+    found = []
+    for w in q.split():
+        for cand in (w, w.rstrip("s")):
+            if cand in words:
+                found.append((cand, *words[cand]))
+                break
+    import difflib
+    sugg = difflib.get_close_matches(q, list(words), n=5, cutoff=.72) if not found else []
+    return found, sugg
+
+
+def save_my_word(en):
+    def change(d):
+        lst = d.setdefault("tamil_saved", [])
+        if en not in lst:
+            lst.append(en)
+    update(change)
+
+
+with tab_tamil:
+    words = all_tamil_words(data)
+    st.markdown("### 🗣️ English → Tamil words")
+    st.caption("Type an English word to find the Tamil word, written in English letters so you can say it. "
+               "Then use it when you speak Tamil today! 🦜")
+    with st.container(border=True):
+        q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, water, thank you")
+        if q.strip():
+            found, sugg = lookup_tamil(q, words)
+            if found:
+                for en, ta, note, cat in found:
+                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(en)}</div>'
+                                f'<div class="wotd">{html_safe(ta)}</div>'
+                                f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
+                                f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
+                                unsafe_allow_html=True)
+                    st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
+            else:
+                st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
+                if sugg:
+                    st.markdown("Did you mean: " + ", ".join(f"**{md_safe(s_)}**" for s_ in sugg) + "?")
+    tip_i = today.toordinal() % len(TAMIL_TIPS)
+    st.markdown(f'<div class="fact">🗣️ <b>Speaking tip:</b> {html_safe(TAMIL_TIPS[tip_i])}</div>', unsafe_allow_html=True)
+    saved = [w for w in data.get("tamil_saved", []) if w in words]
+    if saved:
+        st.markdown("### ⭐ My Tamil words")
+        st.markdown("".join(f'<span class="pill">{html_safe(w)} → <b>{html_safe(words[w][0])}</b></span>' for w in saved),
+                    unsafe_allow_html=True)
+    st.markdown("### 📚 Browse words by topic")
+    cats = list(TAMIL_WORDS) + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else [])
+    cat = st.selectbox("Topic", cats, key="tamil_cat")
+    rows = [(en, ta) for en, (ta, _n, c) in sorted(words.items()) if c == cat]
+    st.markdown("".join(f'<span class="pill">{html_safe(en)} → <b>{html_safe(ta)}</b></span>' for en, ta in rows),
+                unsafe_allow_html=True)
+    st.caption("Spoken Tamil can be a little different in each family — check with a grown-up how your family says it. 💗")
 
 
 # ============================== HANUMAN CHALISA ==============================
@@ -2385,7 +2874,8 @@ with tab_spin:
             else:
                 st.caption("Win 🧸 on the big wheel to add $10.".replace("$", "\\$"))
 
-    # ---- big streak rewards ----
+
+with tab_rewards:
     st.markdown("### 🏆 Big rewards")
     for r in REWARDS:
         s = reward_status(data, r, today)
@@ -2588,9 +3078,12 @@ def save_edit():
     d_iso = st.session_state.edit_date.isoformat()
     chosen = st.session_state[f"edit_tasks_{d_iso}"]
 
+    star = st.session_state.get(f"edit_star_{d_iso}", False)
+
     def change(d):
-        d["days"][d_iso] = sorted(chosen)
-        d.setdefault("earned", {})[d_iso] = task_minutes(set(chosen))
+        new = set(chosen) | ({"star"} if star else set())
+        d["days"][d_iso] = sorted(new)
+        d.setdefault("earned", {})[d_iso] = task_minutes(new)
 
     if update(change):
         if d_iso == TODAY_KEY:
@@ -2598,6 +3091,20 @@ def save_edit():
                 if not t.get("auto"):
                     st.session_state[f"{TODAY_KEY}_{t['id']}"] = t["id"] in chosen
         st.session_state.flash = "Saved ✔️"
+
+
+def add_tamil_word():
+    en = str(st.session_state.get("tw_en", "")).strip().lower()
+    ta = str(st.session_state.get("tw_ta", "")).strip()
+    if not en or not ta:
+        return
+
+    def change(d):
+        d.setdefault("tamil_custom", {})[en] = {"tamil": ta, "note": str(st.session_state.get("tw_note", "")).strip()}
+
+    if update(change):
+        st.session_state.tw_en = st.session_state.tw_ta = st.session_state.tw_note = ""
+        st.session_state.parent_note = f"🗣️ Added: {en} → {ta}"
 
 
 def send_message():
@@ -2786,7 +3293,19 @@ with tab_parent:
                        default=sorted(done_on(data, st.session_state.edit_date) & set(TASK_BY_ID)),
                        format_func=lambda tid: f"{TASK_BY_ID[tid]['emoji']} {TASK_BY_ID[tid]['name']}",
                        key=f"edit_tasks_{d_iso}")
+        st.checkbox("⭐ Count this day as a star day (even if not every task is ticked)",
+                    value="star" in done_on(data, st.session_state.edit_date), key=f"edit_star_{d_iso}")
         st.button("Save this day", on_click=save_edit)
+
+        st.markdown("#### 🗣️ Add a Tamil word")
+        st.caption("Add words she looks up that aren't in the list yet (or change how your family says one).")
+        tc1, tc2, tc3 = st.columns(3)
+        tc1.text_input("English", key="tw_en")
+        tc2.text_input("Tamil (in English letters)", key="tw_ta")
+        tc3.text_input("Note (optional)", key="tw_note")
+        st.button("Add word", on_click=add_tamil_word)
+        if data.get("tamil_custom"):
+            st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
 
         st.markdown("#### 🎁 Rewards & prizes history")
         hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
@@ -2812,5 +3331,4 @@ with tab_parent:
 
 # ---- hopping friends (purely decorative, never block taps) ----
 if ANIMATED_FRIENDS:
-    st.markdown('<div class="critter bunny"><span>🐇</span></div><div class="critter unicorn"><span>🦄</span></div>',
-                unsafe_allow_html=True)
+    st.markdown(friends_html(), unsafe_allow_html=True)
