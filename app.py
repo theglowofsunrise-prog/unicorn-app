@@ -24,6 +24,7 @@ TRIES_BEFORE_SKIP = 3          # wrong tries before she may swap to a different 
 MIN_STORY_WORDS = 50           # words a saved story needs to tick a writing task
 WORD_CHALLENGE_USES = 3        # sentences / uses of the word of the day needed
 WORD_CHALLENGE_MINUTES = 5     # screen-time minutes for completing the word challenge
+WORD_SENTENCE_MIN_WORDS = 6    # each word-of-the-day sentence needs at least this many words
 BIG_WHEEL_STREAK = 4           # star days in a row needed for a big-wheel spin
 BIG_SPINS_PER_WEEK = 2         # most big-wheel spins per week (Mon–Sun)
 CARROTS_FOR_SWAP = 30          # carrots needed to swap for screen time
@@ -344,7 +345,7 @@ st.set_page_config(page_title=f"{STUDENT_NAME} Earns Stars", page_icon="🦄", l
 BEADS_PER_PART = 5             # 📿 beads earned for each part learned by heart
 BEADS_FOR_MINUTES = 20         # every 20 beads ...
 BEAD_MINUTES = 30              # ... = 30 minutes of screen time (added automatically)
-CHALISA_NEEDS_PIN = False      # True = a grown-up PIN is needed to submit each part
+CHALISA_NEEDS_PIN = True       # True = a grown-up PIN is needed to submit each part (after hearing her recite)
 CHALISA_PICTURES = ["Sri1.png", "HM1.png"]   # picture files in the repo, next to app.py (names are case-sensitive)
 CHALISA_OUTINGS = [
     "🎬 Watch a movie at the cinema, then ice cream 🍦",
@@ -529,6 +530,7 @@ FRIENDS = [
 
 # Days that should count as star days even though the rules were different back then
 STAR_DAY_FIXES = ["2026-10-12"]
+PARENT_AUTOLOCK_MINUTES = 5   # the Grown-ups tab locks itself after this long
 
 # Bonus maths (optional): each correct answer = 1 carrot
 EXTRA_MATHS_TOPICS = [
@@ -1355,6 +1357,10 @@ def migrate(data, today: date):
                                             "reason": f"Unused minutes carried over from {k}"})
         data["carried_over"] = True
     data.setdefault("earned", {})
+    if not data.get("approval_start"):
+        data["approval_start"] = today.isoformat()
+        data.setdefault("approved", {})[today.isoformat()] = list(data["days"].get(today.isoformat(), []))
+    data.setdefault("approved", {})
     # One-time: days that must count as star days (e.g. the first day, before the rules changed)
     fixed = data.setdefault("star_fixes_done", [])
     for k in STAR_DAY_FIXES:
@@ -1368,8 +1374,30 @@ def migrate(data, today: date):
     return data
 
 
+def counted_set(data, key: str) -> set:
+    """Tasks that COUNT for rewards: ticked AND approved (grown-up or auto-checked). Older days count as ticked."""
+    ticked = set(data["days"].get(key, []))
+    start = data.get("approval_start")
+    if not start or key < start:
+        return ticked
+    ok = set(data.get("approved", {}).get(key, []))
+    return (ticked & ok) | ({"star"} & ticked)
+
+
+def counted_days(data) -> dict:
+    return {k: counted_set(data, k) for k in data["days"]}
+
+
 def done_on(data, d: date) -> set:
+    return counted_set(data, d.isoformat())
+
+
+def ticked_on(data, d: date) -> set:
     return set(data["days"].get(d.isoformat(), []))
+
+
+def pending_on(data, d: date) -> set:
+    return (ticked_on(data, d) - done_on(data, d)) & set(TASK_BY_ID)
 
 
 def task_minutes(done: set) -> int:
@@ -1389,7 +1417,7 @@ def is_star_day(done: set) -> bool:
 def balance_info(data):
     start = data.get("balance_start") or "0000"
     locked = data.get("earned", {})   # each day's minutes are locked in, so later rule changes don't alter them
-    earned = sum(locked.get(k, task_minutes(set(v))) for k, v in data["days"].items() if k >= start)
+    earned = sum(locked.get(k, task_minutes(v)) for k, v in counted_days(data).items() if k >= start)
     credits = sum(int(c["minutes"]) for c in data.get("credits", []))
     used = sum(int(u["minutes"]) for u in data.get("used", []))
     return {"earned": earned, "credits": credits, "used": used, "balance": max(earned + credits - used, 0)}
@@ -1431,7 +1459,7 @@ def task_streak(data, today: date, tid: str) -> int:
 
 
 def max_streak(data, tid: str) -> int:
-    days = sorted(date.fromisoformat(k) for k, v in data["days"].items() if tid in v)
+    days = sorted(date.fromisoformat(k) for k, v in counted_days(data).items() if tid in v)
     best = cur = 0
     prev = None
     for d in days:
@@ -1441,7 +1469,7 @@ def max_streak(data, tid: str) -> int:
 
 
 def dollar_status(data):
-    stars = sum(is_star_day(set(v)) for v in data["days"].values())
+    stars = sum(is_star_day(v) for v in counted_days(data).values())
     earned = stars // STAR_DAYS_PER_DOLLAR
     return {"owed": earned - data.get("dollars_paid", 0),
             "toward_next": stars % STAR_DAYS_PER_DOLLAR, "paid": data.get("dollars_paid", 0)}
@@ -1495,7 +1523,7 @@ DECIMAL_RE = re.compile(r"\d\.\d")
 
 
 def compute_stats(data):
-    days = data["days"]
+    days = counted_days(data)
     logs = [q for m in data.get("maths", {}).values() for q in m.get("log", [])]
 
     def count(tid):
@@ -1526,7 +1554,7 @@ def pet_stage(star_days):
 
 
 def last_star_day(data):
-    stars = [k for k, v in data["days"].items() if is_star_day(set(v))]
+    stars = [k for k, v in counted_days(data).items() if is_star_day(v)]
     return date.fromisoformat(max(stars)) if stars else None
 
 
@@ -1550,11 +1578,49 @@ def bead_status(d):
             "all_done": len(d.get("chalisa", {})) >= len(CHALISA_PARTS)}
 
 
+def _norm(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9']+", text.lower()))
+
+
+def story_problem(text: str, earlier_texts=()):
+    """Returns a friendly reason if a story looks copied, repeated or made up of nonsense; otherwise None."""
+    words = re.findall(r"[a-z']+", text.lower())
+    if len(words) < 10:
+        return None
+    if len(set(words)) / len(words) < 0.4:
+        return "Lots of the same words over and over. Write your own new sentences! ✏️"
+    if any(words[i] == words[i + 1] == words[i + 2] for i in range(len(words) - 2)):
+        return "The same word three times in a row? Make your sentences make sense! ✏️"
+    sentences = [_norm(x) for x in re.split(r"[.!?\n]+", text) if len(_norm(x).split()) >= 3]
+    if len(sentences) != len(set(sentences)):
+        return "Some sentences are copied more than once. Every sentence should be new! ✏️"
+    no_vowel = sum(1 for w in words if len(w) > 2 and not re.search(r"[aeiouy]", w))
+    if no_vowel / len(words) > 0.25:
+        return "Some of those don't look like real words. Write a real story! ✏️"
+    import difflib
+    me = _norm(text)
+    for old in earlier_texts:
+        if difflib.SequenceMatcher(None, me, _norm(old)).ratio() > 0.8:
+            return "This looks like a story you've already written. Write a brand-new one! ✏️"
+    return None
+
+
+def good_sentence(sentence: str, word: str) -> bool:
+    return count_word(sentence, word) > 0 and count_words(sentence) >= WORD_SENTENCE_MIN_WORDS \
+        and story_problem(sentence) is None
+
+
 def wotd_uses(d, day_key: str, word: str) -> int:
-    """Uses of the word today: good sentences in the word box + times used in today's stories."""
+    """Uses of the word today: different good sentences in the word box + uses in today's genuine stories."""
     sents = d.get("wotd_sentences", {}).get(day_key, [])
-    in_sentences = sum(1 for x in sents if count_word(x, word) > 0 and count_words(x) >= 4)
-    in_stories = sum(count_word(x["text"], word) for x in d.get("stories", []) if x["date"] == day_key)
+    seen, in_sentences = set(), 0
+    for x in sents:
+        n = _norm(x)
+        if good_sentence(x, word) and n not in seen:
+            seen.add(n)
+            in_sentences += 1
+    in_stories = sum(count_word(x["text"], word) for x in d.get("stories", [])
+                     if x["date"] == day_key and x.get("ok", True))
     return in_sentences + in_stories
 
 
@@ -1648,7 +1714,7 @@ def update(change) -> bool:
                 st.session_state.data, st.session_state.sha = data, sha
                 return False
             tk = today_local().isoformat()
-            data.setdefault("earned", {})[tk] = task_minutes(set(data["days"].get(tk, [])))
+            data.setdefault("earned", {})[tk] = task_minutes(counted_set(data, tk))
             sha = save_data(data, sha)
             st.session_state.data, st.session_state.sha = data, sha
             return True
@@ -1821,6 +1887,8 @@ def pet_svg(stage_id, sleepy=False, wear=None, size=200):
 # ---------------------------------- badges -----------------------------------
 def badge_html(b, earned=True, small=False, show_desc=True):
     bid, emoji, name, desc, _stat, _need, c1, c2 = b
+    if not earned:   # keep it a surprise: no name or picture until it's earned
+        emoji, name = "❓", "Mystery badge"
     cls = "bdg" + ("" if earned else " bdg-off") + (" small" if small else "")
     desc_html = f'<div class="bdesc">{html_safe(desc)}</div>' if show_desc else ""
     return (f'<div class="{cls}"><div class="medal" style="--c2:{c2};background:radial-gradient(circle at 32% 28%, '
@@ -2033,6 +2101,123 @@ def friends_html():
     return "<style>" + "".join(css) + "</style>" + "".join(divs)
 
 
+# --------------------------- Tamil pronunciation ---------------------------
+# Converts our English-letter Tamil (e.g. "veedu") into Tamil script (வீடு) so a Tamil voice can read it.
+_TA_VOWELS = [("aa", "ஆ", "ா"), ("ai", "ஐ", "ை"), ("au", "ஔ", "ௌ"), ("ee", "ஈ", "ீ"), ("ii", "ஈ", "ீ"),
+              ("oo", "ஊ", "ூ"), ("uu", "ஊ", "ூ"), ("ae", "ஏ", "ே"), ("a", "அ", ""), ("i", "இ", "ி"),
+              ("u", "உ", "ு"), ("e", "எ", "ெ"), ("o", "ஒ", "ொ")]
+_TA_CONS = [("ndr", ["ன", "ற"]), ("tr", ["ற", "ற"]), ("ndh", ["ந", "த"]), ("nth", ["ந", "த"]), ("ng", ["ங", "க"]), ("nj", ["ஞ", "ச"]), ("nd", ["ண", "ட"]),
+            ("zh", ["ழ"]), ("th", ["த"]), ("dh", ["த"]), ("ch", ["ச"]), ("sh", ["ஷ"]), ("k", ["க"]), ("g", ["க"]),
+            ("c", ["க"]), ("q", ["க"]), ("j", ["ஜ"]), ("s", ["ச"]), ("t", ["ட"]), ("d", ["ட"]), ("p", ["ப"]),
+            ("b", ["ப"]), ("f", ["ஃப"]), ("v", ["வ"]), ("w", ["வ"]), ("m", ["ம"]), ("y", ["ய"]), ("r", ["ர"]),
+            ("l", ["ல"]), ("h", ["ஹ"]), ("z", ["ஜ"]), ("x", ["க", "ஸ"])]
+_PULLI = "்"
+_ROMAN_VOWELS = "aeiou"
+_HARD = {"k", "t", "p", "ch", "th", "c"}   # these sound hard in the middle of a word only when doubled in Tamil
+
+
+def tamil_script(roman: str) -> str:
+    out = []
+    for word in re.split(r"(\W+)", roman.lower()):
+        if not word or not re.match(r"[a-z]", word):
+            out.append(word)
+            continue
+        if len(word) > 3 and word.endswith("en"):
+            word = word[:-2] + "aen"          # spoken verb endings are long: vandhen -> வந்தேன்
+        i, res, pending = 0, "", None   # pending = consonant waiting for its vowel
+        while i < len(word):
+            for v, ind, sign in _TA_VOWELS:
+                if word.startswith(v, i):
+                    if pending:
+                        res += pending + sign
+                        pending = None
+                    else:
+                        res += ind
+                    i += len(v)
+                    break
+            else:
+                cons = None
+                for c, letters in _TA_CONS:
+                    if word.startswith(c, i):
+                        cons = (c, letters)
+                        break
+                if cons is None and word[i] == "n":
+                    cons = ("n", ["ந"] if i == 0 else ["ன"])
+                if cons is None:
+                    i += 1
+                    continue
+                if pending:
+                    res += pending + _PULLI
+                after = i + len(cons[0])
+                if (cons[0] in _HARD and len(cons[1]) == 1 and i > 0 and word[i - 1] in _ROMAN_VOWELS
+                        and after < len(word) and word[after] in _ROMAN_VOWELS):
+                    cons = (cons[0], cons[1] * 2)    # paati -> பாட்டி, saapidu -> சாப்பிடு
+                for L in cons[1][:-1]:
+                    res += L + _PULLI
+                pending = cons[1][-1]
+                i += len(cons[0])
+        if pending:
+            res += pending + _PULLI
+        out.append(res)
+    return "".join(out)
+
+
+@st.cache_data(show_spinner=False, max_entries=2000)
+def _gtts_b64(roman: str):
+    """Google Tamil voice via gTTS (needs internet). Raises on failure so failures aren't remembered."""
+    from io import BytesIO
+    from gtts import gTTS
+    buf = BytesIO()
+    gTTS(text=tamil_script(roman), lang="ta", slow=False, timeout=5).write_to_fp(buf)
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+def tamil_audio_b64(roman: str):
+    if st.session_state.get("tts_off"):
+        return None
+    try:
+        return _gtts_b64(roman)
+    except Exception:
+        st.session_state.tts_off = True   # use the iPad's own voice for the rest of this visit
+        return None
+
+
+SAY_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Fredoka,system-ui,sans-serif;background:transparent}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:4px}
+button{font:600 15px Fredoka,system-ui,sans-serif;border:0;border-radius:999px;padding:9px 14px;cursor:pointer;
+ background:linear-gradient(90deg,#ff7fbf,#9b6bff);color:#fff;box-shadow:0 3px 8px rgba(155,107,255,.3)}
+button.slow{background:#f3e8ff;color:#5a2d66;box-shadow:none}
+</style></head><body><div class="row">__BUTTONS__</div>
+<script>
+var ITEMS = __ITEMS__;
+function voice(){ var vs = speechSynthesis.getVoices();
+  return vs.find(function(x){return x.lang && x.lang.toLowerCase().indexOf('ta') === 0;}); }
+function say(i, rate){
+  var it = ITEMS[i];
+  if (it.b64) { var a = new Audio('data:audio/mp3;base64,' + it.b64); a.playbackRate = rate; a.play().catch(function(){ speak(it, rate); }); return; }
+  speak(it, rate);
+}
+function speak(it, rate){
+  try { speechSynthesis.cancel(); var v = voice(), u;
+    if (v) { u = new SpeechSynthesisUtterance(it.ta); u.voice = v; u.lang = v.lang; }
+    else { u = new SpeechSynthesisUtterance(it.roman); u.lang = 'en-IN'; }
+    u.rate = 0.85 * rate; speechSynthesis.speak(u); } catch(e) {}
+}
+if (window.speechSynthesis) speechSynthesis.getVoices();
+</script></body></html>"""
+
+
+def say_buttons(items, height=56):
+    """items: list of (label, roman). Shows 🔊 buttons that pronounce the Tamil."""
+    data_items, buttons = [], []
+    for n, (label, roman) in enumerate(items):
+        data_items.append({"roman": roman, "ta": tamil_script(roman), "b64": tamil_audio_b64(roman)})
+        buttons.append(f'<button onclick="say({n},1)">🔊 {html_safe(label)}</button>')
+    buttons.append(f'<button class="slow" onclick="say({len(items) - 1 if len(items) == 1 else 0},0.7)">🐢 Slowly</button>')
+    _embed(SAY_HTML.replace("__BUTTONS__", "".join(buttons)).replace("__ITEMS__", json.dumps(data_items)), height)
+
+
 # =================================== APP ===================================
 if "data" not in st.session_state:
     try:
@@ -2066,7 +2251,9 @@ st.markdown(BASE_CSS + "<style>" + THEME_CSS.get(theme_id, THEME_CSS["rainbow"])
 install_sound_engine()
 alerts = st.container()   # fixed holders, so the tabs below never move (moving resets the open tab)
 
-done_today = done_on(data, today)
+done_today = done_on(data, today)          # tasks that COUNT (approved or auto-checked)
+ticked_today = ticked_on(data, today)      # everything she ticked
+pending_today = pending_on(data, today)    # ticked, waiting for a grown-up
 bal = balance_info(data)
 small_ws = small_wheel_status(data, today)
 big_ws = big_wheel_status(data, today)
@@ -2170,16 +2357,47 @@ def task_label(t):
 
 
 def task_box(t, tip=None):
+    tid = t["id"]
     if t.get("auto"):
-        is_done = t["id"] in done_today
-        st.checkbox(task_label(t), value=is_done, disabled=True, key=f"view_{TODAY_KEY}_{t['id']}_{is_done}")
+        is_done = tid in done_today
+        st.checkbox(task_label(t) + ("  ✅" if is_done else ""), value=is_done, disabled=True,
+                    key=f"view_{TODAY_KEY}_{tid}_{is_done}")
+    elif tid in done_today:   # approved: locked so it can't be unticked
+        st.checkbox(task_label(t) + "  ✅ *approved*", value=True, disabled=True, key=f"locked_{TODAY_KEY}_{tid}")
     else:
-        key = f"{TODAY_KEY}_{t['id']}"
+        key = f"{TODAY_KEY}_{tid}"
         if key not in st.session_state:
-            st.session_state[key] = t["id"] in done_today
-        st.checkbox(task_label(t), key=key, on_change=toggle, args=(t["id"], key))
+            st.session_state[key] = tid in ticked_today
+        label = task_label(t) + ("  ⏳ *waiting for a grown-up*" if tid in pending_today else "")
+        st.checkbox(label, key=key, on_change=toggle, args=(tid, key))
     if tip:
         st.markdown(f'<div class="tip">{tip}</div>', unsafe_allow_html=True)
+
+
+def approve_tasks(day_key, tids, pin_key=None):
+    if pin_key and not pin_ok(pin_key):
+        st.session_state.approve_msg = ("bad", "That PIN isn't right.")
+        return
+    n = {}
+
+    def change(d):
+        ticked = set(d["days"].get(day_key, []))
+        ok = d.setdefault("approved", {}).setdefault(day_key, [])
+        new = [t for t in tids if t in ticked and t not in ok]
+        ok.extend(new)
+        n["n"] = len(new)
+        if day_key != TODAY_KEY:
+            d.setdefault("earned", {})[day_key] = task_minutes(counted_set(d, day_key))
+
+    if pin_key:
+        st.session_state[pin_key] = ""
+    if update(change):
+        st.session_state.parent_ok = False if pin_key else st.session_state.get("parent_ok")
+        st.session_state.flash = f"✅ {n['n']} task{'s' if n['n'] != 1 else ''} approved — rewards unlocked!"
+
+
+def approve_today_from_box():
+    approve_tasks(TODAY_KEY, list(st.session_state.get("approve_pick", [])), pin_key="approve_pin")
 
 
 def next_idea():
@@ -2247,10 +2465,25 @@ with tab_today:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
     else:
         st.info(f"🐰 Hop hop! {DAILY_GOAL_MINUTES - task_mins} more minutes to earn. You can do it!")
+    if pending_today:
+        with st.container(border=True):
+            st.markdown(f"**⏳ Waiting for a grown-up to check ({len(pending_today)})** — your stars, minutes and "
+                        "surprises unlock once a grown-up says they're done! 🎁")
+            with st.form("approve_form", border=False):
+                st.multiselect("Grown-up: which tasks are really done?", sorted(pending_today), default=sorted(pending_today),
+                               key="approve_pick",
+                               format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
+                a1, a2 = st.columns([2, 1])
+                a1.text_input("Grown-up PIN", type="password", key="approve_pin")
+                a2.write("")
+                a2.form_submit_button("Approve ✅", on_click=approve_today_from_box)
+            amsg = st.session_state.pop("approve_msg", None)
+            if amsg:
+                st.error(amsg[1])
     if small_ws["ok"] or big_ws["ok"]:
         which = "big 🦄 AND small 🌈" if small_ws["ok"] and big_ws["ok"] else ("big 🦄" if big_ws["ok"] else "small 🌈")
         st.markdown(f'<div class="fact">🎡 <b>You have a {which} wheel spin waiting!</b> '
-                    'Open the <b>Spin & rewards</b> tab.</div>', unsafe_allow_html=True)
+                    'Open the <b>🎡 Spin</b> tab.</div>', unsafe_allow_html=True)
     if celebration and celebration.get("fact") is not None:
         st.markdown(f'<div class="fact">🧠 <b>Fun fact unlocked!</b> {html_safe(FUN_FACTS[celebration["fact"]])}</div>',
                     unsafe_allow_html=True)
@@ -2384,6 +2617,7 @@ def check_answer():
                 if "maths" not in s:
                     s.add("maths")
                     d["days"][TODAY_KEY] = sorted(s)
+                    d.setdefault("approved", {}).setdefault(TODAY_KEY, []).append("maths")   # checked by the app
                     add_fact(d, TODAY_KEY, outcome)
         else:
             m["tries"] += 1
@@ -2429,22 +2663,28 @@ def check_extra(topic, symbol):
         xs = _xm_state(d, topic)
         prob = make_extra_problem(topic, today, xs["index"])
         if given == prob["answer"]:
+            first_try = xs["tries"] == 0
             xs["index"] += 1
             xs["tries"] = 0
             xs["correct"] += 1
-            d["carrots"] = d.get("carrots", 0) + EXTRA_MATHS_CARROTS
+            if first_try:      # no carrot for guessing until it's right
+                d["carrots"] = d.get("carrots", 0) + EXTRA_MATHS_CARROTS
             out["right"] = True
-            out["carrots"] = d["carrots"]
+            out["first"] = first_try
+            out["carrots"] = d.get("carrots", 0)
         else:
             xs["tries"] += 1
             out["right"] = False
 
     if update(change):
         st.session_state.xm_answer = ""
-        if out["right"]:
+        if out["right"] and not out["first"]:
+            st.session_state.xm_msg = ("ok", "✅ That's right! Carrots are only for first-try answers, so take your time "
+                                             "and think before you answer. 🥕")
+        elif out["right"]:
             extra = (f" You have {out['carrots']} carrots — ask a grown-up to swap them for "
                      f"{CARROT_SWAP_MINUTES} minutes! 🎉" if out["carrots"] >= CARROTS_FOR_SWAP else "")
-            st.session_state.xm_msg = ("ok", f"🥕 Correct! +{EXTRA_MATHS_CARROTS} carrot.{extra}")
+            st.session_state.xm_msg = ("ok", f"🥕 Correct first time! +{EXTRA_MATHS_CARROTS} carrot.{extra}")
             st.session_state.celebrate = {"fact": None, "task": "bonus"}
         else:
             st.session_state.xm_msg = ("bad", "Not quite — have another go! 💪")
@@ -2559,14 +2799,18 @@ def save_story():
     def change(d):
         w = word_of_the_day(d, today)
         stories = d.setdefault("stories", [])
+        problem = story_problem(text, [x["text"] for x in stories])
+        info["problem"] = problem
         stories.append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "title": title, "text": text, "words": words,
+                        "ok": problem is None,
                         "wotd": w["word"], "wotd_count": count_word(text, w["word"]), "feedback": ""})
-        if words >= MIN_STORY_WORDS:
+        if words >= MIN_STORY_WORDS and problem is None:
             s = set(d["days"].get(TODAY_KEY, []))
             for tid in ("write1", "write2"):
-                if tid not in s:
+                if tid not in s or tid not in d.get("approved", {}).get(TODAY_KEY, []):
                     s.add(tid)
                     info["tick"] = tid
+                    d.setdefault("approved", {}).setdefault(TODAY_KEY, []).append(tid)   # checked by the app
                     break
             d["days"][TODAY_KEY] = sorted(s)
             if info.get("tick"):
@@ -2580,6 +2824,8 @@ def save_story():
         if info.get("tick"):
             parts.append(f"Your writing task {'1' if info['tick'] == 'write1' else '2'} is ticked! ✅")
             st.session_state.celebrate = {"fact": info.get("fact"), "task": info["tick"]}
+        elif info.get("problem"):
+            parts = [f"📖 Saved, but it can't tick your writing task: {info['problem']}"]
         elif words < MIN_STORY_WORDS:
             parts.append(f"Write at least {MIN_STORY_WORDS} words in a story to tick a writing task.")
         if info.get("word_win"):
@@ -2602,7 +2848,7 @@ def save_sentences():
         info["word"] = w["word"]
 
     if update(change):
-        good = sum(1 for x in sents if count_word(x, info["word"]) > 0 and count_words(x) >= 4)
+        good = len({_norm(x) for x in sents if good_sentence(x, info["word"])})
         if info.get("word_win"):
             st.session_state.sent_msg = ("ok", f"💖 WORD WIZARD! Brilliant sentences — +{WORD_CHALLENGE_MINUTES} minutes!")
             st.session_state.celebrate = {"fact": None, "task": "wotd"}
@@ -2619,7 +2865,7 @@ with tab_write:
         f'<div class="card" style="text-align:center"><div style="color:#8a6a96;font-weight:600">✨ Word of the day ✨</div>'
         f'<div class="wotd">{html_safe(wotd["word"])}</div><div style="color:#5a2d66"><i>{html_safe(wotd["meaning"])}</i></div>'
         f'<div style="color:#8a6a96;margin-top:4px">e.g. “{html_safe(wotd.get("example", ""))}”</div>'
-        f'<div style="margin-top:10px;font-size:1.05rem"><b>Challenge:</b> write {WORD_CHALLENGE_USES} sentences using '
+        f'<div style="margin-top:10px;font-size:1.05rem"><b>Challenge:</b> write {WORD_CHALLENGE_USES} different sentences ({WORD_SENTENCE_MIN_WORDS}+ words each) using '
         f'this word (or use it in your stories) for +{WORD_CHALLENGE_MINUTES} minutes!</div>'
         f'<div style="font-size:1.8rem">{stars}</div>'
         f'<div style="color:#1f7a37;font-weight:600">{"🎉 Challenge complete!" if won else ""}</div></div>',
@@ -2639,8 +2885,12 @@ with tab_write:
             if val:
                 if count_word(val, wotd["word"]) == 0:
                     mark = f"  ❌ use the word “{wotd['word']}”"
-                elif count_words(val) < 4:
-                    mark = "  ❌ make it a full sentence"
+                elif count_words(val) < WORD_SENTENCE_MIN_WORDS:
+                    mark = f"  ❌ use at least {WORD_SENTENCE_MIN_WORDS} words"
+                elif story_problem(val) is not None:
+                    mark = "  ❌ make it a real sentence"
+                elif any(_norm(val) == _norm(str(st.session_state.get(f"wsent_{j}", ""))) for j in range(i)):
+                    mark = "  ❌ write a different sentence"
                 else:
                     mark = "  ✅"
             st.text_input(f"Sentence {i + 1}{md_safe(mark)}", key=key,
@@ -2790,6 +3040,7 @@ def verb_card(kind, i, label):
         st.markdown(f'<div class="card"><div style="color:#8a6a96">{html_safe(en)} · {html_safe(past)}</div>'
                     f'<div class="scroll"><table class="week">{body}</table></div>'
                     f'{"<div class=note>" + html_safe(note) + "</div>" if note else ""}</div>', unsafe_allow_html=True)
+        say_buttons([("Now", now), ("Past", did), ("Future", will)])
         return
     en, past, part, cmd, now, did, will, note = TAMIL_VERBS[i]
     head = (f'<div style="color:#8a6a96">{html_safe(en)} · {html_safe(past)} · {html_safe(part)} · {html_safe(ing_form(en))}</div>'
@@ -2810,6 +3061,7 @@ def verb_card(kind, i, label):
     st.markdown(f'<div class="card">{head}<div class="scroll" style="margin-top:8px"><table class="week">{head_row}{rows}'
                 f'</table></div>{eng}{"<div class=note>💡 " + html_safe(note) + "</div>" if note else ""}</div>',
                 unsafe_allow_html=True)
+    say_buttons([(f"{cmd}!", cmd), ("I do", f"naan {now}"), ("I did", f"naan {did}"), ("I will", f"naan {will}")], height=96)
 
 
 def save_my_word(en):
@@ -2838,6 +3090,7 @@ with tab_tamil:
                                     f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
                                     f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
                                     unsafe_allow_html=True)
+                        say_buttons([("Say it", ta.split(" / ")[0].replace("…", "").strip())])
                         st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
                     else:
                         verb_card(*res)
@@ -3093,6 +3346,7 @@ def mark_prize():
             s = set(d["days"].get(TODAY_KEY, []))
             s.add("bed")
             d["days"][TODAY_KEY] = sorted(s)
+            d.setdefault("approved", {}).setdefault(TODAY_KEY, []).append("bed")   # grown-up used the PIN
             result["bed"] = True
         spin["status"] = "done"
         spin["done_date"] = TODAY_KEY
@@ -3334,7 +3588,7 @@ with tab_pet:
                 need = nxt[0] - star_days
                 frac = (star_days - stage[0]) / (nxt[0] - stage[0])
                 st.markdown(f'<div style="margin-top:10px;color:#6b3f73">⭐ {need} more star day{"s" if need != 1 else ""} '
-                            f'to grow into: <b>{nxt[2]}</b></div><div class="rbar"><div class="rfill" style="width:'
+                            f'until your bunny grows… <b>✨ it’s a surprise!</b></div><div class="rbar"><div class="rfill" style="width:'
                             f'{max(3, int(100 * frac))}%"></div></div>', unsafe_allow_html=True)
             else:
                 st.markdown("🌈 Fully grown and magical!")
@@ -3359,8 +3613,8 @@ with tab_pet:
         chips = []
         for a in ACCESSORIES:
             ok = a in unlocked
-            chips.append(f'<span class="pill {"ok" if ok else "no"}">{a["emoji"] if ok else "🔒"} {html_safe(a["name"])}'
-                         f'{"" if ok else " · " + html_safe(a["how"])}</span>')
+            chips.append(f'<span class="pill {"ok" if ok else "no"}">{a["emoji"] + " " + html_safe(a["name"]) if ok else "🎁 Surprise"}'
+                         f'{"" if ok else " · unlock with " + html_safe(a["how"])}</span>')
         st.markdown("".join(chips), unsafe_allow_html=True)
 
     st.markdown("### 🎨 My themes")
@@ -3368,7 +3622,7 @@ with tab_pet:
         tcols = st.columns(3)
         for i, th in enumerate(THEMES):
             ok = star_days >= th["need"]
-            label = th["name"] + (" ✔️" if th["id"] == theme_id else "") + ("" if ok else f" 🔒 {th['need']}⭐")
+            label = (th["name"] if ok else "🎁 Mystery theme") + (" ✔️" if th["id"] == theme_id else "") + ("" if ok else f" 🔒 {th['need']}⭐")
             tcols[i % 3].button(label, key=f"theme_{th['id']}", disabled=not ok or th["id"] == theme_id,
                                 on_click=set_theme, args=(th["id"],), use_container_width=True)
         st.caption("Unlock new themes by collecting ⭐ star days.")
@@ -3445,7 +3699,8 @@ with tab_weeks:
     head = "".join(f"<th>{d_.strftime('%a')}<br>{d_.day}</th>" for d_ in days14)
     rows = ""
     for t in TASKS:
-        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else '·'}</td>" for d_ in days14)
+        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else ('⏳' if t['id'] in ticked_on(data, d_) else '·')}</td>"
+                        for d_ in days14)
         rows += f"<tr><td class='name'>{t['emoji']} {t['id']}</td>{cells}</tr>"
     stars_row = "".join(f"<td>{'⭐' if is_star_day(done_on(data, d_)) else ''}</td>" for d_ in days14)
     mins_row = "".join(f"<td>{task_minutes(done_on(data, d_)) or ''}</td>" for d_ in days14)
@@ -3465,13 +3720,14 @@ def save_edit():
     def change(d):
         new = set(chosen) | ({"star"} if star else set())
         d["days"][d_iso] = sorted(new)
+        d.setdefault("approved", {})[d_iso] = sorted(chosen)   # a grown-up chose these, so they count
         d.setdefault("earned", {})[d_iso] = task_minutes(new)
 
     if update(change):
         if d_iso == TODAY_KEY:
             for t in TASKS:
                 if not t.get("auto"):
-                    st.session_state[f"{TODAY_KEY}_{t['id']}"] = t["id"] in chosen
+                    st.session_state.pop(f"{TODAY_KEY}_{t['id']}", None)
         st.session_state.flash = "Saved ✔️"
 
 
@@ -3569,6 +3825,10 @@ def reset_all():
         st.session_state.flash = "All progress reset."
 
 
+if st.session_state.get("parent_ok") and \
+        datetime.now().timestamp() - st.session_state.get("parent_ok_at", 0) > PARENT_AUTOLOCK_MINUTES * 60:
+    st.session_state.parent_ok = False     # auto-lock
+
 with tab_parent:
     if not st.session_state.get("parent_ok"):
         st.markdown("### 🔐 Grown-ups only")
@@ -3577,6 +3837,7 @@ with tab_parent:
             if st.form_submit_button("Open"):
                 if pin.strip() == parent_pin():
                     st.session_state.parent_ok = True
+                    st.session_state.parent_ok_at = datetime.now().timestamp()
                     st.rerun()
                 else:
                     st.error("That PIN isn't right.")
@@ -3591,6 +3852,23 @@ with tab_parent:
         note = st.session_state.pop("parent_note", None)
         if note:
             st.success(note)
+        st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
+
+        st.markdown("#### ✅ Approve ticked tasks")
+        any_pending = False
+        for back in range(0, 8):
+            dd = today - timedelta(days=back)
+            pend = sorted(pending_on(data, dd))
+            if not pend:
+                continue
+            any_pending = True
+            st.markdown(f"**{dd.strftime('%A %d %b')}**")
+            st.multiselect("Really done:", pend, default=pend, key=f"gp_pick_{dd}",
+                           format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
+            st.button(f"Approve {dd.strftime('%d %b')}", key=f"gp_btn_{dd}",
+                      on_click=lambda k=dd.isoformat(), kk=f"gp_pick_{dd}": approve_tasks(k, list(st.session_state.get(kk, [])))) 
+        if not any_pending:
+            st.caption("Nothing waiting. 🎉")
 
         st.markdown("#### 💌 Send a message")
         st.text_area("Message", key="parent_msg", placeholder="So proud of your maths today, Andal! 💖", height=80)
@@ -3672,7 +3950,7 @@ with tab_parent:
         st.date_input("Day", value=today, max_value=today, key="edit_date", format="DD/MM/YYYY")
         d_iso = st.session_state.edit_date.isoformat()
         st.multiselect("Tasks done that day", options=[t["id"] for t in TASKS],
-                       default=sorted(done_on(data, st.session_state.edit_date) & set(TASK_BY_ID)),
+                       default=sorted(ticked_on(data, st.session_state.edit_date) & set(TASK_BY_ID)),
                        format_func=lambda tid: f"{TASK_BY_ID[tid]['emoji']} {TASK_BY_ID[tid]['name']}",
                        key=f"edit_tasks_{d_iso}")
         st.checkbox("⭐ Count this day as a star day (even if not every task is ticked)",
