@@ -957,6 +957,336 @@ TAMIL_WORDS.update({
     },
 })
 
+# ===================== YEAR 5 VOCABULARY (spoken Tamil, English letters) =====================
+TAMIL_WORDS.update({
+    "📘 School subjects & learning": {
+        "science": ("ariviyal", ""), "history": ("varalaaru", ""), "geography": ("puviyiyal", ""),
+        "art": ("oviyam", "also 'kalai'"), "music": ("isai", ""), "sport": ("vilaiyaattu", ""), "computer": ("kanini", "most say 'computer'"),
+        "english (language)": ("aangilam", ""), "subject": ("paadam", ""), "principal": ("thalaimai aasiriyar", ""),
+        "classroom": ("vagupparai", ""), "map": ("varaipadam", "also 'map'"), "dictionary": ("agaraadhi", ""),
+        "page": ("pakkam", ""), "chapter": ("adhiyaayam", ""), "poem": ("kavidhai", ""), "essay": ("katturai", ""),
+        "example": ("udhaaranam", ""), "meaning": ("artham", ""), "practice": ("payirchi", ""), "mistake": ("thappu", ""),
+        "result": ("mudivu", ""), "sports day": ("vilaiyaattu dhinam", ""), "project": ("project", ""), "test": ("test", "also 'thervu'"),
+        "knowledge": ("arivu", ""), "idea": ("yosanai", ""), "rule": ("vidhi", ""), "team": ("anni", "also 'team'"),
+        "line (queue)": ("varisai", ""), "drawing": ("padam", ""), "colouring": ("colour adikkaradhu", ""),
+        "reading": ("vaasippu", ""), "spelling": ("ezhuththu kootal", ""), "grammar": ("ilakkanam", ""),
+    },
+    "🔬 Science & space": {
+        "air": ("kaaththu", "formal: 'kaatru'"), "plant": ("chedi", ""), "energy": ("aatral", ""), "heat": ("veppam", ""),
+        "sound": ("oli", "also 'saththam'"), "electricity": ("minsaaram", "also 'current'"), "magnet": ("kaandham", ""),
+        "machine": ("iyandhiram", ""), "experiment": ("sodhanai", ""), "scientist": ("vinjaani", ""), "brain": ("moolai", ""),
+        "bone": ("elumbu", ""), "lungs": ("nurai eeral", ""), "muscle": ("thasai", ""), "germ": ("kirumi", ""),
+        "health": ("aarokkiyam", ""), "space": ("vinveli", ""), "rocket": ("rocket", ""), "astronaut": ("vinveli veerar", ""),
+        "volcano": ("erimalai", ""), "earthquake": ("nilanadukkam", ""), "flood": ("vellam", "also means jaggery!"),
+        "desert": ("paalaivanam", ""), "ocean": ("samudhram", "also 'kadal'"), "dinosaur": ("dinosaur", ""),
+        "gold (metal)": ("thangam", ""), "silver": ("velli", ""), "iron": ("irumbu", ""), "glass": ("kannaadi", ""),
+        "wood": ("maram", "also 'kattai'"), "plastic": ("plastic", ""), "water drop": ("thuli", ""),
+        "temperature": ("vepanilai", ""), "shadow puppet": ("nizhal bommai", ""),
+    },
+    "🧍 More body words": {
+        "lips": ("udhadu", ""), "cheek": ("kannam", ""), "eyebrow": ("puruvam", ""), "eyelash": ("imai", ""),
+        "chin": ("thaadai", ""), "elbow": ("muzhangai", ""), "wrist": ("manikkattu", ""), "ankle": ("kanukkaal", ""),
+        "heel": ("kudhikaal", ""), "toe": ("kaal viral", ""), "thumb": ("kattai viral", ""), "palm": ("ullangai", ""),
+        "chest": ("nenju", ""), "waist": ("idupu", ""), "sweat": ("viyarvai", ""), "tears": ("kanneer", ""),
+        "breath": ("moochu", ""), "voice": ("kural", ""),
+    },
+    "👨‍👩‍👧 More family & people": {
+        "relatives": ("sondhakkaaranga", ""), "guest": ("virundhaali", ""), "neighbour": ("pakkaththu veettukaaranga", ""),
+        "twins": ("irattaiyar", ""), "grandson": ("peran", ""), "granddaughter": ("peththi", ""), "parents": ("petror", "also 'amma appa'"),
+        "husband": ("kanavan", ""), "wife": ("manaivi", ""), "elders": ("periyavanga", ""), "everybody": ("ellaarum", ""),
+        "stranger": ("theriyaadhavanga", ""), "classmate": ("kooda padikkaravanga", ""), "best friend": ("nerungiya thozhi", "for a boy: 'nerungiya nanban'"),
+    },
+    "🛁 Daily routine": {
+        "toothbrush": ("pal brush", ""), "toothpaste": ("pal paste", ""), "shampoo": ("shampoo", ""), "bath": ("kuliyal", ""),
+        "water bottle": ("thanni bottle", ""), "school bag": ("school pai", ""), "rest": ("oyvu", ""), "nap": ("kutti thookkam", ""),
+        "bedtime": ("thoongara neram", ""), "story time": ("kadhai neram", ""), "alarm": ("alarm", ""),
+        "morning prayer": ("kaalai praarththanai", ""), "screen time": ("screen time", ""), "chores": ("veettu velai", ""),
+        "homework time": ("padikkira neram", ""), "dinner time": ("saapadu neram", ""),
+    },
+    "🍳 Kitchen & cooking": {
+        "rice cooker": ("rice cooker", ""), "pressure cooker": ("cooker", ""), "frying pan": ("vaanali", ""),
+        "dosa pan": ("dosai kal", ""), "mixer": ("mixie", ""), "flour": ("maavu", "also 'batter'"), "rice flour": ("arisi maavu", ""),
+        "wheat": ("godhumai", ""), "spices": ("masaala", ""), "turmeric": ("manjal", ""), "cumin": ("seeragam", ""),
+        "mustard seeds": ("kadugu", ""), "curry leaves": ("kariveppilai", ""), "coriander": ("koththamalli", ""),
+        "mint": ("pudhinaa", ""), "tamarind": ("puli", "also means 'tiger'!"), "jaggery": ("vellam", ""),
+        "coconut milk": ("thengaai paal", ""), "smell (nice)": ("vaasanai", ""), "recipe": ("seimurai", ""),
+        "fridge": ("fridge", ""), "oven": ("oven", ""), "lid": ("moodi", ""), "tray": ("thattu", ""),
+    },
+    "🪔 Festivals & culture": {
+        "festival": ("pandigai", ""), "deepavali": ("Deepavali", "also 'Diwali'"), "pongal": ("Pongal", ""),
+        "navarathri": ("Navaraathiri", ""), "karthigai deepam": ("Karththigai Deepam", ""), "vinayagar chathurthi": ("Vinaayagar Chathurththi", ""),
+        "tamil new year": ("Thamizh puththaandu", ""), "prayer": ("praarththanai", ""), "god": ("kadavul", "also 'saami'"),
+        "garland": ("maalai", ""), "new clothes": ("pudhu dhuni", ""), "crackers": ("pattaasu", ""), "gift": ("parisu", ""),
+        "celebration": ("kondaattam", ""), "wedding": ("kalyaanam", ""), "birthday": ("piranthanaal", ""), "function": ("vizhaa", "also 'function'"),
+        "blessing": ("aasirvaadham", ""), "dance (classical)": ("Bharathanaattiyam", ""), "drum": ("melam", ""),
+        "veena": ("veenai", ""), "flute": ("pullaankuzhal", ""), "sugarcane": ("karumbu", ""), "oil lamp": ("agal vilakku", ""),
+        "tamil months": ("Chiththirai, Vaigaasi, Aani, Aadi, Aavani, Purattaasi, Aippasi, Karththigai, Maargazhi, Thai, Maasi, Panguni",
+                         "Chiththirai starts in mid-April"),
+    },
+    "🛍️ Shopping & money": {
+        "coin": ("kaasu", ""), "rupee": ("rooba", ""), "dollar": ("dollar", ""), "price": ("vilai", ""), "cheap": ("malivu", ""),
+        "expensive": ("vilai adhigam", ""), "customer": ("vaadikkaiyaalar", ""), "change (money)": ("chillarai", ""),
+        "bill": ("bill", ""), "discount": ("thallupadi", ""), "queue": ("varisai", ""), "trolley": ("trolley", ""),
+        "how much is this": ("idhu evvalavu?", ""), "too expensive": ("romba vilai", ""),
+    },
+    "🚌 Travel & transport": {
+        "motorbike": ("bike", ""), "auto rickshaw": ("auto", ""), "ticket": ("ticket", "formal: 'cheetu'"),
+        "station": ("station", "formal: 'nilaiyam'"), "traffic": ("traffic", ""), "journey": ("payanam", ""), "trip": ("suttrula", "also 'trip'"),
+        "suitcase": ("petti", ""), "passport": ("passport", ""), "driver": ("driver", "formal: 'ottunar'"), "seatbelt": ("seatbelt", ""),
+        "boat ride": ("padagu savaari", ""), "ship": ("kappal", ""), "helicopter": ("helicopter", ""), "road trip": ("car payanam", ""),
+    },
+    "⚽ Sports & games": {
+        "bat": ("bat", ""), "cricket": ("cricket", ""), "football": ("football", "also 'kaalpandhu'"), "race": ("ottappandhayam", ""),
+        "score": ("score", ""), "goal": ("goal", "a dream/aim is 'ilakku'"), "slide": ("sarukku maram", "kids say 'slide'"),
+        "hide and seek": ("kannaamoochi", ""), "skipping": ("skipping", ""), "chess": ("chadhurangam", ""), "carrom": ("carrom", ""),
+        "puzzle": ("pudhir", ""), "kite": ("pattam", ""), "swimming": ("neechal", ""), "dance class": ("dance class", ""),
+        "winner": ("vetriyaalar", ""), "loser": ("thotravanga", ""), "turn (my turn)": ("murai", "'en murai' = my turn"),
+        "rules (game)": ("vilaiyaattu vidhigal", ""), "medal": ("padhakkam", ""), "trophy": ("kopai", ""),
+    },
+    "💛 Character & values": {
+        "respect": ("mariyaadhai", ""), "kindness": ("irakkam", "also 'anbu'"), "patience": ("porumai", ""), "honesty": ("nermai", ""),
+        "discipline": ("ozhukkam", ""), "hard work": ("uzhaippu", ""), "success": ("vetri", ""), "failure": ("thoalvi", ""),
+        "dream": ("kanavu", ""), "aim": ("ilakku", ""), "wisdom": ("gnaanam", ""), "confidence": ("thannambikkai", ""),
+        "helpful": ("udhavi seiyara", ""), "polite": ("mariyaadhaiyaana", ""), "lazy": ("somberi", ""), "clever": ("puththisaali", ""),
+        "naughty": ("settai", ""), "careful": ("jaakkiradhai", ""), "nervous": ("padhattam", ""), "embarrassed": ("vetkamaa", ""),
+        "grateful": ("nandriyulla", ""), "upset": ("manasu sariyilla", ""), "generous": ("thaaraala", ""), "brave girl": ("dhairiyamaana ponnu", ""),
+        "truthful": ("unmaiyaana", ""), "forgiveness": ("mannippu", ""), "teamwork": ("koottu muyarchi", ""),
+    },
+    "🗣️ Conversation (Year 5)": {
+        "can you help me": ("enakku udhavi panreengalaa?", ""), "i need help": ("enakku help venum", ""),
+        "what does this mean": ("idhukku enna artham?", ""), "how do you say it in tamil": ("Thamizhla eppadi solradhu?", ""),
+        "please say it again": ("thirumba sollunga", ""), "please speak slowly": ("medhuvaa pesunga", ""), "let me try": ("naan try panren", ""),
+        "my turn": ("en murai", ""), "your turn": ("un murai", "polite: 'unga murai'"), "who is it": ("yaaru adhu?", ""),
+        "wait for me": ("enakkaaga kaaththiru", ""), "hurry up": ("seekiram", ""), "be quiet": ("amaidhiyaa iru", ""),
+        "sit down": ("utkaaru", ""), "stand up": ("ezhundhiru", ""), "can i go to the toilet": ("naan toilet polaamaa?", ""),
+        "i finished my homework": ("naan homework mudichitten", ""), "i got good marks": ("enakku nalla mark kidaichudhu", ""),
+        "i love tamil": ("enakku Thamizh romba pidikkum", ""), "thank you very much": ("romba nandri", ""),
+        "see you tomorrow": ("naalaikku paakkalaam", ""), "take care": ("paaththukko", "to an elder: 'paaththukkonga'"),
+        "get well soon": ("seekiram gunamaagu", ""), "congratulations": ("vaazhthukkal", ""), "happy new year": ("puththaandu vaazhthukkal", ""),
+        "what time is it": ("mani enna?", ""), "what day is it today": ("innaikku enna kizhamai?", ""), "what is this": ("idhu enna?", ""),
+        "where is my bag": ("en bag enga?", ""), "i lost my pencil": ("en pencil tholanjudhu", ""), "can i watch tv": ("naan TV paakkalaamaa?", ""),
+        "come and play": ("vilaiyaada vaa", ""), "i am ready": ("naan ready", ""), "i'm busy": ("naan busy-aa irukken", ""),
+        "is it okay": ("sariyaa?", ""), "that's right": ("adhu sari", ""), "that's wrong": ("adhu thappu", ""),
+        "i forgot": ("naan maranthutten", ""), "i remember": ("enakku nyaabagam irukku", ""), "tell me a story": ("oru kadhai sollunga", ""),
+        "i'm full": ("vayiru niranjudhu", ""), "one more please": ("innum onnu kudunga", ""), "it's my birthday": ("innaikku en piranthanaal", ""),
+        "i'm sorry": ("mannichidunga", "to a friend: 'sorry'"), "it's raining": ("mazhai peyyudhu", ""), "it's hot": ("veyil adikkudhu", ""),
+        "it's cold": ("kulirudhu", ""), "where do you live": ("neenga enga irukkeenga?", ""), "i live in brisbane": ("naan Brisbane-la irukken", ""),
+        "what is your favourite": ("unakku enna romba pidikkum?", ""), "my favourite colour is pink": ("enakku pink niram romba pidikkum", ""),
+    },
+    "⏰ Time": {
+        "o'clock": ("mani", "e.g. 'moonu mani' = 3 o'clock"), "minute": ("nimisham", ""), "second (time)": ("vinaadi", ""),
+        "hour": ("mani neram", ""), "calendar": ("naatkaatti", ""), "date": ("thedhi", ""), "midnight": ("nalliravu", ""),
+        "noon": ("madhiyam", ""), "weekend": ("vaara iruthi", "also 'weekend'"), "every day": ("dhinamum", ""), "tonight": ("innaikku raaththiri", ""),
+        "this week": ("indha vaaram", ""), "next week": ("adutha vaaram", ""), "last week": ("pona vaaram", ""),
+        "next year": ("adutha varusham", ""), "last year": ("pona varusham", ""), "early": ("seekiram", ""), "on time": ("sariyaana neraththula", ""),
+    },
+    "📐 Maths words": {
+        "circle": ("vattam", ""), "square": ("sadhuram", ""), "triangle": ("mukkonam", ""), "rectangle": ("neel sadhuram", ""),
+        "line": ("kodu", ""), "dot": ("pulli", ""), "number": ("en", ""), "add": ("koottu", ""), "subtract": ("kazhi", ""),
+        "multiply": ("perukku", ""), "divide": ("vagu", ""), "equal": ("samam", ""), "plus": ("koottal", ""), "minus": ("kazhiththal", ""),
+        "quarter": ("kaal", "also means 'leg'!"), "double": ("rendu madangu", ""), "total": ("mottham", ""), "more": ("adhigam", ""),
+        "less": ("kuraivu", ""), "length": ("neelam", ""), "weight": ("edai", ""), "height": ("uyaram", ""), "measure": ("alavu", ""),
+        "even number": ("iratta padai en", ""), "odd number": ("otrai padai en", ""), "fraction": ("bin", ""), "answer (maths)": ("vidai", ""),
+    },
+    "💼 Jobs": {
+        "farmer": ("vivasaayi", ""), "nurse": ("nurse", "formal: 'sevilier'"), "police officer": ("police", "formal: 'kaavalar'"),
+        "firefighter": ("theeyanaippu veerar", ""), "cook": ("samaiyalkaarar", ""), "shopkeeper": ("kadaikkaarar", ""),
+        "tailor": ("thaiyalkaarar", ""), "carpenter": ("thachchar", ""), "engineer": ("engineer", "formal: 'poriyaalar'"),
+        "artist": ("oviyar", ""), "singer": ("paadagar", ""), "dancer": ("nadanakkalaignar", ""), "pilot": ("vimaani", "also 'pilot'"),
+        "soldier": ("raanuva veerar", ""), "priest": ("poosaari", ""), "postman": ("thabaalkaarar", ""), "fisherman": ("meenavar", ""),
+        "builder": ("kattida thozhilaali", ""), "vet": ("kaalnadai maruththuvar", ""), "dentist": ("pal doctor", ""), "writer": ("ezhuththaalar", ""),
+    },
+    "🏙️ More places": {
+        "living room": ("hall", ""), "bedroom": ("padukkai arai", ""), "balcony": ("balcony", ""), "post office": ("anjal nilaiyam", "also 'post office'"),
+        "police station": ("kaaval nilaiyam", ""), "bank": ("vangi", "also 'bank'"), "restaurant": ("unavagam", "people often say 'hotel'"),
+        "bakery": ("bakery", ""), "cinema": ("thiraiyarangam", "also 'theatre'"), "museum": ("arungaatchiyagam", ""),
+        "swimming pool": ("neechal kulam", ""), "farm": ("pannai", ""), "factory": ("thozhirsaalai", ""), "office": ("aluvalagam", "also 'office'"),
+        "church": ("church", ""), "mosque": ("pallivaasal", ""), "village fair": ("thiruvizhaa", ""), "playground": ("vilaiyaattu maidhaanam", ""),
+    },
+    "🐘 More animals": {
+        "rooster": ("seval", ""), "ox": ("maadu", ""), "buffalo": ("erumai", ""), "sheep": ("semmari aadu", ""), "wolf": ("onaai", ""),
+        "cheetah": ("sivingi", ""), "leopard": ("siruththai", ""), "rhinoceros": ("kaandaamirugam", ""), "hippopotamus": ("neeryaanai", ""),
+        "crab": ("nandu", ""), "prawn": ("iraal", ""), "starfish": ("natchathira meen", ""), "seahorse": ("kadal kudhirai", ""),
+        "swan": ("annam", ""), "kingfisher": ("meenkoththi", ""), "woodpecker": ("marangoththi", ""), "cuckoo": ("kuyil", ""),
+        "dragonfly": ("thumbi", ""), "grasshopper": ("vettukkili", ""), "firefly": ("minminippoochi", ""), "caterpillar": ("kambalippoochi", ""),
+        "scorpion": ("thel", ""), "beetle": ("vandu", ""), "cobra": ("naagappaambu", ""), "python": ("malaippaambu", ""),
+    },
+    "🌸 Plants & flowers": {
+        "neem tree": ("vembu", ""), "banyan tree": ("aalamaram", ""), "coconut tree": ("thennai maram", ""), "palm tree": ("panai maram", ""),
+        "rose": ("roja", ""), "jasmine": ("malligai", "spoken: 'malli poo'"), "lotus": ("thaamarai", ""), "sunflower": ("sooriyagaandhi", ""),
+        "tulsi": ("thulasi", ""), "banana leaf": ("vaazhai ilai", ""), "thorn": ("mul", ""), "bud": ("mottu", ""), "petal": ("idhazh", ""),
+    },
+    "🥦 More vegetables & dishes": {
+        "okra": ("vendaikkaai", ""), "bitter gourd": ("paavakkaai", ""), "drumstick": ("murungaikkaai", ""), "cabbage": ("muttaikose", ""),
+        "cauliflower": ("cauliflower", ""), "radish": ("mullangi", ""), "beetroot": ("beetroot", ""), "peas": ("pattaani", ""),
+        "capsicum": ("kudai milagaai", ""), "mushroom": ("kaalaan", ""), "sweet potato": ("sakkaraivalli kizhangu", ""),
+        "raw banana": ("vaazhaikkaai", ""), "upma": ("uppumaa", ""), "chapati": ("chappaaththi", ""), "parotta": ("parotta", ""),
+        "biryani": ("biriyaani", ""), "curd rice": ("thayir saadham", ""), "lemon rice": ("elumichai saadham", ""),
+        "tamarind rice": ("puliyodharai", ""), "vada": ("vadai", ""), "kesari": ("kesari", ""), "halwa": ("halwa", ""),
+        "murukku": ("murukku", ""), "appalam": ("appalam", ""), "buttermilk": ("mor", ""), "porridge": ("kanji", ""),
+        "pongal (dish)": ("pongal", ""), "poori": ("poori", ""), "noodles": ("noodles", ""),
+    },
+    "👕 More clothes & things": {
+        "dhoti": ("vesti", ""), "half saree": ("dhaavani", ""), "kurta": ("kurta", ""), "shorts": ("shorts", ""), "trousers": ("pant", ""),
+        "t-shirt": ("t-shirt", ""), "sweater": ("sweater", ""), "raincoat": ("mazhai coat", ""), "slippers": ("seruppu", ""),
+        "watch": ("kai kadigaaram", ""), "anklet": ("kolusu", ""), "ring": ("modhiram", ""), "hair band": ("hair band", ""),
+        "flowers for hair": ("poo", ""), "handkerchief": ("kaikkuttai", ""),
+    },
+    "✨ More describing words": {
+        "noisy": ("saththamaana", ""), "messy": ("olungillaadha", ""), "crowded": ("kootamaana", ""), "famous": ("prabalamaana", ""),
+        "important": ("mukkiyamaana", ""), "special": ("sirappaana", ""), "dangerous": ("aabaththaana", ""), "safe": ("paadhugaappaana", ""),
+        "healthy": ("aarokkiyamaana", ""), "delicious": ("rusiyaana", ""), "fresh": ("fresh-aana", ""), "ripe": ("pazhutha", ""),
+        "raw": ("pachchai", ""), "colourful": ("pala niramaana", ""), "shiny": ("palapalappaana", ""), "smooth": ("vazhuvazhuppaana", ""),
+        "sticky": ("pisupisuppaana", ""), "terrible": ("mosamaana", ""), "strange": ("vinodhamaana", ""), "funny": ("vedikkaiyaana", ""),
+        "cute": ("azhagaana", "kids also say 'cute'"), "smart": ("puththisaali", ""), "busy": ("busy", ""), "ready": ("ready", "formal: 'thayaar'"),
+        "sure": ("nichayam", ""), "possible": ("mudiyum", "'I can' = 'ennaala mudiyum'"), "impossible": ("mudiyaadhu", "'I can't' = 'ennaala mudiyaadhu'"),
+    },
+    "🔢 Big numbers": {
+        "twenty-one": ("irubaththonnu", ""), "twenty-five": ("irubaththanju", ""), "two hundred": ("irunooru", ""),
+        "five hundred": ("ainooru", ""), "ten thousand": ("paththaayiram", ""), "lakh": ("latcham", "100,000"), "crore": ("kodi", "10 million"),
+        "million": ("paththu latcham", ""),
+    },
+})
+
+TAMIL_VERBS.extend([
+    ("sneeze", "sneezed", "sneezed", "thummu", "thummaren", "thumminen", "thummuven", ""),
+    ("cough", "coughed", "coughed", "irumu", "irumaren", "iruminen", "irumuven", ""),
+    ("yawn", "yawned", "yawned", "kottaavi vidu", "kottaavi vidaren", "kottaavi vitten", "kottaavi viduven", ""),
+    ("smell", "smelled", "smelled", "vaasanai paaru", "vaasanai paakkiren", "vaasanai paaththen", "vaasanai paappen", ""),
+    ("taste", "tasted", "tasted", "rusi paaru", "rusi paakkiren", "rusi paaththen", "rusi paappen", ""),
+    ("agree", "agreed", "agreed", "othukko", "othukkaren", "othukkitten", "othukkuven", ""),
+    ("decide", "decided", "decided", "mudivu pannu", "mudivu panren", "mudivu pannen", "mudivu pannuven", ""),
+    ("explain", "explained", "explained", "vilakku", "vilakkaren", "vilakkinen", "vilakkuven", ""),
+    ("answer", "answered", "answered", "badhil sollu", "badhil solren", "badhil sonnen", "badhil solluven", ""),
+    ("repeat", "repeated", "repeated", "thirumba sollu", "thirumba solren", "thirumba sonnen", "thirumba solluven", ""),
+    ("collect", "collected", "collected", "sekari", "sekarikkiren", "sekarichen", "sekarippen", ""),
+    ("arrange", "arranged", "arranged", "adukku", "adukkaren", "adukkinen", "adukkuven", ""),
+    ("build", "built", "built", "kattu", "kattaren", "kattinen", "kattuven", "same word as 'tie'"),
+    ("plant", "planted", "planted", "nadu", "nadaren", "natten", "naduven", ""),
+    ("water the plants", "watered the plants", "watered the plants", "chedikku thanni oothu", "chedikku thanni oothaaren",
+     "chedikku thanni oothinen", "chedikku thanni oothuven", ""),
+    ("save", "saved", "saved", "semi", "semikkiren", "semichen", "semippen", "save money"),
+    ("spend", "spent", "spent", "selavu pannu", "selavu panren", "selavu pannen", "selavu pannuven", ""),
+    ("pay", "paid", "paid", "panam kodu", "panam kudukkiren", "panam kuduththen", "panam kuduppen", ""),
+    ("celebrate", "celebrated", "celebrated", "kondaadu", "kondaadaren", "kondaadinen", "kondaaduven", ""),
+    ("invite", "invited", "invited", "azhai", "azhaikkiren", "azhaichen", "azhaippen", ""),
+    ("travel", "travelled", "travelled", "payanam pannu", "payanam panren", "payanam pannen", "payanam pannuven", ""),
+    ("enjoy", "enjoyed", "enjoyed", "enjoy pannu", "enjoy panren", "enjoy pannen", "enjoy pannuven", ""),
+    ("rest", "rested", "rested", "oyvu edu", "oyvu edukkiren", "oyvu eduththen", "oyvu eduppen", ""),
+    ("worry", "worried", "worried", "kavalaippadu", "kavalaippadaren", "kavalaippatten", "kavalaippaduven", ""),
+    ("believe", "believed", "believed", "nambu", "nambaren", "nambinen", "nambuven", "also 'trust'"),
+    ("trust", "trusted", "trusted", "nambu", "nambaren", "nambinen", "nambuven", ""),
+    ("whisper", "whispered", "whispered", "mella pesu", "mella pesaren", "mella pesinen", "mella pesuven", ""),
+    ("apologise", "apologised", "apologised", "mannippu kelu", "mannippu kekkiren", "mannippu ketten", "mannippu keppen", ""),
+    ("forgive", "forgave", "forgiven", "mannichidu", "mannikkiren", "mannichitten", "mannichiduven", ""),
+    ("thank", "thanked", "thanked", "nandri sollu", "nandri solren", "nandri sonnen", "nandri solluven", ""),
+    ("protect", "protected", "protected", "kaappaaththu", "kaappaaththaren", "kaappaaththinen", "kaappaaththuven", ""),
+    ("get dressed", "got dressed", "got dressed", "dress pannikko", "dress pannikkaren", "dress pannikitten", "dress pannikkuven", ""),
+    ("comb hair", "combed hair", "combed hair", "thalai vaaru", "thalai vaaraaren", "thalai vaarinen", "thalai vaaruven", ""),
+    ("knock", "knocked", "knocked", "thattu", "thattaren", "thattinen", "thattuven", ""),
+    ("shake", "shook", "shaken", "aattu", "aattaren", "aattinen", "aattuven", ""),
+    ("wave", "waved", "waved", "kai aattu", "kai aattaren", "kai aattinen", "kai aattuven", "wave your hand"),
+    ("wipe", "wiped", "wiped", "thudai", "thudaikkiren", "thudaichen", "thudaippen", ""),
+    ("sweep", "swept", "swept", "perukku", "perukkaren", "perukkinen", "perukkuven", ""),
+    ("sew", "sewed", "sewn", "thai", "thaikkiren", "thaichen", "thaippen", ""),
+    ("lock", "locked", "locked", "poottu", "poottaren", "poottinen", "poottuven", ""),
+    ("switch on", "switched on", "switched on", "on pannu", "on panren", "on pannen", "on pannuven", ""),
+    ("switch off", "switched off", "switched off", "off pannu", "off panren", "off pannen", "off pannuven", ""),
+    ("meet", "met", "met", "santhi", "santhikkiren", "santhichen", "santhippen", ""),
+    ("leave", "left", "left", "kilambu", "kilambaren", "kilambinen", "kilambuven", "leave / set off"),
+    ("come back", "came back", "come back", "thirumbi vaa", "thirumbi varen", "thirumbi vandhen", "thirumbi varuven", ""),
+    ("arrive", "arrived", "arrived", "poi seru", "poi seraren", "poi serndhen", "poi seruven", ""),
+    ("choose", "chose", "chosen", "therndhedu", "therndhedukkiren", "therndheduththen", "therndheduppen", ""),
+    ("lend", "lent", "lent", "kadan kodu", "kadan kudukkiren", "kadan kuduththen", "kadan kuduppen", ""),
+    ("guess", "guessed", "guessed", "yoogi", "yoogikkiren", "yoogichen", "yoogippen", ""),
+    ("imagine", "imagined", "imagined", "karpanai pannu", "karpanai panren", "karpanai pannen", "karpanai pannuven", ""),
+    ("dream", "dreamed", "dreamed", "kanavu kaanu", "kanavu kaanaren", "kanavu kanden", "kanavu kaanuven", ""),
+    ("shine", "shone", "shone", "minnu", "minnaren", "minninen", "minnuven", ""),
+    ("melt", "melted", "melted", "urugu", "urugaren", "uruginen", "uruguven", ""),
+    ("wake someone up", "woke someone up", "woken someone up", "ezhuppu", "ezhupparen", "ezhuppinen", "ezhuppuven", ""),
+    ("obey", "obeyed", "obeyed", "solradha kelu", "solradha kekkiren", "sonnadha ketten", "solradha keppen", "listen to what you're told"),
+    ("greet", "greeted", "greeted", "vanakkam sollu", "vanakkam solren", "vanakkam sonnen", "vanakkam solluven", ""),
+])
+
+# ===================== MORE TOPICS (space, science, sea, plants, food, relationships) =====================
+TAMIL_WORDS.update({
+    "🪐 Space & planets": {
+        "universe": ("pirapanjam", ""), "galaxy": ("vinmeen thiral", ""), "milky way": ("aagaaya gangai", ""),
+        "solar system": ("sooriya kudumbam", ""), "mercury (planet)": ("Budhan", ""), "venus": ("Velli", "also 'Sukkiran'"),
+        "mars": ("Sevvaai", ""), "jupiter": ("Viyaazhan", "also 'Guru'"), "saturn": ("Sani", ""), "uranus": ("Uranus", ""),
+        "neptune": ("Neptune", ""), "pluto": ("Pluto", "a dwarf planet"), "comet": ("vaal natchaththiram", ""),
+        "meteor": ("eri natchaththiram", "also 'shooting star'"), "shooting star": ("eri natchaththiram", ""),
+        "asteroid": ("sirukol", ""), "orbit": ("suttrupaadhai", ""), "gravity": ("eerppu visai", ""), "telescope": ("tholainokki", ""),
+        "satellite": ("seyarkaikkol", "the Moon is Earth's natural satellite"), "spaceship": ("vinkalam", ""),
+        "space station": ("vinveli nilaiyam", ""), "alien": ("vetrukiraga vaasi", ""), "black hole": ("karunthulai", ""),
+        "constellation": ("natchaththira koottam", ""), "eclipse": ("grahanam", ""), "solar eclipse": ("sooriya grahanam", ""),
+        "lunar eclipse": ("chandhira grahanam", ""), "full moon": ("pournami", ""), "new moon": ("amaavaasai", ""),
+        "crescent moon": ("pirai", ""), "sunrise": ("sooriya udhayam", ""), "sunset": ("sooriya asthamanam", ""),
+        "atmosphere": ("valimandalam", ""), "crater": ("pallam", ""), "light year": ("oli aandu", ""),
+        "north star": ("dhuruva natchaththiram", ""), "planet earth": ("bhoomi graham", ""), "astronomy": ("vaaniyal", ""),
+    },
+    "🧪 Year 5 science (school Tamil)": {
+        "solid": ("thinmam", "formal school word"), "liquid": ("thiravam", "formal school word"), "gas": ("vaayu", ""),
+        "evaporation": ("aaviyaadhal", "formal school word"), "melting": ("urugudhal", ""), "freezing": ("uraidhal", ""),
+        "boiling": ("kodhiththal", ""), "water cycle": ("neer suzharchi", ""), "force": ("visai", ""), "friction": ("uraaivu", ""),
+        "circuit": ("minsutru", ""), "battery": ("battery", "formal: 'minkalam'"), "reflection": ("prathibhalippu", ""),
+        "vibration": ("athirvu", ""), "thermometer": ("vepamaani", ""), "oxygen": ("pranavaayu", "also 'oxygen'"),
+        "carbon dioxide": ("carbon dioxide", ""), "photosynthesis": ("olicherkkai", "formal school word"),
+        "food chain": ("unavu sangili", ""), "habitat": ("vaazhvidam", ""), "life cycle": ("vaazhkkai suzharchi", ""),
+        "germination": ("mulaiththal", ""), "pollination": ("magarandha serkkai", ""), "stem": ("thandu", ""),
+        "skeleton": ("elumbukkoodu", ""), "digestion": ("seeranam", ""), "senses": ("pulangal", ""), "nutrition": ("oottachaththu", ""),
+        "vitamin": ("vitamin", ""), "mammal": ("paaloottigal", "formal school word"), "reptile": ("oorvana", ""),
+        "amphibian": ("iruvaazhvi", ""), "predator": ("vettaiyaadum vilangu", ""), "prey": ("irai", ""),
+        "extinct": ("azhindhu pona", ""), "fossil": ("puthaipadivam", ""), "mineral": ("kanimam", ""), "erosion": ("arippu", ""),
+        "pollution": ("maasu", ""), "recycle": ("marusuzharchi", ""), "environment": ("suttruchoozhal", ""),
+        "climate": ("kaalanilai", ""), "weather": ("vaanilai", ""), "experiment result": ("sodhanai mudivu", ""),
+    },
+    "🌊 Sea & sea creatures": {
+        "seashell": ("kilinjal", ""), "conch shell": ("sangu", ""), "coral": ("pavazham", ""), "seaweed": ("kadal paasi", ""),
+        "lighthouse": ("kalangarai vilakkam", ""), "harbour": ("thuraimugam", ""), "sea turtle": ("kadal aamai", ""),
+        "octopus": ("octopus", ""), "jellyfish": ("jellyfish", ""), "lobster": ("lobster", ""), "eel": ("vilaangu meen", ""),
+        "squid": ("kanavaai", ""), "oyster": ("sippi", ""), "pearl": ("muththu", ""), "stingray": ("thirukkai meen", ""),
+        "seal (animal)": ("seal", ""), "sailor": ("maalumi", ""), "diver": ("diver", ""), "fishing net": ("valai", ""),
+        "anchor": ("nangooram", ""), "sail": ("paai", ""), "deep": ("aazham", ""), "salt water": ("uppu thanni", ""),
+        "beach sand": ("kadarkarai manal", ""), "sandcastle": ("manal veedu", ""), "fish tank": ("meen thotti", ""),
+        "clownfish": ("clownfish", ""), "sea creatures": ("kadal uyirinangal", ""), "underwater": ("thanneerukku adiyil", ""),
+    },
+    "🌳 Plants & trees": {
+        "tree trunk": ("adimaram", ""), "bark": ("maraththoal", ""), "bush": ("pudhar", ""), "creeper": ("kodi", "also 'vine'"),
+        "mango tree": ("maamaram", ""), "tamarind tree": ("puliyamaram", ""), "jackfruit tree": ("palaamaram", ""),
+        "banana tree": ("vaazhai maram", ""), "peepal tree": ("arasamaram", ""), "bamboo": ("moongil", ""), "teak": ("thekku", ""),
+        "sandalwood": ("santhanam", ""), "eucalyptus": ("thaila maram", "koalas love it!"), "cactus": ("kalli", ""),
+        "moss": ("paasi", ""), "herb": ("mooligai", ""), "vegetable garden": ("kaaikari thottam", ""), "flower pot": ("chedi thotti", ""),
+        "sunlight": ("sooriya oli", ""), "dry leaves": ("sarugu", ""), "seedling": ("naaththu", ""), "grass field": ("pulvelli", ""),
+        "pine tree": ("pine maram", ""), "apple tree": ("apple maram", ""), "lemon tree": ("elumichai maram", ""),
+    },
+    "👨‍👩‍👧‍👦 Relationships": {
+        "mother's brother": ("maama", ""), "mother's brother's wife": ("maami", ""), "father's sister": ("athai", ""),
+        "father's sister's husband": ("maama", "same word as mother's brother"),
+        "father's elder brother": ("periyappa", ""), "father's elder brother's wife": ("periyamma", ""),
+        "father's younger brother": ("chithappa", ""), "father's younger brother's wife": ("chithi", ""),
+        "mother's elder sister": ("periyamma", ""), "mother's younger sister": ("chithi", ""),
+        "cousin (periyappa/chithappa's child)": ("anna / akka / thambi / thangachi", "these cousins are called like brothers and sisters"),
+        "cousin (maama/athai's son)": ("maama paiyan", "also 'machaan'"), "cousin (maama/athai's daughter)": ("maama ponnu", "also 'athai ponnu'"),
+        "elder brother's wife": ("anni", ""), "mother-in-law": ("maamiyaar", ""), "father-in-law": ("maamanaar", ""),
+        "nephew": ("marumagan", ""), "niece": ("marumagal", ""), "great grandmother": ("kollu paatti", ""),
+        "great grandfather": ("kollu thaatha", ""), "family tree": ("kudumba maram", ""), "relationship": ("uravu", ""),
+        "only child": ("ore kuzhandhai", ""), "older": ("periya", "older sister = 'periya akka'"), "younger": ("chinna", ""),
+    },
+    "🍲 Even more food": {
+        "idiyappam": ("idiyappam", ""), "appam": ("aappam", ""), "kozhukattai": ("kozhukattai", ""), "sundal": ("sundal", ""),
+        "kootu": ("koottu", ""), "aviyal": ("aviyal", ""), "poriyal": ("poriyal", ""), "bonda": ("bonda", ""), "bajji": ("bajji", ""),
+        "samosa": ("samosa", ""), "mysore pak": ("mysore paagu", ""), "jalebi": ("jilebi", ""), "gulab jamun": ("gulaab jaamun", ""),
+        "dates": ("perichampazham", ""), "fig": ("aththippazham", ""), "custard apple": ("seethaappazham", ""),
+        "sweet lime": ("saaththukudi", ""), "pear": ("berikkaai", ""), "coconut water": ("ilaneer", ""),
+        "sugarcane juice": ("karumbu juice", ""), "cashew": ("mundhiri", ""), "almond": ("baadhaam", ""), "pistachio": ("pista", ""),
+        "raisins": ("ularndha thiraatchai", ""), "millet": ("sirudhaaniyam", ""), "ragi": ("kezhvaragu", ""), "oats": ("oats", ""),
+        "cheese": ("cheese", ""), "paneer": ("paneer", ""), "cream": ("cream", ""), "chips": ("chips", ""), "popcorn": ("popcorn", ""),
+        "sandwich": ("sandwich", ""), "pizza": ("pizza", ""), "pasta": ("pasta", ""), "soup": ("soup", ""), "sauce": ("sauce", ""),
+        "lunch box food": ("tiffin", ""), "leftovers": ("meedhi saapaadu", ""), "hungry tummy": ("pasi vayiru", ""),
+    },
+})
+
 BASE_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
@@ -2163,20 +2493,20 @@ def tamil_script(roman: str) -> str:
 
 
 @st.cache_data(show_spinner=False, max_entries=2000)
-def _gtts_b64(roman: str):
+def _gtts_b64(script: str):
     """Google Tamil voice via gTTS (needs internet). Raises on failure so failures aren't remembered."""
     from io import BytesIO
     from gtts import gTTS
     buf = BytesIO()
-    gTTS(text=tamil_script(roman), lang="ta", slow=False, timeout=5).write_to_fp(buf)
+    gTTS(text=script, lang="ta", slow=False, timeout=5).write_to_fp(buf)
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def tamil_audio_b64(roman: str):
+def tamil_audio_b64(text: str, is_script=False):
     if st.session_state.get("tts_off"):
         return None
     try:
-        return _gtts_b64(roman)
+        return _gtts_b64(text if is_script else tamil_script(text))
     except Exception:
         st.session_state.tts_off = True   # use the iPad's own voice for the rest of this visit
         return None
@@ -2211,11 +2541,129 @@ if (window.speechSynthesis) speechSynthesis.getVoices();
 def say_buttons(items, height=56):
     """items: list of (label, roman). Shows 🔊 buttons that pronounce the Tamil."""
     data_items, buttons = [], []
-    for n, (label, roman) in enumerate(items):
-        data_items.append({"roman": roman, "ta": tamil_script(roman), "b64": tamil_audio_b64(roman)})
+    for n, item in enumerate(items):
+        label, roman = item[0], item[1]
+        script = item[2] if len(item) > 2 and item[2] else tamil_script(roman)
+        data_items.append({"roman": roman, "ta": script, "b64": tamil_audio_b64(script, is_script=True)})
         buttons.append(f'<button onclick="say({n},1)">🔊 {html_safe(label)}</button>')
     buttons.append(f'<button class="slow" onclick="say({len(items) - 1 if len(items) == 1 else 0},0.7)">🐢 Slowly</button>')
     _embed(SAY_HTML.replace("__BUTTONS__", "".join(buttons)).replace("__ITEMS__", json.dumps(data_items)), height)
+
+
+# ------------------- Tamil script -> English letters (for online look-ups) -------------------
+_T_VOW = {"அ": "a", "ஆ": "aa", "இ": "i", "ஈ": "ee", "உ": "u", "ஊ": "oo", "எ": "e", "ஏ": "e", "ஐ": "ai",
+          "ஒ": "o", "ஓ": "o", "ஔ": "au"}
+_T_SIGN = {"ா": "aa", "ி": "i", "ீ": "ee", "ு": "u", "ூ": "oo", "ெ": "e", "ே": "e", "ை": "ai", "ொ": "o", "ோ": "o",
+           "ௌ": "au"}
+_T_CON = {"க": "k", "ங": "ng", "ச": "s", "ஞ": "nj", "ட": "d", "ண": "n", "த": "th", "ந": "n", "ப": "p", "ம": "m",
+          "ய": "y", "ர": "r", "ல": "l", "வ": "v", "ழ": "zh", "ள": "l", "ற": "r", "ன": "n", "ஜ": "j", "ஷ": "sh",
+          "ஸ": "s", "ஹ": "h"}
+
+
+def roman_from_tamil(text: str) -> str:
+    """Readable English letters for Tamil script, e.g. தண்ணீர் -> thanneer."""
+    out = []
+    for word in re.split(r"(\s+)", text):
+        sylls, i = [], 0   # list of (consonant or None, vowel_text or "" for pulli)
+        while i < len(word):
+            ch = word[i]
+            if ch in _T_VOW:
+                sylls.append((None, _T_VOW[ch])); i += 1
+            elif ch in _T_CON:
+                nxt = word[i + 1] if i + 1 < len(word) else ""
+                if nxt == "்":
+                    sylls.append((ch, "")); i += 2
+                elif nxt in _T_SIGN:
+                    sylls.append((ch, _T_SIGN[nxt])); i += 2
+                else:
+                    sylls.append((ch, "a")); i += 1
+            else:
+                sylls.append((None, ch if ch.isascii() else "")); i += 1
+        res = ""
+        for n, (c, v) in enumerate(sylls):
+            if c is None:
+                res += v
+                continue
+            prev = sylls[n - 1] if n > 0 else (None, " ")
+            nxt = sylls[n + 1] if n + 1 < len(sylls) else (None, " ")
+            prev_pulli = prev[0] is not None and prev[1] == ""
+            first_half = v == "" and nxt[0] == c          # first part of a double letter, e.g. ட் in ட்ட
+            second_half = prev_pulli and prev[0] == c
+            sound = _T_CON[c]
+            if first_half:
+                sound = {"க": "k", "ட": "t", "த": "th", "ப": "p", "ச": "", "ற": "t"}.get(c, sound)
+            elif second_half:
+                sound = {"க": "k", "ட": "t", "த": "th", "ப": "p", "ச": "ch", "ற": "r"}.get(c, sound)
+            elif v == "" and c in ("க", "ட", "ப") and nxt[0] is not None:
+                sound = {"க": "k", "ட": "t", "ப": "p"}[c]           # e.g. ஆக்டோபஸ் -> aaktopas
+            elif c == "க":
+                sound = "k" if n == 0 or (prev_pulli and prev[0] != "ங") else "g"
+            elif c == "ச":
+                sound = ("j" if prev_pulli and prev[0] == "ஞ" else
+                         "ch" if prev_pulli and prev[0] in ("ட", "ற") else "s")
+            elif c == "த":
+                sound = "th" if n == 0 or (prev_pulli and prev[0] != "ந") else "dh"
+            elif c == "ப":
+                sound = "b" if prev_pulli and prev[0] == "ம" else "p"
+            elif c == "ட" and prev_pulli and prev[0] not in ("ண",):
+                sound = "t"
+            elif c == "ற":
+                sound = "dr" if prev_pulli and prev[0] == "ன" else "r"
+            elif c == "ட" and v == "" and nxt[0] in ("ச",):
+                sound = "t"
+            if v == "" and ((c == "ஞ" and nxt[0] == "ச") or (c == "ங" and nxt[0] == "க")):
+                sound = "n"
+            res += sound + v
+        res = re.sub(r"aay$", "aai", res)
+        out.append(res)
+    return "".join(out)
+
+
+TAMIL_RE = re.compile("[\u0B80-\u0BFF]")
+ONLINE_NOTE = "🌐 From an online dictionary: usually written (formal) Tamil — check with a grown-up how your family says it."
+
+
+def _translate_google(q: str):
+    from deep_translator import GoogleTranslator
+    return GoogleTranslator(source="en", target="ta").translate(q)
+
+
+def _translate_mymemory(q: str):
+    r = requests.get("https://api.mymemory.translated.net/get", params={"q": q, "langpair": "en|ta"}, timeout=6)
+    r.raise_for_status()
+    return r.json()["responseData"]["translatedText"]
+
+
+@st.cache_data(show_spinner=False, max_entries=5000, ttl=60 * 60 * 24 * 7)
+def _online_tamil_cached(q: str):
+    import concurrent.futures as cf
+    answered = False
+    for fn in (_translate_google, _translate_mymemory):
+        try:
+            with cf.ThreadPoolExecutor(max_workers=1) as ex:
+                ta = ex.submit(fn, q).result(timeout=7)
+            answered = True
+            if ta and TAMIL_RE.search(ta):
+                return ta.strip()
+        except Exception:
+            continue
+    if answered:
+        return None                      # the dictionary replied but had no Tamil for it
+    raise ConnectionError("online dictionary not reachable")
+
+
+def online_tamil(q: str):
+    """Tamil script for an English word/phrase from an online dictionary, or None (never remembers failures)."""
+    import time
+    if time.time() < st.session_state.get("online_pause_until", 0):
+        return None
+    try:
+        return _online_tamil_cached(q.strip().lower())
+    except ConnectionError:
+        st.session_state.online_pause_until = time.time() + 30   # internet trouble: short pause, then try again
+        return None
+    except Exception:
+        return None
 
 
 # =================================== APP ===================================
@@ -2976,9 +3424,11 @@ def all_tamil_words(d):
     words = {}
     for cat, items in TAMIL_WORDS.items():
         for en, (ta, note) in items.items():
-            words[en.lower()] = (ta, note, cat)
+            words.setdefault(en.lower(), (ta, note, cat))   # first entry wins if a word appears twice
     for v in TAMIL_VERBS:
         words.setdefault(v[0], (v[3], v[7], "🏃 Doing words"))
+    for en, v in d.get("tamil_online", {}).items():
+        words.setdefault(en.lower(), (v.get("tamil", ""), ONLINE_NOTE, "🌐 Looked up online"))
     for en, v in d.get("tamil_custom", {}).items():
         words[en.lower()] = (v.get("tamil", ""), v.get("note", ""), "⭐ Added by a grown-up")
     return words
@@ -3008,6 +3458,7 @@ def lookup_tamil(query, words):
     for cand in (q.rstrip("s"), q[:-2] if q.endswith("es") else None, stripped):
         if cand and cand in words:
             return [("word", cand, *words[cand])], []
+    out.append(("split",))   # marker: found word-by-word, not as a whole phrase
     for w in q.split():
         if w in vidx:
             out.append(vidx[w])
@@ -3016,8 +3467,9 @@ def lookup_tamil(query, words):
             if cand in words:
                 out.append(("word", cand, *words[cand]))
                 break
-    if out:
+    if len(out) > 1:
         return out, []
+    out = []
     import difflib
     return [], difflib.get_close_matches(q, list(words) + list(vidx), n=5, cutoff=.72)
 
@@ -3064,6 +3516,15 @@ def verb_card(kind, i, label):
     say_buttons([(f"{cmd}!", cmd), ("I do", f"naan {now}"), ("I did", f"naan {did}"), ("I will", f"naan {will}")], height=96)
 
 
+def save_online_word(en, roman, script):
+    def change(d):
+        d.setdefault("tamil_online", {})[en] = {"tamil": roman, "script": script}
+        lst = d.setdefault("tamil_saved", [])
+        if en not in lst:
+            lst.append(en)
+    update(change)
+
+
 def save_my_word(en):
     def change(d):
         lst = d.setdefault("tamil_saved", [])
@@ -3081,6 +3542,22 @@ with tab_tamil:
         q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, went, I'm tired, broken")
         if q.strip():
             found, sugg = lookup_tamil(q, words)
+            if found and found[0] == ("split",):
+                found = found[1:]
+                qq = re.sub(r"\s+", " ", q.strip().lower())
+                with st.spinner("Looking up the whole sentence… 🌐"):
+                    script = online_tamil(qq) if len(qq) <= 60 else None
+                if script:
+                    roman = roman_from_tamil(script)
+                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
+                                f'<div class="wotd">{html_safe(roman)}</div>'
+                                f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
+                                f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
+                                unsafe_allow_html=True)
+                    say_buttons([("Say it", roman, script)])
+                    st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
+                              args=(qq, roman, script))
+                st.markdown("**Word by word:**")
             if found:
                 for res in found:
                     if res[0] == "word":
@@ -3099,7 +3576,21 @@ with tab_tamil:
                             st.button(f"⭐ Save '{base}' to My Tamil words", key=f"tsave_v_{base}", on_click=save_my_word,
                                       args=(base,))
             else:
-                st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
+                qq = re.sub(r"\s+", " ", q.strip().lower())
+                with st.spinner("Looking it up in the online dictionary… 🌐"):
+                    script = online_tamil(qq) if len(qq) <= 60 else None
+                if script:
+                    roman = roman_from_tamil(script)
+                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
+                                f'<div class="wotd">{html_safe(roman)}</div>'
+                                f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
+                                f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
+                                unsafe_allow_html=True)
+                    say_buttons([("Say it", roman, script)])
+                    st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
+                              args=(qq, roman, script))
+                else:
+                    st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
                 if sugg:
                     st.markdown("Did you mean: " + ", ".join(f"**{md_safe(s_)}**" for s_ in sugg) + "?")
     tip_i = today.toordinal() % len(TAMIL_TIPS)
@@ -3111,7 +3602,8 @@ with tab_tamil:
                     unsafe_allow_html=True)
     st.markdown("### 📚 Browse words by topic")
     cats = (["🏃 Doing words (verb table)", "💛 Feeling words (I know, I like…)"] + list(TAMIL_WORDS)
-            + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else []))
+            + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else [])
+            + (["🌐 Looked up online"] if data.get("tamil_online") else []))
     cat = st.selectbox("Topic", cats, key="tamil_cat")
     if cat.startswith("🏃"):
         rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
@@ -3745,6 +4237,28 @@ def add_tamil_word():
         st.session_state.parent_note = f"🗣️ Added: {en} → {ta}"
 
 
+def add_tamil_bulk():
+    added = {}
+    for line in str(st.session_state.get("tw_bulk", "")).splitlines():
+        if "=" not in line:
+            continue
+        en, rest = line.split("=", 1)
+        ta, _, note = rest.partition("|")
+        en, ta = en.strip().lower(), ta.strip()
+        if en and ta:
+            added[en] = {"tamil": ta, "note": note.strip()}
+    if not added:
+        st.session_state.parent_note = "Nothing to add — use the format: english = tamil"
+        return
+
+    def change(d):
+        d.setdefault("tamil_custom", {}).update(added)
+
+    if update(change):
+        st.session_state.tw_bulk = ""
+        st.session_state.parent_note = f"🗣️ Added {len(added)} Tamil word{'s' if len(added) != 1 else ''}."
+
+
 def send_message():
     text = str(st.session_state.get("parent_msg", "")).strip()
     if not text:
@@ -3964,6 +4478,11 @@ with tab_parent:
         tc2.text_input("Tamil (in English letters)", key="tw_ta")
         tc3.text_input("Note (optional)", key="tw_note")
         st.button("Add word", on_click=add_tamil_word)
+        with st.expander("➕ Add many words at once"):
+            st.caption("One word per line: english = tamil   (optionally add  | note). Example:\n"
+                       "rainbow = vaanavil\nkite = pattam | also 'paattam'")
+            st.text_area("Words", key="tw_bulk", height=140, placeholder="rainbow = vaanavil\nkite = pattam")
+            st.button("Add all", on_click=add_tamil_bulk)
         if data.get("tamil_custom"):
             st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
 
