@@ -281,7 +281,18 @@ ACCESSORIES = [
 ]
 SLOT_NAMES = {"head": "🎀 Head", "back": "🧚 Back", "face": "🕶️ Face", "neck": "🧣 Neck"}
 
+# "free": True = always available (not a reward). "icons" = the 4 tappable hero icons (emoji, joke key)
 THEMES = [
+    {"id": "icepalace", "name": "❄️ Ice Palace", "need": 0, "free": True,
+     "icons": [("❄️", "snow"), ("👑", "crown"), ("⛄", "snowman"), ("✨", "star")]},
+    {"id": "springprincess", "name": "🌷 Spring Princess", "need": 0, "free": True,
+     "icons": [("🌷", "flower"), ("👑", "crown"), ("🦌", "reindeer"), ("🍫", "chocolate")]},
+    {"id": "snowyfun", "name": "⛄ Snowy Fun", "need": 0, "free": True,
+     "icons": [("⛄", "snowman"), ("🥕", "carrot"), ("🦌", "reindeer"), ("❄️", "snow")]},
+    {"id": "planetpals", "name": "🪐 Planet Pals", "need": 0, "free": True,
+     "icons": [("☀️", "sun"), ("🪐", "planet"), ("🌍", "earth"), ("🌙", "moon")]},
+    {"id": "sunnysolar", "name": "☀️ Sunny Solar", "need": 0, "free": True,
+     "icons": [("☀️", "sun"), ("☄️", "comet"), ("🚀", "rocket"), ("⭐", "star")]},
     {"id": "rainbow", "name": "🌈 Rainbow", "need": 0},
     {"id": "candy", "name": "🍬 Candy", "need": 3},
     {"id": "ocean", "name": "🌊 Ocean", "need": 7},
@@ -489,6 +500,77 @@ ICON_JOKES = {
         "Why did the star go to school? To get brighter! ⭐",
     ],
 }
+ICON_JOKES.update({
+    "snow": [
+        "Fact: Every snowflake has six sides (or six points)! ❄️",
+        "Fact: Snow looks white, but each little ice crystal is actually clear like glass! 🧊",
+        "What do snowflakes like to do on holiday? Chill out! 😎",
+        "Fact: The biggest snowflake ever reported was said to be as wide as a dinner plate! 🍽️",
+    ],
+    "crown": [
+        "Why did the princess bring a ladder to the ball? To reach the high notes! 🎶",
+        "Fact: Some royal crowns have more than 2,000 diamonds! 💎",
+        "What's a queen's favourite weather? Reign! 🌧️👑",
+    ],
+    "snowman": [
+        "What do snowmen eat for breakfast? Frosted flakes! 🥣",
+        "Where do snowmen keep their money? In a snow bank! 🏦",
+        "What do you call a snowman in summer? A puddle! 💧",
+        "What do snowmen like to do at parties? Chill! 🎉",
+    ],
+    "reindeer": [
+        "Fact: Reindeer are the only deer where the girls grow antlers too! 🦌",
+        "Fact: Reindeer eyes change colour — golden in summer and blue in winter! 👀",
+        "Why did the reindeer get a ticket? It was caught speeding through the snow! 🚓",
+    ],
+    "flower": [
+        "Fact: Tulips can keep growing about 2 cm after they're cut and put in a vase! 🌷",
+        "What did the big flower say to the little flower? Hi, bud! 🌱",
+        "Fact: Sunflowers turn to follow the Sun when they're young! 🌻",
+    ],
+    "chocolate": [
+        "Fact: Chocolate comes from cocoa beans that grow in pods on trees! 🍫",
+        "Fact: Long ago, cocoa beans were used as money in Central America! 🪙",
+        "Why did the chocolate bar go to school? To become a smarty! 🎓",
+    ],
+    "carrot": [
+        "Fact: Long ago, carrots were purple and yellow — orange ones came later! 🥕",
+        "What's a carrot's favourite game? Root-ball! ⚽",
+    ],
+    "sun": [
+        "Fact: About 1.3 million Earths could fit inside the Sun! ☀️",
+        "Fact: Sunlight takes about 8 minutes to reach Earth! ⏱️",
+        "Why did the Sun go to school? To get brighter! 🎓",
+        "Fact: The Sun is so big it holds almost all the mass of our solar system! 🌞",
+    ],
+    "planet": [
+        "Fact: Saturn is so light that it would float in a giant bathtub! 🛁🪐",
+        "Fact: Jupiter is the biggest planet — more than 1,300 Earths could fit inside! 🟠",
+        "Fact: A day on Venus is longer than its whole year! 🤯",
+        "How do you throw a space party? You planet! 🎉",
+        "Fact: Neptune has the fastest winds in the solar system! 💨",
+        "Fact: Mars has the tallest volcano we know of, Olympus Mons! 🌋",
+    ],
+    "earth": [
+        "Fact: Earth is the only planet not named after a god or goddess! 🌍",
+        "Fact: About 71% of Earth is covered by water! 🌊",
+        "Fact: Earth spins at about 1,600 km per hour at the equator! 🌀",
+    ],
+    "moon": [
+        "Fact: The Moon is slowly moving away from Earth — about 4 cm every year! 🌙",
+        "Fact: Footprints on the Moon can last for millions of years, because there's no wind! 👣",
+        "Why did the cow jump over the Moon? To get to the Milky Way! 🐄🥛",
+    ],
+    "comet": [
+        "Fact: Comets are giant dirty snowballs made of ice, dust and rock! ☄️",
+        "Fact: A comet's tail always points away from the Sun! ➡️",
+    ],
+    "rocket": [
+        "Fact: Astronauts grow a little taller in space! 📏🚀",
+        "Fact: In space, astronauts can't cry tears that fall — they float as little balls! 💧",
+        "What do astronauts eat their lunch on? Satellite dishes! 🍽️",
+    ],
+})
 ANIMATED_FRIENDS = True        # friendly characters cross the screen now and then (tap them!)
 # Each friend: emoji, row (pixels from the bottom), seconds per full cycle, start delay, style, sound, sayings
 FRIENDS = [
@@ -1455,6 +1537,79 @@ THEME_CSS = {
         radial-gradient(circle at 50% 95%, rgba(160,255,230,.6) 0, transparent 40%),
         linear-gradient(160deg, #ffe6f2 0%, #f1e4ff 50%, #e1f7ff 100%); }""",
 }
+
+SNOW_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E"
+            "%3Cg stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' opacity='.85' transform='translate(45 45)'%3E"
+            "%3Cpath d='M0-16V16M-14-8L14 8M-14 8L14-8M0-16l-4-4M0-16l4-4M0 16l-4 4M0 16l4 4'/%3E%3C/g%3E%3C/svg%3E")
+THEME_CSS.update({
+    "icepalace": f""".stApp {{ background-color: #dff3ff; background-image: url("{SNOW_SVG}"),
+        radial-gradient(circle at 15% 10%, rgba(255,255,255,.9) 0, transparent 35%),
+        radial-gradient(circle at 85% 30%, rgba(196,170,255,.45) 0, transparent 40%),
+        linear-gradient(180deg, #e9f7ff 0%, #bfe6ff 55%, #a9d4f5 100%);
+        background-size: 90px 90px, 100% 100%, 100% 100%, 100% 100%; }}
+        .hero .title {{ background: linear-gradient(90deg,#3a8dde,#7fd3ff,#b18cff,#3a8dde); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }}
+        .balance {{ background: linear-gradient(90deg,#4aa8ff,#9b7bff); }}
+        .hero, [data-testid="stVerticalBlockBorderWrapper"], .card {{ border-color: #b9e2ff !important; }}
+        h3 {{ color: #24518a !important; }}""",
+    "springprincess": """.stApp { background:
+        radial-gradient(circle at 10% 12%, rgba(255,160,205,.55) 0, transparent 32%),
+        radial-gradient(circle at 90% 20%, rgba(120,215,200,.5) 0, transparent 34%),
+        radial-gradient(circle at 20% 90%, rgba(170,225,150,.5) 0, transparent 34%),
+        radial-gradient(circle at 85% 88%, rgba(255,205,140,.5) 0, transparent 30%),
+        linear-gradient(180deg, #fff2f8 0%, #f2fff8 100%); }
+        .hero .title { background: linear-gradient(90deg,#d6337f,#ff7fb6,#2fb5a0,#d6337f); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }
+        .balance { background: linear-gradient(90deg,#e0458f,#2fb5a0); }
+        .hero, [data-testid="stVerticalBlockBorderWrapper"], .card { border-color: #ffc4de !important; }
+        h3 { color: #8a1f55 !important; }""",
+    "snowyfun": f""".stApp {{ background-color: #f4fbff; background-image: url("{SNOW_SVG}"),
+        radial-gradient(ellipse at 50% 110%, #ffffff 0, #ffffff 30%, transparent 31%),
+        linear-gradient(180deg, #cfeeff 0%, #e8f7ff 60%, #ffffff 100%);
+        background-size: 70px 70px, 100% 100%, 100% 100%; }}
+        .hero .title {{ background: linear-gradient(90deg,#ff8a1f,#ffb347,#38a8f5,#ff8a1f); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }}
+        .balance {{ background: linear-gradient(90deg,#ff8a1f,#38a8f5); }}
+        .hero, [data-testid="stVerticalBlockBorderWrapper"], .card {{ border-color: #c6e8ff !important; }}
+        h3 {{ color: #1f5c8a !important; }}""",
+    "planetpals": """.stApp { background:
+        radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+        radial-gradient(2px 2px at 110px 140px, #fff7c2, transparent),
+        radial-gradient(1.5px 1.5px at 170px 60px, #ffffff, transparent),
+        radial-gradient(circle at 4% 6%, #fff3a0 0, #ffc21a 7%, #ff9a1f 10%, rgba(255,154,31,.35) 13%, transparent 20%),
+        radial-gradient(circle at 95% 12%, #9fe0ff 0, #3a9be8 3.2%, #2a7a3a 4.4%, #2f8fe0 4.8%, transparent 5%),
+        radial-gradient(circle at 96% 46%, #ffc4a3 0, #e2603a 3.2%, transparent 3.4%),
+        radial-gradient(ellipse 9% 1.6% at 5% 62%, transparent 55%, rgba(255,226,160,.95) 62%, transparent 72%),
+        radial-gradient(circle at 5% 62%, #ffe9b8 0, #e0aa5c 4%, transparent 4.2%),
+        repeating-linear-gradient(0deg, transparent 0 6px, rgba(160,90,40,.35) 6px 10px),
+        linear-gradient(180deg, #3b3f9e 0%, #5a56c4 45%, #7c6fd6 100%);
+        background-size: 200px 200px, 200px 200px, 200px 200px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 0 0, 100% 100%;
+        background-attachment: fixed; }
+        .stApp::after { content: ""; position: fixed; right: 3%; bottom: 4%; width: 110px; height: 110px; border-radius: 50%;
+        background: repeating-linear-gradient(170deg, #f4c58a 0 10px, #d98a4a 10px 18px, #fbe3c0 18px 24px);
+        box-shadow: inset -14px -10px 0 rgba(0,0,0,.12); pointer-events: none; z-index: 0; opacity: .95; }
+        .hero .title { background: linear-gradient(90deg,#ffb020,#e2603a,#2f8fe0,#7a5cff,#ffb020); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }
+        .balance { background: linear-gradient(90deg,#ff9a1f,#3a6cf0); }
+        .hero, .card { border-color: #c9d4ff !important; }
+        [data-testid="stVerticalBlockBorderWrapper"] { background: rgba(255,255,255,.93); border-color: #c9d4ff !important; }
+        h3 { color: #22307a !important; }
+        .block-container { position: relative; z-index: 1; background: rgba(255,255,255,.80); border-radius: 28px;
+        padding: 1.5rem 1.4rem 2rem !important; margin-top: 1.2rem; }
+        [data-testid="stHeader"] { background: transparent; }""",
+    "sunnysolar": """.stApp { background:
+        radial-gradient(circle at 50% -10%, #fff6b0 0, #ffd23f 12%, rgba(255,160,40,.55) 22%, transparent 45%),
+        radial-gradient(circle at 50% -10%, transparent 0 52%, rgba(255,150,60,.35) 52.4%, transparent 53%),
+        radial-gradient(circle at 50% -10%, transparent 0 68%, rgba(255,120,80,.3) 68.4%, transparent 69%),
+        radial-gradient(circle at 50% -10%, transparent 0 84%, rgba(230,90,120,.25) 84.4%, transparent 85%),
+        linear-gradient(180deg, #fff4d6 0%, #ffe3c4 50%, #ffd6d6 100%);
+        background-attachment: fixed; }
+        .hero .title { background: linear-gradient(90deg,#ff7a00,#ffc400,#ff4f6d,#ff7a00); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }
+        .balance { background: linear-gradient(90deg,#ff8a00,#ff4f6d); }
+        .hero, [data-testid="stVerticalBlockBorderWrapper"], .card { border-color: #ffd59a !important; }
+        h3 { color: #8a3a00 !important; }""",
+})
 # ------------------------------ Year 4 maths bank ------------------------------
 def _frac(n, d):
     return f"{n}/{d}"
@@ -2745,10 +2900,11 @@ if dollars["paid"] or dollars["owed"]:
     pills += f'<span class="badge money">💵 &#36;{dollars["paid"]} earned</span>'
 if small_ws["ok"] or big_ws["ok"]:
     pills += '<span class="badge spin">🎡 Spin waiting!</span>'
+_th = next((t for t in THEMES if t["id"] == theme_id), {})
+_icons = _th.get("icons") or [("🦄", "unicorn"), ("🐰", "bunny"), ("🌈", "rainbow"), ("✨", "star")]
+_floats = "".join(f'<div class="float f{i + 1}" data-joke="{k}" title="Tap me!">{e}</div>' for i, (e, k) in enumerate(_icons))
 st.markdown(
-    f"""<div class="hero"><div class="float f1" data-joke="unicorn" title="Tap me!">🦄</div>
-<div class="float f2" data-joke="bunny" title="Tap me!">🐰</div>
-<div class="float f3" data-joke="rainbow" title="Tap me!">🌈</div><div class="float f4" data-joke="star" title="Tap me!">✨</div>
+    f"""<div class="hero">{_floats}
 <div class="title">Hi {html_safe(STUDENT_NAME)}!</div>
 <div class="sub">{today.strftime("%A, %d %B %Y")}</div>
 <div class="balance">⏳ {bal["balance"]} min screen time left</div><br>{pills}</div>""",
@@ -4111,8 +4267,15 @@ with tab_pet:
 
     st.markdown("### 🎨 My themes")
     with st.container(border=True):
+        st.markdown("**✨ Pick any time**")
+        fcols = st.columns(3)
+        for i, th in enumerate([t for t in THEMES if t.get("free")]):
+            fcols[i % 3].button(th["name"] + (" ✔️" if th["id"] == theme_id else ""), key=f"theme_{th['id']}",
+                                disabled=th["id"] == theme_id, on_click=set_theme, args=(th["id"],),
+                                use_container_width=True)
+        st.markdown("**⭐ Star-day themes**")
         tcols = st.columns(3)
-        for i, th in enumerate(THEMES):
+        for i, th in enumerate([t for t in THEMES if not t.get("free")]):
             ok = star_days >= th["need"]
             label = (th["name"] if ok else "🎁 Mystery theme") + (" ✔️" if th["id"] == theme_id else "") + ("" if ok else f" 🔒 {th['need']}⭐")
             tcols[i % 3].button(label, key=f"theme_{th['id']}", disabled=not ok or th["id"] == theme_id,
