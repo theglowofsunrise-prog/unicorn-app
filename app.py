@@ -32,6 +32,12 @@ CARROT_SWAP_MINUTES = 30
 TOY_FUND_STEP = 10             # $ added to the toy fund per win
 TOY_FUND_TARGET = 30           # $ needed before the toy shop trip
 RESTAURANT_GAP_DAYS = 21       # days between restaurant dinners
+WEEKEND_RULES_FROM = "2026-10-17"   # weekend must-do rules start on this Saturday
+WEEKEND_MUST = ["chalisa", "tidy", "exercise", "meditate", "sit1", "sit2"]   # extra must-dos on Sat & Sun
+WEEKEND_CHALISA_PARTS = 2      # Chalisa parts to learn (and recite to a grown-up) every weekend
+CHALISA_REPEATS = 21           # times to say each part before it can be recited to a grown-up
+WEEKEND_MAX_STRETCH = 40       # weekends: most screen minutes in one go, even with more saved
+QUOTE_HOURS = 4                # a new inspiring quote every 4 hours
 
 # id: short code (don't change once she has progress)   minutes: screen time it earns
 # required: True = must be done before ANY screen time unlocks that day
@@ -40,8 +46,8 @@ TASKS = [
      "required": True, "section": "must"},
     {"id": "speak", "emoji": "🗣️", "name": f"Speak {LANGUAGE} for 10 minutes", "minutes": 10,
      "required": True, "section": "must"},
-    {"id": "write1", "emoji": "✏️", "name": "English writing – piece 1", "minutes": 5, "section": "learn"},
-    {"id": "write2", "emoji": "📝", "name": "English writing – piece 2", "minutes": 5, "section": "learn"},
+    {"id": "write1", "emoji": "✏️", "name": "English writing – piece 1 (on paper)", "minutes": 5, "section": "learn"},
+    {"id": "write2", "emoji": "📝", "name": "English writing – piece 2 (on paper)", "minutes": 5, "section": "learn"},
     {"id": "maths", "emoji": "🔢", "name": f"Solve {MATHS_TO_SOLVE} maths problems", "minutes": 5,
      "section": "learn", "auto": True},
     {"id": "read", "emoji": "📚", "name": "Read a book for 20 minutes", "minutes": 5, "section": "learn"},
@@ -52,10 +58,38 @@ TASKS = [
     {"id": "sit2", "emoji": "🦢", "name": "Sit perfectly still for 2 minutes", "minutes": 5, "section": "body"},
     {"id": "sing", "emoji": "🎤", "name": "Practise singing for 15 minutes", "minutes": 5, "section": "habits"},
     {"id": "bed", "emoji": "🌙", "name": "Was in bed by 9:30 pm last night", "minutes": 0, "section": "habits"},
+    # weekend-only tasks (Saturday & Sunday)
+    {"id": "chalisa", "emoji": "🙏", "name": "Hanuman Chalisa: practise this weekend's parts", "minutes": 5,
+     "section": "learn", "days": "weekend"},
+    {"id": "tidy", "emoji": "🧹", "name": "Tidy & organise my room, desk and play space for 20 minutes",
+     "minutes": 5, "section": "body", "days": "weekend"},
 ]
 
+
+def _as_date(d):
+    return d if isinstance(d, date) else date.fromisoformat(str(d))
+
+
+def weekend_rules(d) -> bool:
+    """True on Saturdays and Sundays from WEEKEND_RULES_FROM onwards."""
+    if d is None:
+        return False
+    d = _as_date(d)
+    return d.weekday() >= 5 and d.isoformat() >= WEEKEND_RULES_FROM
+
+
+def tasks_for(d):
+    return [t for t in TASKS if t.get("days") != "weekend" or weekend_rules(d)]
+
+
+def required_ids(d) -> set:
+    req = {t["id"] for t in TASKS if t.get("required")}
+    if weekend_rules(d):
+        req |= set(WEEKEND_MUST)
+    return req
+
 SECTIONS = [
-    ("must", "🦄 Must do every day"),
+    ("must", "🦄 Must do today"),
     ("learn", "🐰 Learning tasks"),
     ("body", "🌈 Body & calm"),
     ("habits", "🌙 Singing & sleep"),
@@ -571,8 +605,157 @@ ICON_JOKES.update({
         "What do astronauts eat their lunch on? Satellite dishes! 🍽️",
     ],
 })
-ANIMATED_FRIENDS = True        # friendly characters cross the screen now and then (tap them!)
-# Each friend: emoji, row (pixels from the bottom), seconds per full cycle, start delay, style, sound, sayings
+
+# Inspiring quotes: (quote, who said it, who they were, what it means). A new one every QUOTE_HOURS hours.
+QUOTES = [
+    ("I have no special talents. I am only passionately curious.", "Albert Einstein", "scientist",
+     "Being curious and asking lots of questions is a superpower."),
+    ("Imagination is more important than knowledge.", "Albert Einstein", "scientist",
+     "Dreaming up new ideas helps us discover things nobody knows yet."),
+    ("Life is like riding a bicycle. To keep your balance, you must keep moving.", "Albert Einstein",
+     "scientist, in a letter to his son", "Keep going, even when things wobble!"),
+    ("Nothing in life is to be feared, it is only to be understood.", "Marie Curie",
+     "scientist who won two Nobel Prizes", "When something feels scary, learning about it makes it smaller."),
+    ("If I have seen further, it is by standing on the shoulders of giants.", "Isaac Newton", "scientist",
+     "We learn so much from the people who came before us — teachers, parents and books."),
+    ("Genius is one percent inspiration and ninety-nine percent perspiration.", "Thomas Edison", "inventor",
+     "Great work is mostly hard work. (Perspiration means sweat!)"),
+    ("Chance favours the prepared mind.", "Louis Pasteur", "scientist",
+     "Good luck comes most often to people who have practised and prepared."),
+    ("Give me a place to stand, and I will move the Earth.", "Archimedes", "Greek mathematician",
+     "With a clever idea (like a lever!), you can do enormous things."),
+    ("Remember to look up at the stars and not down at your feet.", "Stephen Hawking", "scientist",
+     "Stay curious about the big, amazing universe."),
+    ("However difficult life may seem, there is always something you can do and succeed at.", "Stephen Hawking",
+     "scientist", "Even on hard days, there is always something you can do well."),
+    ("What you do makes a difference, and you have to decide what kind of difference you want to make.",
+     "Jane Goodall", "scientist who studied chimpanzees", "Every choice you make changes the world a little bit."),
+    ("Like what you do, and then you will do your best.", "Katherine Johnson", "NASA mathematician",
+     "When you enjoy something, you put your best into it."),
+    ("That's one small step for a man, one giant leap for mankind.", "Neil Armstrong",
+     "the first person to walk on the Moon", "Small steps can be part of something giant."),
+    ("Ask the right questions, and nature will open the doors to her secrets.", "C. V. Raman",
+     "Indian scientist who won the Nobel Prize", "Good questions are the key to big discoveries."),
+    ("Dream, dream, dream. Dreams transform into thoughts, and thoughts result in action.", "Dr A. P. J. Abdul Kalam",
+     "scientist and President of India, from Tamil Nadu", "Big dreams turn into plans, and plans turn into doing."),
+    ("If you want to shine like a sun, first burn like a sun.", "Dr A. P. J. Abdul Kalam",
+     "scientist and President of India, from Tamil Nadu", "To shine brightly, you have to put in the hard work first."),
+    ("Great things are done by a series of small things brought together.", "Vincent van Gogh", "painter",
+     "Lots of little efforts add up to something great."),
+    ("All truths are easy to understand once they are discovered; the point is to discover them.",
+     "Galileo Galilei", "scientist and astronomer", "Exploring and finding things out is the exciting part!"),
+    ("The most effective way to do it, is to do it.", "Amelia Earhart",
+     "first woman to fly solo across the Atlantic Ocean", "Stop waiting — just start!"),
+    ("A journey of a thousand miles begins with a single step.", "Lao Tzu", "Chinese philosopher",
+     "Every big goal starts with one small step."),
+    ("When I walk along with two others, they may serve me as my teachers.", "Confucius", "Chinese philosopher",
+     "You can learn something from everyone around you."),
+    ("To know what you know and to know what you do not know — that is true knowledge.", "Confucius",
+     "Chinese philosopher", "It's smart to say 'I don't know yet' — then you can learn it."),
+    ("While we teach, we learn.", "Seneca", "Roman philosopher",
+     "Explaining something to someone else helps you understand it better."),
+    ("Well begun is half done.", "Aristotle", "Greek philosopher",
+     "A good start makes the rest much easier."),
+    ("We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Will Durant",
+     "writer, explaining the ideas of Aristotle", "Doing something again and again (like 21 times!) makes you great at it."),
+    ("Waste no more time arguing about what a good man should be. Be one.", "Marcus Aurelius",
+     "Roman emperor and philosopher", "Don't just talk about being good — be good!"),
+    ("The mind is not a vessel to be filled, but a fire to be kindled.", "Plutarch", "Greek writer",
+     "Learning isn't just filling your head with facts — it's lighting up your curiosity."),
+    ("Wonder is the beginning of wisdom.", "Socrates", "Greek philosopher",
+     "Wondering 'why?' is how wisdom starts."),
+    ("Arise, awake, and stop not till the goal is reached.", "Swami Vivekananda", "Indian thinker and teacher",
+     "Get up, get going, and don't stop until you reach your goal."),
+    ("Strength does not come from physical capacity. It comes from an indomitable will.", "Mahatma Gandhi",
+     "leader of India's freedom movement", "Real strength is never giving up. (Indomitable = can't be beaten.)"),
+    ("Do your work with your whole heart, and don't worry about the reward.", "Bhagavad Gita",
+     "the simple meaning of verse 2.47", "Focus on doing your best; good things follow."),
+    ("We are what we think.", "The Buddha", "teacher, from the Dhammapada",
+     "Happy, kind thoughts help make a happy, kind you."),
+    ("It is not the mountain we conquer, but ourselves.", "Sir Edmund Hillary",
+     "one of the first two people to climb Mount Everest", "The biggest win is beating your own fears and doubts."),
+    ("How wonderful it is that nobody need wait a single moment before starting to improve the world.", "Anne Frank",
+     "young writer", "You can start making the world better right now — even today!"),
+    ("One child, one teacher, one book, one pen can change the world.", "Malala Yousafzai",
+     "youngest-ever Nobel Peace Prize winner", "Learning is powerful — and you have it!"),
+    ("Alone we can do so little; together we can do so much.", "Helen Keller",
+     "author who was deaf and blind", "Teamwork makes big things possible."),
+    ("The best and most beautiful things in the world cannot be seen or even touched — they must be felt with the heart.",
+     "Helen Keller", "author who was deaf and blind", "Love, kindness and friendship are the real treasures."),
+    ("You must do the thing you think you cannot do.", "Eleanor Roosevelt", "writer and leader",
+     "Try the thing that feels too hard — you might surprise yourself!"),
+    ("Do what you can, with what you have, where you are.", "Theodore Roosevelt", "President of the USA",
+     "You don't need everything to be perfect to start."),
+    ("If you can't fly, then run. If you can't run, then walk. If you can't walk, then crawl. But whatever you do, "
+     "you have to keep moving forward.", "Martin Luther King Jr.", "leader who fought for fairness",
+     "Keep going forward, even if it's slowly."),
+    ("Try to be a rainbow in someone's cloud.", "Maya Angelou", "poet and writer",
+     "Brighten someone's day when they are feeling sad."),
+    ("Well done is better than well said.", "Benjamin Franklin", "inventor and writer",
+     "Doing something is better than just talking about it."),
+    ("Lost time is never found again.", "Benjamin Franklin", "inventor and writer",
+     "Use your time wisely — you can't get it back."),
+    ("Whether you think you can, or you think you can't — you're right.", "Henry Ford", "car maker",
+     "Believing in yourself is the first step."),
+    ("Katrathu kai mann alavu, kallaathathu ulagalavu — what we have learned is a handful of sand; what we haven't "
+     "learned is as big as the world.", "Avvaiyar", "great Tamil poet", "There is always so much more to learn!"),
+    ("Ookkamathu kaividel — never give up your enthusiasm.", "Avvaiyar", "great Tamil poet, from Aathichoodi",
+     "Keep your energy and excitement, even when it's hard."),
+    ("Enn ezhuthu igazhel — never look down on numbers and letters.", "Avvaiyar",
+     "great Tamil poet, from Aathichoodi", "Maths and reading are treasures — treat them with respect!"),
+    ("Aram seya virumbu — love to do good deeds.", "Avvaiyar", "great Tamil poet, from Aathichoodi",
+     "Enjoy helping others and doing what's right."),
+    ("Learn well what you should learn, and then live by what you have learned.", "Thiruvalluvar",
+     "Tamil poet, Thirukkural 391", "Learning is best when you use it in your life."),
+    ("The deeper you dig a well in the sand, the more water flows; the more you learn, the more knowledge flows.",
+     "Thiruvalluvar", "Tamil poet, Thirukkural 396", "Keep learning and your knowledge keeps growing."),
+    ("Even when luck isn't on your side, hard work always brings its reward.", "Thiruvalluvar",
+     "Tamil poet, Thirukkural 619", "Effort always pays off."),
+    ("Saying harsh words when kind words are there is like picking an unripe fruit when a ripe one is right there.",
+     "Thiruvalluvar", "Tamil poet, Thirukkural 100", "Always choose the kind words."),
+    ("A lotus stem grows as tall as the water is deep; a person rises as high as their spirit.", "Thiruvalluvar",
+     "Tamil poet, Thirukkural 595", "Big hopes and a strong heart help you rise high."),
+    ("Odi vilaiyaadu paappa — run and play, little one; don't sit around being lazy!", "Subramania Bharati",
+     "great Tamil poet", "Move your body, play and stay active!"),
+    ("The more that you read, the more things you will know. The more that you learn, the more places you'll go.",
+     "Dr. Seuss", "children's author", "Reading opens doors to the whole world."),
+    ("Today you are You, that is truer than true. There is no one alive who is Youer than You.", "Dr. Seuss",
+     "children's author", "There is only one you — and that's wonderful!"),
+    ("If you have good thoughts they will shine out of your face like sunbeams and you will always look lovely.",
+     "Roald Dahl", "children's author, from The Twits", "Kind thoughts make you shine on the outside too."),
+    ("A little Consideration, a little Thought for Others, makes all the difference.", "A. A. Milne",
+     "author of Winnie-the-Pooh (said by Eeyore)", "Small acts of kindness matter a lot."),
+    ("No act of kindness, no matter how small, is ever wasted.", "Aesop", "storyteller, from The Lion and the Mouse",
+     "Even tiny kind acts can make a big difference."),
+    ("Slow and steady wins the race.", "Aesop", "storyteller, from The Tortoise and the Hare",
+     "Keep going steadily — you'll get there!"),
+    ("Fall seven times, stand up eight.", "Japanese proverb", "a wise saying from Japan",
+     "However many times you fall, get up one more time."),
+    ("I've failed over and over and over again in my life. And that is why I succeed.", "Michael Jordan",
+     "basketball champion", "Mistakes help you learn and get better."),
+    ("You miss 100% of the shots you don't take.", "Wayne Gretzky", "ice hockey champion",
+     "You have to try to have a chance of winning."),
+    ("Don't let what you cannot do interfere with what you can do.", "John Wooden", "famous basketball coach",
+     "Focus on all the things you CAN do."),
+    ("Success is no accident. It is hard work, perseverance, learning, studying, sacrifice and most of all, "
+     "love of what you are doing.", "Pelé", "football champion", "Success comes from hard work and loving what you do."),
+    ("Chase your dreams, because dreams do come true.", "Sachin Tendulkar", "cricket champion",
+     "Keep working toward your dreams."),
+    ("Don't count the days, make the days count.", "Muhammad Ali", "boxing champion",
+     "Make every day a good one!"),
+    ("I think a champion is defined not by their wins, but by how they can recover when they fall.",
+     "Serena Williams", "tennis champion", "Champions get back up after they fall."),
+    ("We all have dreams. But in order to make dreams come into reality, it takes an awful lot of determination, "
+     "dedication, self-discipline, and effort.", "Jesse Owens", "Olympic running champion",
+     "Dreams come true with effort and practice."),
+    ("I don't think limits.", "Usain Bolt", "fastest runner in the world",
+     "Don't decide what you can't do before you try."),
+    ("I'd rather regret the risks that didn't work out than the chances I didn't take at all.", "Simone Biles",
+     "Olympic gymnastics champion", "It's better to try and miss than never try at all."),
+]
+ANIMATED_FRIENDS = True        # friendly characters visit the screen now and then (tap them!)
+VISIT_EVERY_SECONDS = (120, 180)   # a new visitor every 2–3 minutes
+# Each friend: emoji, how it moves, sound when tapped, sayings (one pops up when it visits)
 FRIENDS = [
     {"id": "bunny", "emoji": "🐇", "bottom": 10, "cycle": 70, "delay": 4, "move": "hop", "sound": "boing", "says": [
         "Hop hop! I'm late for a carrot party! 🥕",
@@ -608,6 +791,99 @@ FRIENDS = [
         "I used to be a caterpillar! 🐛",
         "Flutter flutter… you're doing great! 💖",
         "My wings are like stained glass! 🌈"]},
+]
+
+FRIENDS += [
+    {"id": "twinkle", "emoji": "🌟", "move": "twinkle", "sound": "sparkle", "says": [
+        "Twinkle twinkle! Stars are giant balls of glowing gas! ✨",
+        "Our Sun is a star — the closest one to Earth! ☀️",
+        "Starlight can take thousands of years to reach your eyes! 👀",
+        "You're a star when you try your best! ⭐"]},
+    {"id": "trex", "emoji": "🦖", "move": "stomp", "sound": "grunt", "says": [
+        "RAWR! I'm a T. rex — my teeth were as long as bananas! 🍌",
+        "Dinosaurs lived millions of years before people! 🕰️",
+        "Birds are living relatives of dinosaurs! 🐦",
+        "My arms are tiny, but my brain says: never give up! 💪"]},
+    {"id": "dino", "emoji": "🦕", "move": "stomp", "sound": "grunt", "says": [
+        "Long-neck dinosaurs ate plants — like a giant salad! 🥗",
+        "Some long-neck dinosaurs were longer than 3 buses! 🚌🚌🚌",
+        "Fossils help scientists learn about dinosaurs! 🦴",
+        "Slow and steady — that's my style! 🐢"]},
+    {"id": "croc", "emoji": "🐊", "move": "swim", "sound": "grunt", "says": [
+        "Snap snap! Crocodiles have been around since the dinosaurs! 🦖",
+        "Saltwater crocodiles live in northern Australia! 🇦🇺",
+        "I can hold my breath underwater for a very long time! 🫧",
+        "Brush your teeth twice a day — I have about 60 of them! 🪥"]},
+    {"id": "dolphin", "emoji": "🐬", "move": "swim", "sound": "tweet", "says": [
+        "Dolphins call each other with special whistles — like names! 📣",
+        "Dolphins sleep with half their brain at a time! 😴",
+        "I'm a mammal, not a fish — I breathe air! 💨",
+        "Splash! Drink some water — stay hydrated! 💧"]},
+    {"id": "octopus", "emoji": "🐙", "move": "swim", "sound": "pop", "says": [
+        "I have three hearts and blue blood! 💙",
+        "Octopuses can change colour to hide! 🎨",
+        "Eight arms — perfect for doing homework AND maths! 📚",
+        "I squirt ink to escape! 🖋️"]},
+    {"id": "turtle", "emoji": "🐢", "move": "swim", "sound": "pop", "says": [
+        "Sea turtles can travel thousands of kilometres! 🌊",
+        "Slow and steady wins the race! 🏁",
+        "Please don't drop plastic — it hurts sea turtles! ♻️",
+        "Baby turtles race to the sea when they hatch! 🏃"]},
+    {"id": "whale", "emoji": "🐳", "move": "swim", "sound": "grunt", "says": [
+        "The blue whale is the biggest animal that ever lived! 🐋",
+        "Humpback whales sing songs that travel across the ocean! 🎶",
+        "Whales swim past the Queensland coast every winter! 🌊",
+        "Take a deep breath… and relax! 🧘"]},
+    {"id": "shark", "emoji": "🦈", "move": "swim", "sound": "boing", "says": [
+        "Sharks were around even before the dinosaurs! 🦖",
+        "Sharks have no bones — their skeleton is cartilage, like your ears! 👂",
+        "Some sharks lose thousands of teeth in their life — and grow new ones! 🦷",
+        "Keep swimming, keep learning! 🏊"]},
+    {"id": "crab", "emoji": "🦀", "move": "waddle", "sound": "pop", "says": [
+        "I walk sideways! Can you? ↔️",
+        "Crabs wear their skeleton on the outside! 🦴",
+        "Pinch pinch! Time to tidy up? 🧹",
+        "Don't be crabby — smile! 😄"]},
+    {"id": "owl", "emoji": "🦉", "move": "fly", "sound": "tweet", "says": [
+        "Hoo hoo! Owls can turn their heads really far around! 🔄",
+        "Wise owl tip: read a little every day! 📚",
+        "Owls fly almost silently! 🤫",
+        "Bedtime by 9:30 helps your brain grow! 🌙"]},
+    {"id": "bee", "emoji": "🐝", "move": "flutter", "sound": "tweet", "says": [
+        "Buzz! Bees do a waggle dance to tell friends where flowers are! 💃",
+        "Bees help plants grow fruit and veggies! 🍎",
+        "Be busy as a bee — finish your tasks! ✅",
+        "One bee makes only a tiny bit of honey in its whole life! 🍯"]},
+    {"id": "penguin", "emoji": "🐧", "move": "waddle", "sound": "boing", "says": [
+        "Penguins can't fly, but they're super swimmers! 🏊",
+        "Little penguins live in southern Australia! 🇦🇺",
+        "Emperor penguin dads keep the egg warm on their feet! 🥚",
+        "Waddle waddle… exercise time! 🤸"]},
+    {"id": "elephant", "emoji": "🐘", "move": "stomp", "sound": "grunt", "says": [
+        "Elephants never forget… well, they have amazing memories! 🧠",
+        "An elephant's trunk has thousands of muscles! 💪",
+        "Elephants greet friends by twisting trunks together! 🤝",
+        "Practise 21 times and you'll remember like an elephant! 🙏"]},
+    {"id": "rocket", "emoji": "🚀", "move": "fly", "sound": "sparkle", "says": [
+        "3… 2… 1… blast off! 🚀",
+        "It takes about 3 days to fly to the Moon! 🌙",
+        "Astronauts exercise every day in space to stay strong! 💪",
+        "Aim for the stars! ⭐"]},
+    {"id": "fairy", "emoji": "🧚", "move": "flutter", "sound": "sparkle", "says": [
+        "Sprinkle sprinkle! A kind word is real magic! ✨",
+        "Every time you try, you get a little stronger! 💖",
+        "Make your bed — it's a magic start to the day! 🛏️",
+        "Believe in yourself! 🌈"]},
+    {"id": "dragon", "emoji": "🐉", "move": "fly", "sound": "grunt", "says": [
+        "Real Komodo dragons live in Indonesia — they're giant lizards! 🦎",
+        "Breathe in like a dragon… and out slowly! 🧘",
+        "Brave like a dragon — try the hard maths problem! 🔢",
+        "Dragons guard treasure — your treasure is learning! 💎"]},
+    {"id": "robot", "emoji": "🤖", "move": "stomp", "sound": "tick", "says": [
+        "Beep boop! Robots help build cars and explore Mars! 🚗",
+        "Robots follow instructions called code! 💻",
+        "Practice makes progress! Beep! 🔁",
+        "Charging… done! Ready to learn! 🔋"]},
 ]
 
 # Days that should count as star days even though the rules were different back then
@@ -1485,6 +1761,15 @@ table.week tr.star td { font-weight: 600; background: #fffbe6; }
 .friend { position: fixed; left: 0; z-index: 6; pointer-events: none; font-size: 38px; transform: translateX(110vw); }
 .friend span { display: inline-block; pointer-events: auto; cursor: pointer; padding: 6px;
   -webkit-tap-highlight-color: transparent; user-select: none; }
+.quote { position: relative; background: linear-gradient(135deg,#fffdf3,#f4efff); border: 2px solid #e6d6ff;
+  border-radius: 22px; padding: 16px 20px 14px 54px; margin: 6px 0 14px; color: #3b2350; }
+.quote .qmark { position: absolute; left: 14px; top: -6px; font-size: 4.2rem; line-height: 1; color: #c9a8ff;
+  font-family: Georgia, serif; }
+.quote .qtext { font-size: 1.22rem; font-weight: 600; line-height: 1.4; }
+.quote .qwho { margin-top: 6px; color: #6b3f73; font-weight: 600; }
+.quote .qwho span { font-weight: 400; color: #8a6a96; }
+.quote .qmean { margin-top: 6px; color: #5a4300; background: #fff6cc; border-radius: 12px; padding: 4px 10px;
+  display: inline-block; font-size: .95rem; }
 .critter { position: fixed; left: 0; z-index: 4; pointer-events: none; font-size: 36px; will-change: transform; }
 .critter span { display: inline-block; }
 .critter.bunny { bottom: 10px; animation: run-across 38s linear 5s infinite; transform: translateX(110vw); }
@@ -1859,14 +2144,25 @@ def migrate(data, today: date):
     return data
 
 
+class DaySet(set):
+    """A set of task ids that also remembers which day it belongs to (weekends have extra must-dos)."""
+    key = None
+
+
+def day_set(items, key):
+    s = DaySet(items)
+    s.key = key
+    return s
+
+
 def counted_set(data, key: str) -> set:
     """Tasks that COUNT for rewards: ticked AND approved (grown-up or auto-checked). Older days count as ticked."""
     ticked = set(data["days"].get(key, []))
     start = data.get("approval_start")
     if not start or key < start:
-        return ticked
+        return day_set(ticked, key)
     ok = set(data.get("approved", {}).get(key, []))
-    return (ticked & ok) | ({"star"} & ticked)
+    return day_set((ticked & ok) | ({"star"} & ticked), key)
 
 
 def counted_days(data) -> dict:
@@ -1885,18 +2181,19 @@ def pending_on(data, d: date) -> set:
     return (ticked_on(data, d) - done_on(data, d)) & set(TASK_BY_ID)
 
 
-def task_minutes(done: set) -> int:
+def task_minutes(done: set, key=None) -> int:
     if "star" in done:          # a day a grown-up marked as a star day
         return DAILY_GOAL_MINUTES
-    if not all(t["id"] in done for t in TASKS if t.get("required")):
+    key = key or getattr(done, "key", None)
+    if not required_ids(key) <= set(done):
         return 0
     return min(sum(TASK_BY_ID[t]["minutes"] for t in done if t in TASK_BY_ID), DAILY_GOAL_MINUTES)
 
 
-def is_star_day(done: set) -> bool:
+def is_star_day(done: set, key=None) -> bool:
     if "star" in done:
         return True
-    return task_minutes(done) >= DAILY_GOAL_MINUTES
+    return task_minutes(done, key) >= DAILY_GOAL_MINUTES
 
 
 def balance_info(data):
@@ -2016,7 +2313,7 @@ def compute_stats(data):
 
     return {
         "active_days": sum(1 for v in days.values() if v),
-        "star_days": sum(is_star_day(set(v)) for v in days.values()),
+        "star_days": sum(is_star_day(v) for v in days.values()),
         "speak_days": count("speak"), "read_days": count("read"), "sing_days": count("sing"),
         "sit2_days": count("sit2"), "exercise_days": count("exercise"), "homework_days": count("homework"),
         "max_speak_streak": max_streak(data, "speak"), "max_bed_streak": max_streak(data, "bed"),
@@ -2061,6 +2358,40 @@ def bead_status(d):
     beads = BEADS_PER_PART * len(d.get("chalisa", {}))
     return {"beads": beads, "toward": beads % BEADS_FOR_MINUTES, "rewards_due": beads // BEADS_FOR_MINUTES,
             "all_done": len(d.get("chalisa", {})) >= len(CHALISA_PARTS)}
+
+
+def weekend_start(d: date):
+    """The Saturday of this weekend (or None on a weekday)."""
+    if d.weekday() == 5:
+        return d
+    if d.weekday() == 6:
+        return d - timedelta(days=1)
+    return None
+
+
+def weekend_chalisa(d, today: date):
+    """This weekend's Chalisa goal: learn the next 2 parts (or revise 2 once all are learned)."""
+    sat = weekend_start(today)
+    if sat is None:
+        return None
+    days_ = {sat.isoformat(), (sat + timedelta(days=1)).isoformat()}
+    ch = d.get("chalisa", {})
+    before = {int(k) for k, v in ch.items() if v < sat.isoformat()}
+    remaining = [i for i in range(len(CHALISA_PARTS)) if i not in before]
+    learned_now = sorted(int(k) for k, v in ch.items() if v in days_)
+    revised = sorted({int(x) for x in d.get("chalisa_revise", {}).get(sat.isoformat(), [])})
+    if remaining:
+        targets = remaining[:WEEKEND_CHALISA_PARTS]
+        done = [i for i in targets if i in learned_now]
+        need = len(targets)
+        mode = "learn"
+    else:
+        targets = []
+        done = revised
+        need = WEEKEND_CHALISA_PARTS
+        mode = "revise"
+    return {"sat": sat.isoformat(), "mode": mode, "targets": targets, "done": done, "need": need,
+            "complete": len(done) >= need}
 
 
 def _norm(text: str) -> str:
@@ -2572,18 +2903,95 @@ FRIEND_MOVES = {
 MOVE_SPEED = {"hop": .45, "gallop": .8, "waddle": .7, "fly": 1.4, "bound": .9, "flutter": .6}
 
 
-def friends_html():
-    css, divs = [], []
-    for f in FRIENDS:
-        cross = 9.0  # seconds to cross the screen
-        pct = max(2.0, min(60.0, 100 * cross / f["cycle"]))
-        css.append(f"@keyframes run-{f['id']}{{0%{{transform:translateX(110vw)}}{pct:.2f}%{{transform:translateX(-90px)}}"
-                   f"100%{{transform:translateX(-90px)}}}}@keyframes mv-{f['id']}{{{FRIEND_MOVES[f['move']]}}}"
-                   f".fr-{f['id']}{{bottom:{f['bottom']}px;animation:run-{f['id']} {f['cycle']}s linear {f['delay']}s infinite}}"
-                   f".fr-{f['id']} span{{animation:mv-{f['id']} {MOVE_SPEED[f['move']]}s ease-in-out infinite}}")
-        divs.append(f'<div class="friend fr-{f["id"]}"><span data-joke="{f["id"]}" data-sound="{f["sound"]}" '
-                    f'title="Tap me!">{f["emoji"]}</span></div>')
-    return "<style>" + "".join(css) + "</style>" + "".join(divs)
+VISITOR_ENGINE = r"""
+(function(){
+  if (window.__andalVisitors) return; window.__andalVisitors = true;
+  var F = __FRIENDS__, MIN = __MIN__, MAX = __MAX__, MOVES = __MOVES__, last = -1;
+  function rnd(a, b){ return a + Math.random() * (b - a); }
+  function pick(list){ return list[Math.floor(Math.random() * list.length)]; }
+  function edgePoint(e, W, H){
+    if (e === 'L') return [-70, rnd(.15, .8) * H];
+    if (e === 'R') return [W + 20, rnd(.15, .8) * H];
+    if (e === 'T') return [rnd(.1, .85) * W, -70];
+    return [rnd(.1, .85) * W, H + 20];
+  }
+  function say(el, text){
+    var old = document.getElementById('andal-vbubble'); if (old) old.remove();
+    var r = el.getBoundingClientRect(), b = document.createElement('div'); b.id = 'andal-vbubble';
+    b.textContent = text;
+    b.style.cssText = 'position:fixed;z-index:99998;max-width:250px;padding:10px 14px;border-radius:18px;pointer-events:none;'
+      + 'background:#fff;border:3px solid #9b6bff;color:#3b2350;font:600 15px Fredoka,system-ui,sans-serif;'
+      + 'box-shadow:0 8px 24px rgba(155,107,255,.3);transition:opacity .3s, transform .3s;opacity:0;transform:scale(.6)';
+    document.body.appendChild(b);
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - 125), window.innerWidth - 266);
+    var top = r.top > 140 ? r.top - b.offsetHeight - 10 : r.bottom + 10;
+    b.style.left = left + 'px'; b.style.top = Math.max(8, top) + 'px';
+    requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'scale(1)'; });
+    setTimeout(function(){ b.style.opacity = '0'; setTimeout(function(){ b.remove(); }, 350); }, 4200);
+  }
+  function visit(){
+    if (document.hidden || !F.length) { schedule(); return; }
+    var i; do { i = Math.floor(Math.random() * F.length); } while (F.length > 1 && i === last); last = i;
+    var f = F[i], W = window.innerWidth, H = window.innerHeight;
+    var edges = ['L', 'R', 'T', 'B'], a = pick(edges), b;
+    do { b = pick(edges); } while (b === a);
+    var p0 = edgePoint(a, W, H), p2 = edgePoint(b, W, H), pm = [rnd(.15, .75) * W, rnd(.25, .65) * H];
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:0;top:0;z-index:99990;pointer-events:none;will-change:transform';
+    var flip = document.createElement('span'); flip.style.cssText = 'display:inline-block;'
+      + (p2[0] > p0[0] ? 'transform:scaleX(-1)' : '');
+    var em = document.createElement('span');
+    em.textContent = f.emoji; em.title = 'Tap me!';
+    em.setAttribute('data-joke', f.id); em.setAttribute('data-sound', f.sound || 'pop');
+    em.style.cssText = 'display:inline-block;font-size:46px;padding:6px;cursor:pointer;pointer-events:auto;'
+      + 'user-select:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))';
+    flip.appendChild(em); wrap.appendChild(flip); document.body.appendChild(wrap);
+    var mv = MOVES[f.move] || MOVES.hop;
+    try { em.animate(mv[0], {duration: mv[1], iterations: Infinity, easing: 'ease-in-out'}); } catch (e) {}
+    var T = 15000;
+    var anim = wrap.animate([
+      {transform: 'translate(' + p0[0] + 'px,' + p0[1] + 'px)'},
+      {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .35},
+      {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .65},
+      {transform: 'translate(' + p2[0] + 'px,' + p2[1] + 'px)'}], {duration: T, easing: 'ease-in-out'});
+    setTimeout(function(){ if (f.says && f.says.length) say(em, pick(f.says)); }, T * .37);
+    anim.onfinish = function(){ wrap.remove(); schedule(); };
+  }
+  function schedule(){ setTimeout(visit, rnd(MIN, MAX) * 1000); }
+  setTimeout(visit, 20000);   // the first visitor pops in about 20 seconds after opening
+})();
+"""
+
+VISITOR_MOVES = {
+    "hop": ([{"transform": "translateY(0)"}, {"transform": "translateY(-14px)"}, {"transform": "translateY(0)"}], 450),
+    "gallop": ([{"transform": "translateY(0) rotate(0)"}, {"transform": "translateY(-22px) rotate(-8deg)"},
+                {"transform": "translateY(0) rotate(0)"}], 800),
+    "waddle": ([{"transform": "rotate(-9deg)"}, {"transform": "rotate(9deg) translateY(-3px)"},
+                {"transform": "rotate(-9deg)"}], 700),
+    "fly": ([{"transform": "translateY(0) rotate(-4deg)"}, {"transform": "translateY(-26px) rotate(4deg)"},
+             {"transform": "translateY(0) rotate(-4deg)"}], 1400),
+    "bound": ([{"transform": "translateY(0) scaleY(1)"}, {"transform": "translateY(-34px) scaleY(1.05)"},
+               {"transform": "translateY(0) scaleY(.92)"}, {"transform": "translateY(0) scaleY(1)"}], 900),
+    "flutter": ([{"transform": "translateY(0) scale(1)"}, {"transform": "translateY(-18px) scale(.9)"},
+                 {"transform": "translateY(-6px) scale(1)"}, {"transform": "translateY(-22px) scale(.9)"},
+                 {"transform": "translateY(0) scale(1)"}], 650),
+    "swim": ([{"transform": "translateY(0) rotate(-5deg)"}, {"transform": "translateY(-12px) rotate(5deg)"},
+              {"transform": "translateY(0) rotate(-5deg)"}], 1600),
+    "twinkle": ([{"transform": "scale(1) rotate(0)"}, {"transform": "scale(1.25) rotate(20deg)"},
+                 {"transform": "scale(1) rotate(0)"}], 1200),
+    "stomp": ([{"transform": "translateY(0) rotate(-3deg)"}, {"transform": "translateY(-6px) rotate(3deg)"},
+               {"transform": "translateY(0) rotate(-3deg)"}], 900),
+}
+
+
+def install_visitors():
+    friends = [{"id": f["id"], "emoji": f["emoji"], "move": f["move"], "sound": f.get("sound", "pop"),
+                "says": f["says"]} for f in FRIENDS]
+    code = (VISITOR_ENGINE.replace("__FRIENDS__", json.dumps(friends))
+            .replace("__MIN__", str(VISIT_EVERY_SECONDS[0])).replace("__MAX__", str(VISIT_EVERY_SECONDS[1]))
+            .replace("__MOVES__", json.dumps(VISITOR_MOVES)))
+    _embed("<script>try{var P=window.parent;if(!P.__andalVisitors){var s=P.document.createElement('script');"
+           f"s.textContent={json.dumps(code)};P.document.head.appendChild(s);}}}}catch(e){{}}</script>", 1)
 
 
 # --------------------------- Tamil pronunciation ---------------------------
@@ -2954,9 +3362,14 @@ def toggle(tid, key):
         st.session_state[key] = not checked  # put the tick back how it was
 
 
+REQ_TODAY = required_ids(today)
+TASKS_TODAY = tasks_for(today)
+WEEKEND = weekend_rules(today)
+
+
 def task_label(t):
     reward = f"  **+{t['minutes']} min**" if t["minutes"] else "  *(counts toward big rewards)*"
-    must = "  · **must do**" if t.get("required") else ""
+    must = "  · **must do**" if t["id"] in REQ_TODAY else ""
     return f"{t['emoji']} {t['name']}{reward}{must}"
 
 
@@ -2988,6 +3401,12 @@ def approve_tasks(day_key, tids, pin_key=None):
         ticked = set(d["days"].get(day_key, []))
         ok = d.setdefault("approved", {}).setdefault(day_key, [])
         new = [t for t in tids if t in ticked and t not in ok]
+        dk = date.fromisoformat(day_key)
+        if "chalisa" in new and weekend_rules(dk) and dk.weekday() == 6:
+            wc = weekend_chalisa(d, dk)
+            if wc and not wc["complete"]:
+                new.remove("chalisa")
+                n["held"] = True
         ok.extend(new)
         n["n"] = len(new)
         if day_key != TODAY_KEY:
@@ -2998,6 +3417,10 @@ def approve_tasks(day_key, tids, pin_key=None):
     if update(change):
         st.session_state.parent_ok = False if pin_key else st.session_state.get("parent_ok")
         st.session_state.flash = f"✅ {n['n']} task{'s' if n['n'] != 1 else ''} approved — rewards unlocked!"
+        if n.get("held"):
+            st.session_state.approve_note = (f"🙏 The Chalisa task can be approved on Sunday once this weekend's "
+                                             f"{WEEKEND_CHALISA_PARTS} parts have been recited to a grown-up "
+                                             "(🙏 Chalisa tab).")
 
 
 def approve_today_from_box():
@@ -3014,6 +3437,12 @@ def record_used(mins):
         st.session_state.use_msg = ("bad", "That PIN isn't right. Ask a grown-up! 🔐")
         return
     result = {}
+
+    if WEEKEND and mins > WEEKEND_MAX_STRETCH:
+        st.session_state.use_msg = ("bad", f"Weekend rule: at most {WEEKEND_MAX_STRETCH} minutes in one go. "
+                                           "Take a break, then use more later. 🌞")
+        st.session_state.use_pin = ""
+        return
 
     def change(d):
         left = balance_info(d)["balance"]
@@ -3061,9 +3490,17 @@ with tab_today:
         f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>',
         unsafe_allow_html=True,
     )
-    required_left = [t for t in TASKS if t.get("required") and t["id"] not in done_today]
+    if WEEKEND:
+        st.markdown(f'<div class="fact">🌞 <b>Weekend must-dos!</b> On Saturdays and Sundays, these are must-do too: '
+                    f'🙏 Hanuman Chalisa practice, 🧹 tidy-up (20 min), 🤸 exercise, 🧘 meditation and both 🪷🦢 '
+                    f'sit-still challenges. Screen time: at most <b>{WEEKEND_MAX_STRETCH} minutes</b> in one go.</div>',
+                    unsafe_allow_html=True)
+    required_left = [t for t in TASKS_TODAY if t["id"] in REQ_TODAY and t["id"] not in done_today]
     if required_left:
-        names = " and ".join(f"{t['emoji']} {t['name'][0].lower() + t['name'][1:]}" for t in required_left)
+        def _low(n):
+            return n if n.split()[0] in ("Hanuman", "English") else n[0].lower() + n[1:]
+        names = ", ".join(f"{t['emoji']} {_low(t['name'])}" for t in required_left[:-1])
+        names = (names + " and " if names else "") + f"{required_left[-1]['emoji']} {_low(required_left[-1]['name'])}"
         st.warning(f"🔒 Do your **must do** tasks first to unlock screen time: {names}")
     elif task_mins >= DAILY_GOAL_MINUTES:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
@@ -3084,6 +3521,9 @@ with tab_today:
             amsg = st.session_state.pop("approve_msg", None)
             if amsg:
                 st.error(amsg[1])
+            anote = st.session_state.pop("approve_note", None)
+            if anote:
+                st.warning(anote)
     if small_ws["ok"] or big_ws["ok"]:
         which = "big 🦄 AND small 🌈" if small_ws["ok"] and big_ws["ok"] else ("big 🦄" if big_ws["ok"] else "small 🌈")
         st.markdown(f'<div class="fact">🎡 <b>You have a {which} wheel spin waiting!</b> '
@@ -3097,7 +3537,11 @@ with tab_today:
         c1, c2 = st.columns([1, 1])
         c1.markdown(f'<div style="font-size:1.1rem;color:#6b3f73;font-weight:600">⏳ Screen time balance</div>'
                     f'<div style="font-size:2.6rem;font-weight:700;color:#ff4fa3;line-height:1.1">{bal["balance"]} min</div>'
-                    '<div style="color:#8a6a96;font-size:.9rem">Unused minutes are saved for another day 💾</div>',
+                    '<div style="color:#8a6a96;font-size:.9rem">Unused minutes are saved for another day 💾</div>'
+                    + (f'<div style="margin-top:8px;padding:8px 10px;border-radius:12px;background:#fff3d6;color:#7a4a00;'
+                       f'font-size:.95rem">🌞 <b>Weekend rule:</b> even if you have more minutes saved, use the screen '
+                       f'for <b>{WEEKEND_MAX_STRETCH} minutes at most</b> at a time. Then take a break! 🧘</div>'
+                       if WEEKEND else ""),
                     unsafe_allow_html=True)
         with c2:
             if bal["balance"] > 0:
@@ -3106,11 +3550,13 @@ with tab_today:
                 quick = min(DAILY_GOAL_MINUTES, bal["balance"])
                 st.markdown(f"**Option 1** · used the full {quick} minutes")
                 st.toggle(f"Slide ➡️ {quick} minutes used", key="use_toggle", on_change=use_quick)
-                st.markdown("**Option 2** · used fewer minutes")
-                if st.session_state.get("use_mins", 0) > bal["balance"] or "use_mins" not in st.session_state:
-                    st.session_state.use_mins = min(15, bal["balance"])
+                most = min(bal["balance"], WEEKEND_MAX_STRETCH) if WEEKEND else bal["balance"]
+                st.markdown("**Option 2** · used fewer minutes" if not WEEKEND else
+                            f"**Option 2** · enter minutes used (up to {most})")
+                if st.session_state.get("use_mins", 0) > most or "use_mins" not in st.session_state:
+                    st.session_state.use_mins = min(15, most)
                 oc1, oc2 = st.columns([3, 2])
-                oc1.number_input("Minutes used", min_value=1, max_value=bal["balance"], step=5, key="use_mins",
+                oc1.number_input("Minutes used", min_value=1, max_value=most, step=5, key="use_mins",
                                  label_visibility="collapsed")
                 oc2.button("💾 Save", on_click=use_custom, use_container_width=True)
             else:
@@ -3118,6 +3564,15 @@ with tab_today:
         msg = st.session_state.pop("use_msg", None)
         if msg:
             (st.success if msg[0] == "ok" else st.error)(msg[1])
+
+    # ---- inspiring quote (a new one every few hours) ----
+    _qslot = today.toordinal() * (24 // QUOTE_HOURS) + datetime.now(ZoneInfo(TIMEZONE)).hour // QUOTE_HOURS
+    _qorder = list(range(len(QUOTES)))
+    random.Random(2026).shuffle(_qorder)
+    _q = QUOTES[_qorder[_qslot % len(QUOTES)]]
+    st.markdown(f'<div class="quote"><div class="qmark">“</div><div class="qtext">{html_safe(_q[0])}</div>'
+                f'<div class="qwho">— {html_safe(_q[1])}, <span>{html_safe(_q[2])}</span></div>'
+                f'<div class="qmean">💡 {html_safe(_q[3])}</div></div>', unsafe_allow_html=True)
 
     # ---- bunny + newest badges + mood ----
     with st.container(border=True):
@@ -3162,9 +3617,15 @@ with tab_today:
                     "learning task instead, then tick this.",
         "speak": f"💡 <b>Idea for today:</b> {SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]} "
                  "· Need a word? Look it up in the <b>🗣️ Tamil words</b> tab!",
-        "write1": f"✨ Write about: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b> — write it in the "
-                  f"<b>My Stories</b> tab (50+ words ticks this for you!). Try to use the word <b>{html_safe(wotd['word'])}</b>.",
-        "write2": f"✨ Write about: <b>{WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)]}</b>",
+        "write1": f"📄 <b>Write it on paper first</b> — in your notebook or on a separate sheet. "
+                  f"Idea: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b>. Try to use the word "
+                  f"<b>{html_safe(wotd['word'])}</b>. Then tick this and show your writing to a grown-up. "
+                  "🎙️ If you like, read it out loud and record it in the <b>✍️ Stories</b> tab.",
+        "write2": f"📄 <b>Paper first!</b> Write your second piece in your notebook or on paper. "
+                  f"Idea: <b>{WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)]}</b>. Then tick this and show "
+                  "a grown-up. 🎙️ You can read it aloud and record it in the <b>✍️ Stories</b> tab.",
+        "tidy": "🧹 Set a 20-minute timer. Put toys away, clear and wipe your desk, sort books and pencils, "
+                "make your bed and pick up clothes. Then show a grown-up your tidy space! ✨",
         "maths": f"🧮 Go to the <b>Maths</b> tab. This ticks itself when you solve {MATHS_TO_SOLVE} problems "
                  f"(solved today: {data.get('maths', {}).get(TODAY_KEY, {}).get('solved', 0)}).",
         "sit1": "📣 <b>Call a grown-up to watch you first!</b> Sit cross-legged, hands resting on your knees, "
@@ -3175,8 +3636,21 @@ with tab_today:
         "bed": "🌙 Tick this in the morning if you were in bed by 9:30 pm last night. "
                "30 nights in a row = 🍦 ice cream. 90 nights = 🎠 play centre!",
     }
+    wc_today = weekend_chalisa(data, today) if WEEKEND else None
+    if wc_today:
+        if wc_today["mode"] == "learn":
+            parts_txt = " and ".join(f"Part {i + 1}" for i in wc_today["targets"])
+            goal = f"learn <b>{parts_txt}</b> by heart"
+        else:
+            goal = f"revise any <b>{WEEKEND_CHALISA_PARTS} parts</b>"
+        tips["chalisa"] = (f"🙏 This weekend: {goal}. Say each part at least <b>{CHALISA_REPEATS} times</b> (count them "
+                           f"in the 🙏 Chalisa tab). On Saturday or Sunday, recite the parts to a grown-up "
+                           f"<b>without looking and without help</b>. Recited so far: <b>{len(wc_today['done'])}/"
+                           f"{wc_today['need']}</b>{' ✅' if wc_today['complete'] else ''}. Tick this each day after "
+                           "practising; a grown-up approves it (on Sunday, once the parts are recited).")
     for sec_id, sec_title in SECTIONS:
-        sec_tasks = [t for t in TASKS if t.get("section", "learn") == sec_id]
+        sec_tasks = [t for t in TASKS_TODAY
+                     if ("must" if t["id"] in REQ_TODAY else t.get("section", "learn")) == sec_id]
         if not sec_tasks:
             continue
         st.markdown(f"### {sec_title}")
@@ -3408,17 +3882,7 @@ def save_story():
         stories.append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "title": title, "text": text, "words": words,
                         "ok": problem is None,
                         "wotd": w["word"], "wotd_count": count_word(text, w["word"]), "feedback": ""})
-        if words >= MIN_STORY_WORDS and problem is None:
-            s = set(d["days"].get(TODAY_KEY, []))
-            for tid in ("write1", "write2"):
-                if tid not in s or tid not in d.get("approved", {}).get(TODAY_KEY, []):
-                    s.add(tid)
-                    info["tick"] = tid
-                    d.setdefault("approved", {}).setdefault(TODAY_KEY, []).append(tid)   # checked by the app
-                    break
-            d["days"][TODAY_KEY] = sorted(s)
-            if info.get("tick"):
-                add_fact(d, TODAY_KEY, info)
+        # Writing tasks are done on PAPER and approved by a grown-up, so typing here doesn't tick them.
         award_word_win(d, TODAY_KEY, w["word"], info)
 
     if update(change):
@@ -3429,9 +3893,7 @@ def save_story():
             parts.append(f"Your writing task {'1' if info['tick'] == 'write1' else '2'} is ticked! ✅")
             st.session_state.celebrate = {"fact": info.get("fact"), "task": info["tick"]}
         elif info.get("problem"):
-            parts = [f"📖 Saved, but it can't tick your writing task: {info['problem']}"]
-        elif words < MIN_STORY_WORDS:
-            parts.append(f"Write at least {MIN_STORY_WORDS} words in a story to tick a writing task.")
+            parts = [f"📖 Saved, but: {info['problem']}"]
         if info.get("word_win"):
             parts.append(f"💖 WORD WIZARD! You used the word of the day {WORD_CHALLENGE_USES} times: "
                          f"+{WORD_CHALLENGE_MINUTES} minutes!")
@@ -3504,17 +3966,30 @@ with tab_write:
         if smsg:
             (st.success if smsg[0] == "ok" else st.warning)(smsg[1])
 
-    st.markdown("### ✍️ Write a story")
-    st.caption(f"Ideas: **{md_safe(WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)])}** or "
-               f"**{md_safe(WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)])}**")
+    st.markdown("### 📄 English writing: paper first!")
+    with st.container(border=True):
+        st.markdown(f'<div class="tip" style="margin-left:0;font-size:1.05rem">✏️ <b>Step 1:</b> write BOTH English '
+                    f'pieces on paper — in your notebook or on a separate sheet.<br>'
+                    f'💡 Ideas: <b>{html_safe(WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)])}</b> and '
+                    f'<b>{html_safe(WRITING_PROMPTS[(write_n + 5) % len(WRITING_PROMPTS)])}</b><br>'
+                    '✅ <b>Step 2:</b> tick “English writing” on the 🌈 Today tab and show your paper to a grown-up.<br>'
+                    '🎙️ <b>Step 3 (if you like):</b> read your story out loud and record it below!</div>',
+                    unsafe_allow_html=True)
+        if hasattr(st, "audio_input"):
+            st.audio_input("🎙️ Read my story aloud (tap to record, then play it back)", key="story_rec")
+            st.caption("Recordings are for listening back now (and playing to a grown-up) — they aren't saved.")
+
+    st.markdown("### ⌨️ Type a story (optional)")
+    st.caption("Typing a story here is extra practice — it helps with the word-of-the-day challenge and badges. "
+               "Your writing tasks are still done on paper. 📄")
     with st.container(border=True):
         st.text_input("Title", key="story_title", placeholder="My amazing story")
         st.text_area("Your story", key="story_text", height=260,
                      placeholder="Once upon a time, a curious little bunny…")
         draft = str(st.session_state.get("story_text", ""))
         n_words = count_words(draft)
-        st.markdown(f'<div class="minutes"><span>📝 {n_words} words</span><span>🎯 {MIN_STORY_WORDS} words ticks a '
-                    f'writing task</span></div><div class="rbar"><div class="rfill" style="width:'
+        st.markdown(f'<div class="minutes"><span>📝 {n_words} words</span><span>🎯 aim for {MIN_STORY_WORDS}+ words'
+                    f'</span></div><div class="rbar"><div class="rfill" style="width:'
                     f'{max(3, min(100, int(100 * n_words / MIN_STORY_WORDS)))}%"></div></div>', unsafe_allow_html=True)
         st.caption("Tap outside the box to update the word count.")
         st.button("💾 Save my story", on_click=save_story, type="primary")
@@ -3792,6 +4267,9 @@ def learn_part(i):
         ch = d.setdefault("chalisa", {})
         if str(i) in ch or (i > 0 and str(i - 1) not in ch):
             return False
+        if d.get("chalisa_reps", {}).get(str(i), 0) < CHALISA_REPEATS:
+            info["reps"] = True
+            return False
         ch[str(i)] = TODAY_KEY
         bs = bead_status(d)
         while d.get("bead_rewards_given", 0) < bs["rewards_due"]:
@@ -3801,7 +4279,11 @@ def learn_part(i):
             info["minutes"] = info.get("minutes", 0) + BEAD_MINUTES
         info["all"] = bs["all_done"]
 
-    if update(change):
+    ok = update(change)
+    st.session_state[f"ch_pin_{i}"] = ""
+    if info.get("reps"):
+        st.session_state.ch_msg = ("bad", f"Say this part {CHALISA_REPEATS} times first (use the counter). 🔁")
+    if ok:
         parts = [f"🙏 Wonderful! Part {i + 1} learned: +{BEADS_PER_PART} 📿 beads!"]
         if info.get("minutes"):
             parts.append(f"You reached {BEADS_FOR_MINUTES} beads: +{info['minutes']} minutes of screen time! ⏳")
@@ -3810,6 +4292,53 @@ def learn_part(i):
         st.session_state.ch_msg = ("ok", " ".join(parts))
         st.session_state.celebrate = {"fact": None, "task": "chalisa"}
         st.session_state[f"ch_ready_{i}"] = False
+
+
+def add_rep(i, step=1):
+    def change(d):
+        reps = d.setdefault("chalisa_reps", {})
+        reps[str(i)] = max(0, reps.get(str(i), 0) + step)
+    if update(change) and step > 0:
+        n = st.session_state.data.get("chalisa_reps", {}).get(str(i), 0)
+        if n == CHALISA_REPEATS:
+            st.session_state.ch_msg = ("ok", f"🎉 {CHALISA_REPEATS} times! Part {i + 1} is ready to recite to a grown-up.")
+            st.session_state.celebrate = {"fact": None, "task": "chalisa"}
+
+
+def revise_part(i):
+    if not pin_ok(f"rv_pin_{i}"):
+        st.session_state.ch_msg = ("bad", "That PIN isn't right. Ask a grown-up! 🔐")
+        return
+    sat = weekend_start(today)
+
+    def change(d):
+        if sat is None:
+            return False
+        lst = d.setdefault("chalisa_revise", {}).setdefault(sat.isoformat(), [])
+        if i in lst:
+            return False
+        lst.append(i)
+
+    st.session_state[f"rv_pin_{i}"] = ""
+    if update(change):
+        st.session_state.ch_msg = ("ok", f"🙏 Super! Part {i + 1} recited from memory this weekend.")
+        st.session_state.celebrate = {"fact": None, "task": "chalisa"}
+
+
+def reps_box(i):
+    n = data.get("chalisa_reps", {}).get(str(i), 0)
+    shown = min(n, CHALISA_REPEATS)
+    dots = "".join(f'<span class="bead{" on" if j < shown else ""}" style="width:14px;height:14px"></span>'
+                   for j in range(CHALISA_REPEATS))
+    st.markdown(f'<div style="text-align:center"><div class="chalisa-head">🔁 Said it {n} time{"s" if n != 1 else ""}'
+                f'{" ✅" if n >= CHALISA_REPEATS else f" · {CHALISA_REPEATS - n} to go"}</div>'
+                f'<div class="beads">{dots}</div></div>', unsafe_allow_html=True)
+    r1, r2 = st.columns([3, 1])
+    r1.button("➕ I said the whole part once more", key=f"rep_add_{i}", on_click=add_rep, args=(i, 1),
+              use_container_width=True, type="primary")
+    r2.button("↩️ Undo", key=f"rep_undo_{i}", on_click=add_rep, args=(i, -1), use_container_width=True,
+              disabled=n == 0)
+    return n
 
 
 def choose_outing():
@@ -3880,6 +4409,34 @@ with tab_chalisa:
         st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>', unsafe_allow_html=True)
         st.caption(f"Each part you learn by heart = {BEADS_PER_PART} 📿 beads. Every {BEADS_FOR_MINUTES} beads = "
                    f"{BEAD_MINUTES} minutes. Learn ALL {len(CHALISA_PARTS)} parts for a special weekend outing! 🎉")
+    wc = weekend_chalisa(data, today) if WEEKEND else None
+    with st.container(border=True):
+        st.markdown('<div class="reward-head">🌞 Weekend Chalisa goal</div>', unsafe_allow_html=True)
+        if wc:
+            if wc["mode"] == "learn":
+                names = " and ".join(f"<b>Part {i + 1}</b>" for i in wc["targets"])
+                st.markdown(f'<div class="how">This weekend, learn {names} by heart. It\'s a <b>must-do</b> on Saturday '
+                            f'and Sunday!</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div class="how">You know the whole Chalisa! 🏆 This weekend, revise any '
+                            f'<b>{WEEKEND_CHALISA_PARTS} parts</b> and recite them to a grown-up.</div>',
+                            unsafe_allow_html=True)
+            pills = "".join(f'<span class="pill {"ok" if j < len(wc["done"]) else "no"}">'
+                            f'{"✅" if j < len(wc["done"]) else "⬜"} recited {j + 1}</span>' for j in range(wc["need"]))
+            st.markdown(pills, unsafe_allow_html=True)
+        else:
+            nxt_parts = [i for i in range(len(CHALISA_PARTS)) if str(i) not in data.get("chalisa", {})]
+            if nxt_parts:
+                st.markdown(f'<div class="how">Every Saturday & Sunday: learn <b>{WEEKEND_CHALISA_PARTS} parts</b>. '
+                            f'Next weekend: ' + " and ".join(f"<b>Part {i + 1}</b>" for i in nxt_parts[:WEEKEND_CHALISA_PARTS])
+                            + '. You can start practising now!</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div class="how">Every weekend: revise any {WEEKEND_CHALISA_PARTS} parts.</div>',
+                            unsafe_allow_html=True)
+        st.markdown(f'<div class="tip" style="margin-left:0">🔁 <b>The rule:</b> say every part at least '
+                    f'<b>{CHALISA_REPEATS} times</b> (tap the counter each time). Then recite it to a grown-up '
+                    '<b>without looking and without any help</b>. The grown-up approves with the PIN. 🙏</div>',
+                    unsafe_allow_html=True)
     msg = st.session_state.pop("ch_msg", None)
     if msg:
         (st.success if msg[0] == "ok" else st.error)(msg[1])
@@ -3930,18 +4487,31 @@ with tab_chalisa:
                 st.markdown(md_safe(part["meaning"]))
             if learned:
                 st.success(f"✅ You learned this part! +{BEADS_PER_PART} 📿")
+                if wc and wc["mode"] == "revise":
+                    if i in wc["done"]:
+                        st.info("🙏 Recited from memory this weekend ✅")
+                    else:
+                        reps_box(i)
+                        with st.form(f"rv_form_{i}", border=False):
+                            v1, v2 = st.columns([2, 1])
+                            v1.text_input("Grown-up PIN: recited without looking or help", type="password",
+                                          key=f"rv_pin_{i}")
+                            v2.write("")
+                            v2.form_submit_button("Recited ✅", on_click=revise_part, args=(i,))
                 continue
-            st.markdown(f'<div class="tip" style="margin-left:0">🎙️ <b>Before you submit:</b> record yourself saying all '
-                        f'{len(part["lines"])} lines from memory (use the recorder below or the iPad\'s Voice Memos app), '
-                        'then play the recording to a grown-up.</div>', unsafe_allow_html=True)
+            n_reps = reps_box(i)
             if hasattr(st, "audio_input"):
-                st.audio_input("🎙️ Practice recorder (tap to record, then play it back)", key=f"ch_rec_{i}")
-            st.checkbox(f"I said all {len(part['lines'])} lines from memory, recorded it and played it to a grown-up",
-                        key=f"ch_ready_{i}")
+                st.audio_input("🎙️ Practice recorder (optional: tap to record, then play it back)", key=f"ch_rec_{i}")
+            ready_ok = n_reps >= CHALISA_REPEATS
+            if not ready_ok:
+                st.caption(f"🔒 Say this part {CHALISA_REPEATS} times first, then you can recite it to a grown-up.")
+            st.checkbox(f"I recited all {len(part['lines'])} lines to a grown-up — without looking and without any help",
+                        key=f"ch_ready_{i}", disabled=not ready_ok)
             if CHALISA_NEEDS_PIN:
                 st.text_input("Grown-up PIN", type="password", key=f"ch_pin_{i}")
             st.button(f"🙏 I've learned Part {i + 1}! (+{BEADS_PER_PART} 📿)", key=f"ch_submit_{i}", type="primary",
-                      on_click=learn_part, args=(i,), disabled=not st.session_state.get(f"ch_ready_{i}"))
+                      on_click=learn_part, args=(i,),
+                      disabled=not (ready_ok and st.session_state.get(f"ch_ready_{i}")))
 
 
 # ============================ SPIN & REWARDS ============================
@@ -4376,7 +4946,7 @@ def save_edit():
         new = set(chosen) | ({"star"} if star else set())
         d["days"][d_iso] = sorted(new)
         d.setdefault("approved", {})[d_iso] = sorted(chosen)   # a grown-up chose these, so they count
-        d.setdefault("earned", {})[d_iso] = task_minutes(new)
+        d.setdefault("earned", {})[d_iso] = task_minutes(new, d_iso)
 
     if update(change):
         if d_iso == TODAY_KEY:
@@ -4673,4 +5243,4 @@ with tab_parent:
 
 # ---- hopping friends (purely decorative, never block taps) ----
 if ANIMATED_FRIENDS:
-    st.markdown(friends_html(), unsafe_allow_html=True)
+    install_visitors()
