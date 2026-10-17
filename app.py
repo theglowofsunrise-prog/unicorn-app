@@ -37,7 +37,7 @@ WEEKEND_MUST = ["chalisa", "tidy", "exercise", "meditate", "sit1", "sit2"]   # e
 WEEKEND_CHALISA_PARTS = 2      # Chalisa parts to learn (and recite to a grown-up) every weekend
 CHALISA_REPEATS = 21           # times to say each part before it can be recited to a grown-up
 WEEKEND_MAX_STRETCH = 40       # weekends: most screen minutes in one go, even with more saved
-QUOTE_HOURS = 4                # a new inspiring quote every 4 hours
+QUOTE_HOURS = 1                # a new quote and health tip every hour
 
 # id: short code (don't change once she has progress)   minutes: screen time it earns
 # required: True = must be done before ANY screen time unlocks that day
@@ -666,8 +666,6 @@ QUOTES = [
      "Wondering 'why?' is how wisdom starts."),
     ("Arise, awake, and stop not till the goal is reached.", "Swami Vivekananda", "Indian thinker and teacher",
      "Get up, get going, and don't stop until you reach your goal."),
-    ("Strength does not come from physical capacity. It comes from an indomitable will.", "Mahatma Gandhi",
-     "leader of India's freedom movement", "Real strength is never giving up. (Indomitable = can't be beaten.)"),
     ("Do your work with your whole heart, and don't worry about the reward.", "Bhagavad Gita",
      "the simple meaning of verse 2.47", "Focus on doing your best; good things follow."),
     ("We are what we think.", "The Buddha", "teacher, from the Dhammapada",
@@ -754,7 +752,7 @@ QUOTES = [
      "Olympic gymnastics champion", "It's better to try and miss than never try at all."),
 ]
 ANIMATED_FRIENDS = True        # friendly characters visit the screen now and then (tap them!)
-VISIT_EVERY_SECONDS = (120, 180)   # a new visitor every 2–3 minutes
+VISIT_EVERY_SECONDS = (120, 120)   # a new visitor every 2 minutes
 # Each friend: emoji, how it moves, sound when tapped, sayings (one pops up when it visits)
 FRIENDS = [
     {"id": "bunny", "emoji": "🐇", "bottom": 10, "cycle": 70, "delay": 4, "move": "hop", "sound": "boing", "says": [
@@ -884,6 +882,137 @@ FRIENDS += [
         "Robots follow instructions called code! 💻",
         "Practice makes progress! Beep! 🔁",
         "Charging… done! Ready to learn! 🔋"]},
+]
+
+FRIENDS += [
+    {"id": "elyssa", "name": "Elyssa", "emoji": "👧🏼", "move": "hop", "sound": "sparkle", "says": [
+        "Hi Andal! I finished my spelling homework — high five! ✋",
+        "In class today we learned about volcanoes! 🌋 What did you learn?",
+        "Homework first, then we can play! 📚➡️⚽",
+        "Camping tip: pack a torch and spare batteries! 🔦",
+        "Camping tip: always tell a grown-up before you go exploring! 🏕️",
+        "Camping tip: wear a hat and sunscreen, even when it's cloudy! 🧢",
+        "I'm SO excited for camp! Are you? ⛺"]},
+    {"id": "priya", "name": "Priya", "emoji": "👧🏽", "move": "hop", "sound": "tweet", "says": [
+        "Hi! I practised my times tables in the car today! ✖️",
+        "I'm going to dance class after school! 💃",
+        "Let's both read one chapter before bed tonight! 📖",
+        "Camping tip: bring a water bottle and drink often! 💧",
+        "Camping tip: shake your shoes before you put them on — bugs love hiding there! 👟",
+        "Camping tip: leave the campsite cleaner than you found it! ♻️"]},
+    {"id": "mia", "name": "Mia", "emoji": "👧🏻", "move": "hop", "sound": "pop", "says": [
+        "Art class was so fun — I painted a rainbow! 🎨",
+        "My homework trick: do the hardest bit first! 💪",
+        "Swimming lessons today — I can float on my back now! 🏊‍♀️",
+        "Camping tip: pack warm pyjamas — nights at camp get chilly! 🧦",
+        "Camping tip: stay with your buddy the whole time! 👭",
+        "Camping tip: pack a raincoat, just in case! 🌧️"]},
+    {"id": "panda", "emoji": "🐼", "move": "waddle", "sound": "grunt", "says": [
+        "Giant pandas spend about 12 hours a day eating bamboo! 🎋",
+        "A newborn panda is about the size of a stick of butter! 🧈",
+        "Pandas are great tree climbers! 🌳"]},
+    {"id": "giraffe", "emoji": "🦒", "move": "stomp", "sound": "boing", "says": [
+        "Giraffes sleep very little — but YOU need 9–12 hours! 😴",
+        "My tongue is about 50 cm long! 👅",
+        "Every giraffe has its own special pattern of spots — just like you're one of a kind! 🌟"]},
+    {"id": "flamingo", "emoji": "🦩", "move": "fly", "sound": "tweet", "says": [
+        "Flamingos are pink because of the food they eat! 🦐",
+        "Can you balance on one leg like me? Try for 10 seconds! 🦵"]},
+    {"id": "ladybird", "emoji": "🐞", "move": "flutter", "sound": "pop", "says": [
+        "Ladybirds help gardens by eating tiny pests called aphids! 🌱",
+        "My spots warn birds that I taste yucky! 🔴"]},
+    {"id": "comet", "emoji": "☄️", "move": "fly", "sound": "sparkle", "says": [
+        "Halley's Comet visits about every 76 years — next time in 2061! 🔭",
+        "Comets are icy, dusty space snowballs! ❄️"]},
+]
+for _f in FRIENDS:                      # friends with names say who they are
+    if _f.get("name"):
+        _f["says"] = [f"{_f['name']}: {_x}" for _x in _f["says"]]
+
+# Mindfulness, meditation, health and exercise quotes (shown every other hour). (quote, who, who they were, meaning)
+MINDFUL_QUOTES = [
+    ("Breath is the bridge which connects life to consciousness, which unites your body to your thoughts.",
+     "Thich Nhat Hanh", "Zen teacher and mindfulness writer", "Noticing your breathing helps your body and mind feel calm together."),
+    ("Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.", "Thich Nhat Hanh",
+     "Zen teacher and mindfulness writer", "Big feelings pass. Slow breaths keep you steady."),
+    ("Walk as if you are kissing the Earth with your feet.", "Thich Nhat Hanh", "Zen teacher and mindfulness writer",
+     "Walk gently and notice each step."),
+    ("Smile, breathe and go slowly.", "Thich Nhat Hanh", "Zen teacher and mindfulness writer",
+     "Slowing down helps you enjoy things more."),
+    ("The present moment is filled with joy and happiness. If you are attentive, you will see it.", "Thich Nhat Hanh",
+     "Zen teacher and mindfulness writer", "Look around — there's something good happening right now."),
+    ("Nothing can bring you peace but yourself.", "Ralph Waldo Emerson", "American writer and thinker",
+     "Calm comes from inside you."),
+    ("Adopt the pace of nature: her secret is patience.", "Ralph Waldo Emerson", "American writer and thinker",
+     "Trees grow slowly — be patient with yourself too."),
+    ("Look deep into nature, and then you will understand everything better.", "Albert Einstein", "scientist",
+     "Time in nature helps your mind."),
+    ("Calmness is the cradle of power.", "Josiah Gilbert Holland", "American writer", "A calm mind is a strong mind."),
+    ("You can't stop the waves, but you can learn to surf.", "Jon Kabat-Zinn", "mindfulness teacher",
+     "You can't stop every problem, but you can learn to handle it."),
+    ("Wherever you go, there you are.", "Jon Kabat-Zinn", "mindfulness teacher", "Be here, in this moment."),
+    ("Almost everything will work again if you unplug it for a few minutes, including you.", "Anne Lamott", "writer",
+     "Short breaks — even from screens — help you recharge."),
+    ("Lack of activity destroys the good condition of every human being, while movement and methodical physical "
+     "exercise save it and preserve it.", "Plato", "Greek philosopher", "Moving your body every day keeps it strong."),
+    ("Take care of your body. It's the only place you have to live.", "Jim Rohn", "writer and speaker",
+     "Look after your body: eat well, move and sleep."),
+    ("An early-morning walk is a blessing for the whole day.", "Henry David Thoreau", "writer who loved nature",
+     "A morning walk makes the whole day better."),
+    ("Practice and all is coming.", "Sri K. Pattabhi Jois", "yoga teacher from India", "Keep practising — good things come."),
+    ("Health is a state of complete harmony of the body, mind and spirit.", "B. K. S. Iyengar",
+     "famous yoga teacher from India", "Being healthy means your body AND your mind feel good."),
+    ("In the midst of movement and chaos, keep stillness inside of you.", "Deepak Chopra", "writer on health and meditation",
+     "Even on busy days, find a calm spot inside."),
+    ("Exercise is king. Nutrition is queen. Put them together and you've got a kingdom.", "Jack LaLanne",
+     "fitness pioneer", "Moving + healthy food = super you!"),
+    ("He who has health has hope; and he who has hope has everything.", "Arabian proverb", "a wise old saying",
+     "Good health gives you hope for everything else."),
+    ("A good laugh and a long sleep are the best cures in the doctor's book.", "Irish proverb", "a wise old saying",
+     "Laughing and sleeping well are great medicine."),
+    ("Sleep is the golden chain that ties health and our bodies together.", "Thomas Dekker", "English writer",
+     "Sleep keeps you healthy and strong."),
+    ("No medicine is needed for the body if you eat only after your last meal has been digested.", "Thiruvalluvar",
+     "Tamil poet, Thirukkural 942", "Don't overeat — give your tummy a rest between meals."),
+    ("Kaalai ezhunthavudan padippu… maalai muzhuthum vilaiyaattu — study after you wake up, and play all evening!",
+     "Subramania Bharati", "great Tamil poet", "Balance learning and play every day."),
+    ("Happiness depends upon ourselves.", "Aristotle", "Greek philosopher", "You can choose things that make you happy."),
+    ("Yoga is the journey of the self, through the self, to the self.", "The Bhagavad Gita", "ancient Indian wisdom",
+     "Yoga helps you understand yourself."),
+    ("Take rest; a field that has rested gives a bountiful crop.", "Ovid", "Roman poet",
+     "Resting helps you grow and do your best."),
+    ("When you arise in the morning, think of what a precious privilege it is to be alive — to breathe, to think, "
+     "to enjoy, to love.", "Marcus Aurelius", "Roman emperor and philosopher", "Start each day feeling thankful."),
+    ("Very little is needed to make a happy life.", "Marcus Aurelius", "Roman emperor and philosopher",
+     "Happiness often comes from simple things."),
+]
+
+# Health tips (a new one every hour)
+HEALTH_TIPS = [
+    "💧 Drink water through the day — keep a bottle nearby!",
+    "🌈 Eat a rainbow: different coloured fruits and veggies give you different vitamins.",
+    "🏃‍♀️ Kids need about 60 minutes of active play every day.",
+    "😴 Children your age need about 9–12 hours of sleep each night.",
+    "🪥 Brush your teeth twice a day, for 2 minutes each time.",
+    "🧼 Wash your hands with soap for 20 seconds — that's 'Happy Birthday' sung twice!",
+    "👀 The 20-20-20 rule: every 20 minutes of screen time, look at something 6 metres away for 20 seconds.",
+    "🧢 Going outside? Slip, slop, slap, seek, slide: shirt, sunscreen, hat, shade and sunnies!",
+    "🌳 Playing outside in daylight is good for your eyes.",
+    "🍳 Eat breakfast — it gives your brain energy for learning.",
+    "🥛 Choose water or milk instead of sugary drinks.",
+    "🧘 Feeling upset? Take 5 slow belly breaths: in through your nose, out through your mouth.",
+    "🪑 Sit up tall when you read or write — your back will thank you.",
+    "🍎 Pick fruit or yoghurt for snacks instead of lollies.",
+    "🤧 Sneeze or cough into your elbow to keep germs away.",
+    "📵 Put screens away an hour before bed to sleep better.",
+    "🤸 Stretch for a couple of minutes when you wake up.",
+    "🥕 Crunchy veggies like carrots and cucumber make great snacks.",
+    "🚶 Sitting for a long time? Take a short walk or dance break!",
+    "😊 Laughing and playing with friends is good for your heart and mind.",
+    "💅 Keep your nails short and clean to stop germs.",
+    "🎒 Carry your school bag on both shoulders.",
+    "🌙 Go to bed at the same time every night — your body loves a routine.",
+    "🍽️ Eat slowly and stop when your tummy feels comfortably full.",
 ]
 
 # Days that should count as star days even though the rules were different back then
@@ -2101,7 +2230,8 @@ def default_data():
             "credits": [], "used": [], "balance_start": None, "spins": [], "carrots": 0, "toy_fund": 0,
             "last_restaurant": None, "pet": {"name": "Bunnicorn", "wear": {}}, "theme": "rainbow",
             "badges_earned": {}, "stories": [], "wotd_custom": {}, "word_wins": [], "moods": [],
-            "messages": [], "facts": {}, "chalisa": {}, "bead_rewards_given": 0, "chalisa_reward": None}
+            "messages": [], "facts": {}, "chalisa": {}, "bead_rewards_given": 0, "chalisa_reward": None,
+            "kid_messages": [], "task_feedback": []}
 
 
 def migrate(data, today: date):
@@ -2935,7 +3065,7 @@ VISITOR_ENGINE = r"""
     var f = F[i], W = window.innerWidth, H = window.innerHeight;
     var edges = ['L', 'R', 'T', 'B'], a = pick(edges), b;
     do { b = pick(edges); } while (b === a);
-    var p0 = edgePoint(a, W, H), p2 = edgePoint(b, W, H), pm = [rnd(.15, .75) * W, rnd(.25, .65) * H];
+    var p0 = edgePoint(a, W, H), p2 = edgePoint(b, W, H), pm = [rnd(.32, .6) * W, rnd(.3, .55) * H];
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:fixed;left:0;top:0;z-index:99990;pointer-events:none;will-change:transform';
     var flip = document.createElement('span'); flip.style.cssText = 'display:inline-block;'
@@ -3289,6 +3419,83 @@ def dismiss_message(mid):
     update(change)
 
 
+FB_STARS = {0: "", 1: "⭐", 2: "⭐⭐", 3: "⭐⭐⭐"}
+FB_TASKS = [(t["id"], f"{t['emoji']} {t['name']}") for t in TASKS] + [
+    ("chalisa_recite", "🙏 Hanuman Chalisa recitation"), ("story", "📖 Story / writing"),
+    ("bonus_maths", "⭐ Bonus maths"), ("general", "💬 General / the whole day")]
+FB_TASK_NAME = dict(FB_TASKS)
+new_feedback = [f for f in data.get("task_feedback", []) if not f.get("seen")]
+if new_feedback:
+    with alerts:
+        st.markdown(f'<div class="msg">💬 <b>You have {len(new_feedback)} new note{"s" if len(new_feedback) != 1 else ""} '
+                    'from a grown-up about your tasks!</b><br>Scroll down on the 🌈 Today tab to '
+                    '“Notes from my grown-ups”.</div>', unsafe_allow_html=True)
+
+
+def save_task_feedback(prefix, day_key, need_pin):
+    if need_pin and not pin_ok(f"{prefix}_pin"):
+        st.session_state[f"{prefix}_msg"] = ("bad", "That PIN isn't right.")
+        return
+    text = str(st.session_state.get(f"{prefix}_text", "")).strip()
+    task = st.session_state.get(f"{prefix}_task", "general")
+    stars = int(st.session_state.get(f"{prefix}_stars", 0) or 0)
+    if not text and not stars:
+        st.session_state[f"{prefix}_msg"] = ("bad", "Write a note or choose stars first.")
+        return
+
+    def change(d):
+        d.setdefault("task_feedback", []).append({
+            "id": uuid.uuid4().hex[:8], "date": day_key, "task": task, "text": text, "stars": stars,
+            "time": datetime.now(ZoneInfo(TIMEZONE)).strftime("%d %b %H:%M"), "seen": False})
+
+    if need_pin:
+        st.session_state[f"{prefix}_pin"] = ""
+    if update(change):
+        st.session_state[f"{prefix}_text"] = ""
+        st.session_state[f"{prefix}_stars"] = 0
+        st.session_state[f"{prefix}_msg"] = ("ok", f"💬 Feedback saved — {STUDENT_NAME} will see it on her Today page.")
+
+
+def feedback_form(prefix, day_key, need_pin, task_ids=None):
+    opts = [k for k, _ in FB_TASKS if task_ids is None or k in task_ids or k in ("chalisa_recite", "story",
+                                                                                   "bonus_maths", "general")]
+    with st.form(f"{prefix}_form", border=False):
+        st.selectbox("Which task?", opts, key=f"{prefix}_task", format_func=lambda k: FB_TASK_NAME.get(k, k))
+        st.text_area("Your feedback", key=f"{prefix}_text", height=80,
+                     placeholder="Lovely clear Tamil today! Try to say 'naan' a little slower. 💖")
+        st.radio("Stars (optional)", [0, 1, 2, 3], key=f"{prefix}_stars", horizontal=True,
+                 format_func=lambda n: FB_STARS[n] or "none")
+        if need_pin:
+            st.text_input("Grown-up PIN", type="password", key=f"{prefix}_pin")
+        st.form_submit_button("💾 Save feedback", on_click=save_task_feedback, args=(prefix, day_key, need_pin))
+    fmsg = st.session_state.pop(f"{prefix}_msg", None)
+    if fmsg:
+        (st.success if fmsg[0] == "ok" else st.error)(fmsg[1])
+
+
+def mark_feedback_seen():
+    def change(d):
+        for f in d.get("task_feedback", []):
+            f["seen"] = True
+    update(change)
+
+
+def send_kid_message():
+    text = str(st.session_state.get("kid_msg", "")).strip()
+    if not text:
+        st.session_state.kid_msg_note = ("bad", "Type your message first! ✏️")
+        return
+
+    def change(d):
+        d.setdefault("kid_messages", []).append({
+            "id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "time": datetime.now(ZoneInfo(TIMEZONE)).strftime("%H:%M"),
+            "text": text[:1000], "read": False, "reply": ""})
+
+    if update(change):
+        st.session_state.kid_msg = ""
+        st.session_state.kid_msg_note = ("ok", "💌 Sent! Your grown-up will see it in the 🔐 Grown-ups tab.")
+
+
 unseen = [m for m in data.get("messages", []) if not m.get("seen")]
 if unseen:
     with alerts:
@@ -3389,6 +3596,10 @@ def task_box(t, tip=None):
         st.checkbox(label, key=key, on_change=toggle, args=(tid, key))
     if tip:
         st.markdown(f'<div class="tip">{tip}</div>', unsafe_allow_html=True)
+    for f in data.get("task_feedback", []):
+        if f["date"] == TODAY_KEY and f["task"] == tid:
+            st.markdown(f'<div class="note">💬 <b>Grown-up says:</b> {FB_STARS.get(f.get("stars", 0), "")} '
+                        f'{html_safe(f.get("text", ""))}</div>', unsafe_allow_html=True)
 
 
 def approve_tasks(day_key, tids, pin_key=None):
@@ -3565,11 +3776,16 @@ with tab_today:
         if msg:
             (st.success if msg[0] == "ok" else st.error)(msg[1])
 
-    # ---- inspiring quote (a new one every few hours) ----
+    # ---- inspiring quote + health tip (new ones every hour; mindfulness/health quotes every other hour) ----
     _qslot = today.toordinal() * (24 // QUOTE_HOURS) + datetime.now(ZoneInfo(TIMEZONE)).hour // QUOTE_HOURS
-    _qorder = list(range(len(QUOTES)))
+    _qlist = MINDFUL_QUOTES if _qslot % 2 == 0 else QUOTES
+    _qorder = list(range(len(_qlist)))
     random.Random(2026).shuffle(_qorder)
-    _q = QUOTES[_qorder[_qslot % len(QUOTES)]]
+    _q = _qlist[_qorder[(_qslot // 2) % len(_qlist)]]
+    _horder = list(range(len(HEALTH_TIPS)))
+    random.Random(7).shuffle(_horder)
+    st.markdown(f'<div class="fact">🍏 <b>Health tip:</b> {html_safe(HEALTH_TIPS[_horder[_qslot % len(HEALTH_TIPS)]])}</div>',
+                unsafe_allow_html=True)
     st.markdown(f'<div class="quote"><div class="qmark">“</div><div class="qtext">{html_safe(_q[0])}</div>'
                 f'<div class="qwho">— {html_safe(_q[1])}, <span>{html_safe(_q[2])}</span></div>'
                 f'<div class="qmean">💡 {html_safe(_q[3])}</div></div>', unsafe_allow_html=True)
@@ -3661,6 +3877,41 @@ with tab_today:
                     st.button("🎲 Give me a different idea", on_click=next_idea)
             if sec_id == "body" and any(t["id"] in ("sit1", "sit2") for t in sec_tasks):
                 _embed(SIT_TIMER, 130)
+
+    # ---- notes (feedback) from grown-ups ----
+    recent_fb = [f for f in data.get("task_feedback", [])
+                 if f["date"] >= (today - timedelta(days=14)).isoformat()]
+    st.markdown("### 💬 Notes from my grown-ups")
+    with st.container(border=True):
+        if not recent_fb:
+            st.caption("When a grown-up gives you feedback on a task, it will appear here. 🌟")
+        for f in reversed(recent_fb[-12:]):
+            st.markdown(f'<div class="note">{"🆕 " if not f.get("seen") else ""}<b>{html_safe(FB_TASK_NAME.get(f["task"], f["task"]))}</b>'
+                        f' · {date.fromisoformat(f["date"]).strftime("%a %d %b")} {FB_STARS.get(f.get("stars", 0), "")}'
+                        f'<br>{html_safe(f.get("text", ""))}</div>', unsafe_allow_html=True)
+        if any(not f.get("seen") for f in recent_fb):
+            st.button("👍 Got it — thank you!", on_click=mark_feedback_seen, key="fb_seen_btn")
+
+    # ---- message to a grown-up ----
+    st.markdown("### 💌 Send a message to my grown-up")
+    with st.container(border=True):
+        st.text_area("My message", key="kid_msg", height=80, max_chars=1000, label_visibility="collapsed",
+                     placeholder="Type a message for Amma or Appa… 💖")
+        st.button("📨 Send", on_click=send_kid_message, key="kid_send", type="primary")
+        knote = st.session_state.pop("kid_msg_note", None)
+        if knote:
+            (st.success if knote[0] == "ok" else st.warning)(knote[1])
+        my_msgs = data.get("kid_messages", [])
+        if my_msgs:
+            with st.expander(f"📬 My messages ({len(my_msgs)})"):
+                for km in reversed(my_msgs[-10:]):
+                    st.markdown(f"• {km['date'][5:]} {km.get('time', '')}: {md_safe(km['text'])} "
+                                f"{'👀 read' if km.get('read') else '🕒 not read yet'}"
+                                + (f"  \n  ↪️ **Reply:** {md_safe(km['reply'])}" if km.get("reply") else ""))
+
+    # ---- quick feedback while listening (grown-up PIN) ----
+    with st.expander("🧑‍🏫 Grown-up: give feedback on a task (needs PIN)"):
+        feedback_form("qfb", TODAY_KEY, True, {t["id"] for t in TASKS_TODAY})
 
     facts_today = data.get("facts", {}).get(TODAY_KEY, [])
     if facts_today:
@@ -5060,6 +5311,39 @@ def undo_part(i):
         st.session_state.parent_note = f"↩️ Part {i + 1} marked as not learned yet. (Minutes already given stay.)"
 
 
+def kid_msg_read(mid):
+    def change(d):
+        for km in d.get("kid_messages", []):
+            if km["id"] == mid:
+                km["read"] = True
+    update(change)
+
+
+def kid_msg_reply(mid):
+    text = str(st.session_state.get(f"kreply_{mid}", "")).strip()
+    if not text:
+        return
+
+    def change(d):
+        for km in d.get("kid_messages", []):
+            if km["id"] == mid:
+                km["read"] = True
+                km["reply"] = text
+        d.setdefault("messages", []).append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY,
+                                             "text": f"↪️ Reply to your message: {text}", "seen": False})
+
+    if update(change):
+        st.session_state[f"kreply_{mid}"] = ""
+        st.session_state.parent_note = f"↪️ Reply sent — {STUDENT_NAME} will see it as a message."
+
+
+def delete_feedback(fid):
+    def change(d):
+        d["task_feedback"] = [f for f in d.get("task_feedback", []) if f["id"] != fid]
+    if update(change):
+        st.session_state.parent_note = "🗑️ Feedback removed."
+
+
 def reset_all():
     def change(d):
         d.clear()
@@ -5077,7 +5361,11 @@ if st.session_state.get("parent_ok") and \
     st.session_state.parent_ok = False     # auto-lock
 
 with tab_parent:
+    unread_kid = [km for km in data.get("kid_messages", []) if not km.get("read")]
     if not st.session_state.get("parent_ok"):
+        if unread_kid:
+            st.info(f"📨 {len(unread_kid)} new message{'s' if len(unread_kid) != 1 else ''} from {STUDENT_NAME} — "
+                    "enter the PIN to read.")
         st.markdown("### 🔐 Grown-ups only")
         with st.form("parent_login", border=False):
             pin = st.text_input("PIN", type="password")
@@ -5100,6 +5388,36 @@ with tab_parent:
         if note:
             st.success(note)
         st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
+
+        kms = data.get("kid_messages", [])
+        st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
+        if not kms:
+            st.caption(f"No messages yet. {STUDENT_NAME} can send one from the bottom of her Today page.")
+        for km in reversed(kms[-10:]):
+            with st.container(border=True):
+                st.markdown(f"{'🆕 ' if not km.get('read') else ''}**{km['date']} {km.get('time', '')}** — {md_safe(km['text'])}")
+                if km.get("reply"):
+                    st.caption(f"↪️ You replied: {km['reply']}")
+                else:
+                    r1, r2 = st.columns([3, 1])
+                    r1.text_input("Reply", key=f"kreply_{km['id']}", label_visibility="collapsed",
+                                  placeholder="Write a reply…")
+                    r2.button("Reply ↪️", key=f"kreply_btn_{km['id']}", on_click=kid_msg_reply, args=(km["id"],))
+                    if not km.get("read"):
+                        st.button("Mark as read 👀", key=f"kread_{km['id']}", on_click=kid_msg_read, args=(km["id"],))
+
+        st.markdown("#### 💬 Give feedback on a task")
+        fb_days = [today - timedelta(days=i) for i in range(8)]
+        st.selectbox("Day", fb_days, key="gfb_day", format_func=lambda x: x.strftime("%A %d %b"))
+        feedback_form("gfb", st.session_state.get("gfb_day", today).isoformat(), False)
+        fbs = data.get("task_feedback", [])
+        if fbs:
+            with st.expander(f"Feedback given ({len(fbs)})"):
+                for f in reversed(fbs[-20:]):
+                    c1, c2 = st.columns([5, 1])
+                    c1.markdown(f"• {f['date']} · {FB_TASK_NAME.get(f['task'], f['task'])} {FB_STARS.get(f.get('stars', 0), '')}: "
+                                f"{md_safe(f.get('text', ''))} {'✅ seen' if f.get('seen') else '🕒 not seen yet'}")
+                    c2.button("🗑️", key=f"fbdel_{f['id']}", on_click=delete_feedback, args=(f["id"],))
 
         st.markdown("#### ✅ Approve ticked tasks")
         any_pending = False
