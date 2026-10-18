@@ -38,6 +38,13 @@ WEEKEND_CHALISA_PARTS = 2      # Chalisa parts to learn (and recite to a grown-u
 CHALISA_REPEATS = 21           # times to say each part before it can be recited to a grown-up
 WEEKEND_MAX_STRETCH = 40       # weekends: most screen minutes in one go, even with more saved
 QUOTE_HOURS = 1                # a new quote and health tip every hour
+BEDTIME = "9:30 pm"            # bedtime for the 'in bed on time' task
+PARENT_WORDS = "Amma or Appa"  # what she calls her grown-ups
+PROGRESS_PATH = "progress.json"   # file in the private data repo (each child has her own)
+PIN_SECRET = "PARENT_PIN"      # which Secrets entry holds this child's grown-up PIN
+EMAIL_SECRET = "email"         # which Secrets section holds this child's email alerts
+SHOW_TAMIL = True              # Tamil words tab
+SHOW_CHALISA = True            # Hanuman Chalisa tab
 
 # id: short code (don't change once she has progress)   minutes: screen time it earns
 # required: True = must be done before ANY screen time unlocks that day
@@ -105,10 +112,10 @@ REWARDS = [
      "how": f"Speak {LANGUAGE} 21 days in a row (no breaks!), and over the month exercise and read on at least 20 days each."},
     {"id": "icecream", "emoji": "🍦", "name": "Choose your own ice cream", "streak_task": "bed", "streak_len": 30,
      "window": 30, "needs": {},
-     "how": "In bed by 9:30 pm every night for 30 nights in a row."},
+     "how": f"In bed by {BEDTIME} every night for 30 nights in a row."},
     {"id": "playcentre", "emoji": "🎠", "name": "Play centre of your choice (up to $50)", "streak_task": "bed",
      "streak_len": 90, "window": 90, "needs": {},
-     "how": "In bed by 9:30 pm every night for 3 months (90 nights) in a row."},
+     "how": f"In bed by {BEDTIME} every night for 3 months (90 nights) in a row."},
     {"id": "singing", "emoji": "🎶", "name": "Singing star: +60 screen-time minutes", "streak_task": "sing",
      "streak_len": 30, "window": 30, "needs": {}, "bonus_minutes": 60,
      "how": "Practise singing 15 minutes every day for 30 days in a row. The minutes go into your balance."},
@@ -2444,7 +2451,7 @@ def compute_stats(data):
     return {
         "active_days": sum(1 for v in days.values() if v),
         "star_days": sum(is_star_day(v) for v in days.values()),
-        "speak_days": count("speak"), "read_days": count("read"), "sing_days": count("sing"),
+        "speak_days": count("speak"), "read_days": count("read"), "sing_days": count("sing"), "music_days": count("music"),
         "sit2_days": count("sit2"), "exercise_days": count("exercise"), "homework_days": count("homework"),
         "max_speak_streak": max_streak(data, "speak"), "max_bed_streak": max_streak(data, "bed"),
         "maths_solved": len(logs),
@@ -2591,7 +2598,8 @@ def add_fact(d, today_key, info):
 
 
 # --------------------------------- storage -----------------------------------
-LOCAL_FILE = Path("progress_local.json")
+def local_file():
+    return Path(PROGRESS_PATH.replace(".json", "_local.json"))
 
 
 def secret(name, default=None):
@@ -2604,12 +2612,13 @@ def secret(name, default=None):
 def storage_cfg():
     s = secret("storage")
     if s and s.get("github_token") and s.get("repo"):
-        return {"token": s["github_token"], "repo": s["repo"], "path": s.get("path", "progress.json")}
+        path = PROGRESS_PATH if PROGRESS_PATH != "progress.json" else s.get("path", "progress.json")
+        return {"token": s["github_token"], "repo": s["repo"], "path": path}
     return None
 
 
 def parent_pin() -> str:
-    return str(secret("PARENT_PIN", "1234"))
+    return str(secret(PIN_SECRET, "1234"))
 
 
 def _gh(cfg):
@@ -2630,8 +2639,8 @@ def load_data():
         body = r.json()
         data = json.loads(base64.b64decode(body["content"]).decode())
         return migrate({**default_data(), **data}, today_local()), body["sha"]
-    if LOCAL_FILE.exists():
-        return migrate({**default_data(), **json.loads(LOCAL_FILE.read_text())}, today_local()), None
+    if local_file().exists():
+        return migrate({**default_data(), **json.loads(local_file().read_text())}, today_local()), None
     return migrate(default_data(), today_local()), None
 
 
@@ -2647,7 +2656,7 @@ def save_data(data, sha):
         r = requests.put(url, headers=headers, json=payload, timeout=15)
         r.raise_for_status()
         return r.json()["content"]["sha"]
-    LOCAL_FILE.write_text(text)
+    local_file().write_text(text)
     return None
 
 
@@ -3359,6 +3368,243 @@ def online_tamil(q: str):
         return None
 
 
+# ================================ LOGINS & PROFILES ================================
+# Logins live in the app's Secrets:
+#   [logins]
+#   andal = "her password"          andal_parent = "grown-up password"
+#   elyssa = "her password"         elyssa_parent = "grown-up password"
+# With no [logins] section the app works like before (Andal only, no login, no chat).
+import hashlib
+import hmac
+
+KIDS = {"andal": "Andal", "elyssa": "Elyssa"}
+
+ELYSSA_TASKS = [
+    {"id": "homework", "emoji": "📒", "name": "Finish today's homework", "minutes": 10, "required": True,
+     "section": "must"},
+    {"id": "exercise", "emoji": "⚽", "name": "Physical activity or sport for 30 minutes", "minutes": 10,
+     "required": True, "section": "must"},
+    {"id": "bed", "emoji": "🌙", "name": "Was in bed by 9:00 pm last night", "minutes": 0, "required": True,
+     "section": "must"},
+    {"id": "speak", "emoji": "🗣️", "name": "Speak Chinese for 10 minutes", "minutes": 5, "section": "learn"},
+    {"id": "write1", "emoji": "✏️", "name": "English writing – piece 1 (on paper)", "minutes": 5, "section": "learn"},
+    {"id": "write2", "emoji": "📝", "name": "English writing – piece 2 (on paper)", "minutes": 5, "section": "learn"},
+    {"id": "maths", "emoji": "🔢", "name": f"Solve {MATHS_TO_SOLVE} maths problems", "minutes": 5,
+     "section": "learn", "auto": True},
+    {"id": "read", "emoji": "📚", "name": "Read a book for 20 minutes", "minutes": 5, "section": "learn"},
+    {"id": "veggies", "emoji": "🥦", "name": "Ate fruit and veggies today", "minutes": 3, "section": "body"},
+    {"id": "chore", "emoji": "🧹", "name": "Help at home or tidy my room for 15 minutes", "minutes": 5,
+     "section": "habits"},
+    {"id": "music", "emoji": "🎹", "name": "Practise music or my instrument for 15 minutes", "minutes": 5,
+     "section": "habits"},
+]
+ELYSSA_SECTIONS = [("must", "🦄 Must do today"), ("learn", "🐰 Learning tasks"), ("body", "🌈 Healthy me"),
+                   ("habits", "🎵 Home & music")]
+ELYSSA_REWARDS = [
+    {"id": "book", "emoji": "📚", "name": "A new book of your choice", "streak_task": "read", "streak_len": 7,
+     "window": 7, "needs": {"homework": 5},
+     "how": "Read 7 days in a row, and do your homework on at least 5 of those days."},
+    {"id": "movie", "emoji": "🎬", "name": "Movie at the cinema", "streak_task": "exercise", "streak_len": 21,
+     "window": 30, "needs": {"read": 15},
+     "how": "Be active 21 days in a row (no breaks!), and read on at least 15 days that month."},
+    {"id": "icecream", "emoji": "🍦", "name": "Choose your own ice cream", "streak_task": "bed", "streak_len": 30,
+     "window": 30, "needs": {}, "how": "In bed by 9:00 pm every night for 30 nights in a row."},
+    {"id": "playcentre", "emoji": "🎠", "name": "Play centre of your choice (up to $50)", "streak_task": "bed",
+     "streak_len": 90, "window": 90, "needs": {},
+     "how": "In bed by 9:00 pm every night for 3 months (90 nights) in a row."},
+    {"id": "music_star", "emoji": "🎶", "name": "Music star: +60 screen-time minutes", "streak_task": "music",
+     "streak_len": 30, "window": 30, "needs": {}, "bonus_minutes": 60,
+     "how": "Practise music 15 minutes every day for 30 days in a row. The minutes go into your balance."},
+]
+
+
+def apply_profile(profile):
+    """Switch every child-specific setting before the app draws anything."""
+    global STUDENT_NAME, LANGUAGE, TASKS, TASK_BY_ID, SECTIONS, REWARDS, BEDTIME, PARENT_WORDS, PROGRESS_PATH
+    global PIN_SECRET, EMAIL_SECRET, SHOW_TAMIL, SHOW_CHALISA, WEEKEND_RULES_FROM, STAR_DAY_FIXES, BADGES
+    global BIG_PRIZES, PRIZE_BY_ID, FRIENDS
+    if profile != "elyssa":
+        return
+    STUDENT_NAME, LANGUAGE, BEDTIME, PARENT_WORDS = "Elyssa", "Chinese", "9:00 pm", "Mum or Dad"
+    TASKS, SECTIONS, REWARDS = ELYSSA_TASKS, ELYSSA_SECTIONS, ELYSSA_REWARDS
+    TASK_BY_ID = {t["id"]: t for t in TASKS}
+    PROGRESS_PATH, PIN_SECRET, EMAIL_SECRET = "progress_elyssa.json", "ELYSSA_PARENT_PIN", "email_elyssa"
+    SHOW_TAMIL = SHOW_CHALISA = False
+    WEEKEND_RULES_FROM = "9999-12-31"          # Andal's weekend rules don't apply
+    STAR_DAY_FIXES = []
+    BADGES = [b for b in BADGES if b[4] not in ("chalisa_parts", "sit2_days", "sing_days")] + [
+        ("music_maker", "🎹", "Music Maker", "Practise music on 10 days", "music_days", 10, "#e8f0ff", "#5b7cff")]
+    BIG_PRIZES = [dict(p, rules=f"Only if at least {RESTAURANT_GAP_DAYS // 7} weeks have passed since our last "
+                       "family dinner at a restaurant.") if p["id"] == "restaurant" else p for p in BIG_PRIZES]
+    PRIZE_BY_ID = {p["id"]: p for p in BIG_PRIZES + SMALL_PRIZES}
+    # the friendly visitor 'Elyssa' becomes 'Andal' when Elyssa is using the app
+    swapped = []
+    for f in FRIENDS:
+        if f["id"] == "elyssa":
+            f = dict(f, name="Andal", emoji="👧🏽",
+                     says=[x.replace("Elyssa:", "Andal:").replace("Hi Andal", "Hi Elyssa") for x in f["says"]])
+        swapped.append(f)
+    FRIENDS = swapped
+
+
+def login_table():
+    t = secret("logins")
+    return {str(k).lower(): str(v) for k, v in dict(t).items()} if t else {}
+
+
+def _token(user, pw):
+    return hmac.new(pw.encode(), f"earn-stars:{user}".encode(), hashlib.sha256).hexdigest()[:24]
+
+
+def who(user):
+    profile = user.replace("_parent", "")
+    return {"user": user, "profile": profile, "role": "parent" if user.endswith("_parent") else "kid"}
+
+
+def do_login():
+    u = str(st.session_state.get("li_user", "")).strip().lower()
+    pw = str(st.session_state.get("li_pw", ""))
+    table = login_table()
+    if u in table and hmac.compare_digest(pw, table[u]) and u.replace("_parent", "") in KIDS:
+        st.session_state.auth = who(u)
+        st.session_state.li_pw = ""
+        if st.session_state.get("li_keep"):
+            st.query_params["u"] = u
+            st.query_params["k"] = _token(u, table[u])
+    else:
+        st.session_state.li_err = "That name or password isn't right. Try again! 🔐"
+
+
+def do_logout():
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
+    st.query_params.clear()
+
+
+LOGINS = login_table()
+CHAT_ON = bool(LOGINS)
+if not LOGINS:
+    AUTH = {"user": "andal", "profile": "andal", "role": "kid", "legacy": True}
+else:
+    AUTH = st.session_state.get("auth")
+    if not AUTH:
+        qu, qk = st.query_params.get("u", ""), st.query_params.get("k", "")
+        if qu in LOGINS and qk and hmac.compare_digest(qk, _token(qu, LOGINS[qu])):
+            AUTH = st.session_state.auth = who(qu)
+    if not AUTH:
+        st.markdown(BASE_CSS + "<style>" + THEME_CSS["rainbow"] + "</style>", unsafe_allow_html=True)
+        st.markdown('<div class="hero"><div class="title">⭐ Earn Stars ⭐</div>'
+                    '<div class="sub">Sign in to see your stars, tasks and rewards</div></div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            with st.form("login", border=False):
+                st.text_input("Your name", key="li_user", placeholder="e.g. andal or elyssa")
+                st.text_input("Password", key="li_pw", type="password")
+                st.checkbox("Keep me signed in on this device", key="li_keep", value=True)
+                st.form_submit_button("Sign in ✨", on_click=do_login, type="primary", use_container_width=True)
+            if err := st.session_state.pop("li_err", None):
+                st.error(err)
+            st.caption("Grown-ups: sign in with your child's name followed by _parent (for example andal_parent).")
+        st.stop()
+apply_profile(AUTH["profile"])
+IS_PARENT = AUTH["role"] == "parent"
+CHAT_FRIEND = next((n for k, n in KIDS.items() if k != AUTH["profile"]), "")
+
+
+# ------------------------------------ chat ------------------------------------
+CHAT_PATH = "chat.json"
+CHAT_MAX = 300          # characters per message
+CHAT_KEEP = 400         # messages kept in the file
+
+
+def _chat_cfg():
+    cfg = storage_cfg()
+    return dict(cfg, path=CHAT_PATH) if cfg else None
+
+
+def chat_load():
+    cfg = _chat_cfg()
+    if cfg:
+        url, headers = _gh(cfg)
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code == 404:
+            return [], None
+        r.raise_for_status()
+        body = r.json()
+        return json.loads(base64.b64decode(body["content"]).decode()), body["sha"]
+    f = Path("chat_local.json")
+    return (json.loads(f.read_text()) if f.exists() else []), None
+
+
+def chat_change(change) -> bool:
+    for attempt in range(3):
+        try:
+            msgs, sha = chat_load()
+            if change(msgs) is False:
+                return False
+            msgs = msgs[-CHAT_KEEP:]
+            text = json.dumps(msgs, ensure_ascii=False, indent=0)
+            cfg = _chat_cfg()
+            if cfg:
+                url, headers = _gh(cfg)
+                payload = {"message": "chat", "content": base64.b64encode(text.encode()).decode()}
+                if sha:
+                    payload["sha"] = sha
+                r = requests.put(url, headers=headers, json=payload, timeout=15)
+                r.raise_for_status()
+            else:
+                Path("chat_local.json").write_text(text)
+            return True
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code in (409, 422) and attempt < 2:
+                continue
+            st.session_state.chat_err = "The chat couldn't be saved just now — try again."
+            return False
+        except Exception:
+            st.session_state.chat_err = "The chat couldn't be saved just now — try again."
+            return False
+    return False
+
+
+def chat_send():
+    text = " ".join(str(st.session_state.get("chat_in", "")).split())[:CHAT_MAX]
+    if not text:
+        return
+    msg = {"id": uuid.uuid4().hex[:10], "from": AUTH["profile"], "name": STUDENT_NAME, "text": text,
+           "time": datetime.now(ZoneInfo(TIMEZONE)).isoformat(timespec="seconds")}
+
+    def change(msgs):
+        msgs.append(msg)
+    if chat_change(change):
+        st.session_state.chat_in = ""
+        play_sound("pop")
+
+
+def chat_delete(mid):
+    def change(msgs):
+        keep = [m for m in msgs if m["id"] != mid]
+        if len(keep) == len(msgs):
+            return False
+        msgs[:] = keep
+    chat_change(change)
+
+
+def chat_view():
+    try:
+        msgs, _ = chat_load()
+    except Exception:
+        st.warning("The chat couldn't be loaded just now. 🔄")
+        return
+    if not msgs:
+        st.caption(f"No messages yet — say hi to {CHAT_FRIEND}! 👋")
+    html_rows = []
+    for m in msgs[-50:]:
+        mine = m["from"] == AUTH["profile"]
+        when = datetime.fromisoformat(m["time"]).strftime("%a %I:%M %p")
+        html_rows.append(f'<div class="cb {"me" if mine else "them"}"><div class="cn">{html_safe(m["name"])} · {when}</div>'
+                         f'{html_safe(m["text"])}</div>')
+    st.markdown('<div class="chatbox">' + "".join(html_rows) + "</div>", unsafe_allow_html=True)
+
+
 # =================================== APP ===================================
 if "data" not in st.session_state:
     try:
@@ -3390,6 +3636,10 @@ theme_id = data.get("theme", "rainbow")
 st.markdown(BASE_CSS + "<style>" + THEME_CSS.get(theme_id, THEME_CSS["rainbow"]) + "</style>",
             unsafe_allow_html=True)
 install_sound_engine()
+if not AUTH.get("legacy"):
+    _sb1, _sb2 = st.columns([4, 1])
+    _sb1.caption(f"👋 Signed in as **{STUDENT_NAME}'s grown-up**" if IS_PARENT else f"👋 Signed in as **{STUDENT_NAME}**")
+    _sb2.button("Sign out", on_click=do_logout, key="signout", use_container_width=True)
 alerts = st.container()   # fixed holders, so the tabs below never move (moving resets the open tab)
 
 done_today = done_on(data, today)          # tasks that COUNT (approved or auto-checked)
@@ -3480,6 +3730,41 @@ def mark_feedback_seen():
     update(change)
 
 
+def email_cfg():
+    e = secret(EMAIL_SECRET)
+    if e and e.get("sender") and e.get("app_password") and e.get("to"):
+        to = e["to"] if isinstance(e["to"], list) else [x.strip() for x in str(e["to"]).split(",") if x.strip()]
+        return {"sender": e["sender"], "password": str(e["app_password"]).replace(" ", ""), "to": to}
+    return None
+
+
+def send_email(subject, body):
+    """Email the grown-ups (Gmail + App Password from Secrets). Returns True/False; never crashes the app."""
+    cfg = email_cfg()
+    if not cfg:
+        return False
+    try:
+        import smtplib
+        from email.message import EmailMessage
+        msg = EmailMessage()
+        msg["Subject"], msg["From"], msg["To"] = subject, cfg["sender"], ", ".join(cfg["to"])
+        msg.set_content(body)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as smtp:
+            smtp.login(cfg["sender"], cfg["password"])
+            smtp.send_message(msg)
+        return True
+    except Exception as e:
+        st.session_state.email_error = str(e)[:200]
+        return False
+
+
+def send_test_email():
+    ok = send_email(f"⭐ Test from {STUDENT_NAME}'s app", f"Email alerts are working! Messages from {STUDENT_NAME} "
+                    "will arrive here.")
+    st.session_state.parent_note = ("📧 Test email sent — check your inbox (and spam folder)." if ok else
+                                    f"📧 Couldn't send: {st.session_state.pop('email_error', 'email is not set up')}")
+
+
 def send_kid_message():
     text = str(st.session_state.get("kid_msg", "")).strip()
     if not text:
@@ -3493,7 +3778,13 @@ def send_kid_message():
 
     if update(change):
         st.session_state.kid_msg = ""
-        st.session_state.kid_msg_note = ("ok", "💌 Sent! Your grown-up will see it in the 🔐 Grown-ups tab.")
+        now = datetime.now(ZoneInfo(TIMEZONE)).strftime("%A %d %b, %I:%M %p")
+        emailed = send_email(f"💌 New message from {STUDENT_NAME}",
+                             f"{STUDENT_NAME} sent you a message ({now}):\n\n{text}\n\n"
+                             "Reply in the 🔐 Grown-ups tab of the app: https://andal-earns-stars.streamlit.app (sign in as "
+                             f"{AUTH['profile']}_parent)")
+        st.session_state.kid_msg_note = ("ok", "💌 Sent! Your grown-up will see it" +
+                                         (" in their email too. 📧" if emailed else " in the 🔐 Grown-ups tab."))
 
 
 unseen = [m for m in data.get("messages", []) if not m.get("seen")]
@@ -3545,9 +3836,14 @@ if party:
     st.balloons()
     play_sound("fanfare")
 
-(tab_today, tab_maths, tab_write, tab_tamil, tab_chalisa, tab_spin, tab_rewards, tab_pet, tab_weeks,
- tab_parent) = st.tabs(["🌈 Today", "🧮 Maths", "✍️ Stories", "🗣️ Tamil words", "🙏 Chalisa", "🎡 Spin",
-                        "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks", "🔐 Grown-ups"])
+_TAB_NAMES = (["🌈 Today", "🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
+              + (["🙏 Chalisa"] if SHOW_CHALISA else []) + ([f"💬 Chat"] if CHAT_ON else [])
+              + ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks", "🔐 Grown-ups"])
+_TABS = dict(zip(_TAB_NAMES, st.tabs(_TAB_NAMES)))
+(tab_today, tab_maths, tab_write, tab_spin, tab_rewards, tab_pet, tab_weeks, tab_parent) = (
+    _TABS["🌈 Today"], _TABS["🧮 Maths"], _TABS["✍️ Stories"], _TABS["🎡 Spin"], _TABS["🏆 Rewards"],
+    _TABS["🐰 Bunny & badges"], _TABS["📅 My weeks"], _TABS["🔐 Grown-ups"])
+tab_tamil, tab_chalisa, tab_chat = _TABS.get("🗣️ Tamil words"), _TABS.get("🙏 Chalisa"), _TABS.get("💬 Chat")
 
 
 # ================================== TODAY ==================================
@@ -3832,7 +4128,7 @@ with tab_today:
         "homework": "📒 Do today's homework from school. <b>No homework today?</b> Ask a grown-up for a 15-minute "
                     "learning task instead, then tick this.",
         "speak": f"💡 <b>Idea for today:</b> {SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]} "
-                 "· Need a word? Look it up in the <b>🗣️ Tamil words</b> tab!",
+                 + ("· Need a word? Look it up in the <b>🗣️ Tamil words</b> tab!" if SHOW_TAMIL else ""),
         "write1": f"📄 <b>Write it on paper first</b> — in your notebook or on a separate sheet. "
                   f"Idea: <b>{WRITING_PROMPTS[write_n % len(WRITING_PROMPTS)]}</b>. Try to use the word "
                   f"<b>{html_safe(wotd['word'])}</b>. Then tick this and show your writing to a grown-up. "
@@ -3849,7 +4145,10 @@ with tab_today:
         "sit2": "📣 <b>Call a grown-up to watch.</b> Same as the 1-minute challenge, but twice as long! "
                 "Tip: breathe slowly and count your breaths.",
         "sing": "🎶 Sing for 15 minutes every day for 30 days in a row to win 60 bonus minutes!",
-        "bed": "🌙 Tick this in the morning if you were in bed by 9:30 pm last night. "
+        "veggies": "🥦 Did you eat fruit at snack time and veggies at dinner? A rainbow on your plate! 🌈",
+        "chore": "🧹 Ideas: make your bed, tidy your desk, set the table, fold washing, feed a pet.",
+        "music": "🎹 Practise your instrument or singing for 15 minutes. 30 days in a row = 60 bonus minutes!",
+        "bed": f"🌙 Tick this in the morning if you were in bed by {BEDTIME} last night. "
                "30 nights in a row = 🍦 ice cream. 90 nights = 🎠 play centre!",
     }
     wc_today = weekend_chalisa(data, today) if WEEKEND else None
@@ -3896,7 +4195,7 @@ with tab_today:
     st.markdown("### 💌 Send a message to my grown-up")
     with st.container(border=True):
         st.text_area("My message", key="kid_msg", height=80, max_chars=1000, label_visibility="collapsed",
-                     placeholder="Type a message for Amma or Appa… 💖")
+                     placeholder=f"Type a message for {PARENT_WORDS}… 💖")
         st.button("📨 Send", on_click=send_kid_message, key="kid_send", type="primary")
         knote = st.session_state.pop("kid_msg_note", None)
         if knote:
@@ -4415,96 +4714,97 @@ def save_my_word(en):
     update(change)
 
 
-with tab_tamil:
-    words = all_tamil_words(data)
-    st.markdown("### 🗣️ English → Tamil words")
-    st.caption(f"Type an English word or short sentence to find it in Tamil, written in English letters. Try a doing "
-               f"word like 'eat', 'ate' or 'will eat' to see all its forms! ({len(words) + len(TAMIL_SPECIAL_VERBS)}+ words)")
-    with st.container(border=True):
-        q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, went, I'm tired, broken")
-        if q.strip():
-            found, sugg = lookup_tamil(q, words)
-            if found and found[0] == ("split",):
-                found = found[1:]
-                qq = re.sub(r"\s+", " ", q.strip().lower())
-                with st.spinner("Looking up the whole sentence… 🌐"):
-                    script = online_tamil(qq) if len(qq) <= 60 else None
-                if script:
-                    roman = roman_from_tamil(script)
-                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
-                                f'<div class="wotd">{html_safe(roman)}</div>'
-                                f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
-                                f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
-                                unsafe_allow_html=True)
-                    say_buttons([("Say it", roman, script)])
-                    st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
-                              args=(qq, roman, script))
-                st.markdown("**Word by word:**")
-            if found:
-                for res in found:
-                    if res[0] == "word":
-                        _k, en, ta, note, cat = res
-                        st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(en)}</div>'
-                                    f'<div class="wotd">{html_safe(ta)}</div>'
-                                    f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
-                                    f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
+if tab_tamil is not None:
+    with tab_tamil:
+        words = all_tamil_words(data)
+        st.markdown("### 🗣️ English → Tamil words")
+        st.caption(f"Type an English word or short sentence to find it in Tamil, written in English letters. Try a doing "
+                   f"word like 'eat', 'ate' or 'will eat' to see all its forms! ({len(words) + len(TAMIL_SPECIAL_VERBS)}+ words)")
+        with st.container(border=True):
+            q = st.text_input("English word", key="tamil_q", placeholder="e.g. house, went, I'm tired, broken")
+            if q.strip():
+                found, sugg = lookup_tamil(q, words)
+                if found and found[0] == ("split",):
+                    found = found[1:]
+                    qq = re.sub(r"\s+", " ", q.strip().lower())
+                    with st.spinner("Looking up the whole sentence… 🌐"):
+                        script = online_tamil(qq) if len(qq) <= 60 else None
+                    if script:
+                        roman = roman_from_tamil(script)
+                        st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
+                                    f'<div class="wotd">{html_safe(roman)}</div>'
+                                    f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
+                                    f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
                                     unsafe_allow_html=True)
-                        say_buttons([("Say it", ta.split(" / ")[0].replace("…", "").strip())])
-                        st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
-                    else:
-                        verb_card(*res)
-                        base = (TAMIL_VERBS if res[0] == "verb" else TAMIL_SPECIAL_VERBS)[res[1]][0]
-                        if res[0] == "verb":
-                            st.button(f"⭐ Save '{base}' to My Tamil words", key=f"tsave_v_{base}", on_click=save_my_word,
-                                      args=(base,))
-            else:
-                qq = re.sub(r"\s+", " ", q.strip().lower())
-                with st.spinner("Looking it up in the online dictionary… 🌐"):
-                    script = online_tamil(qq) if len(qq) <= 60 else None
-                if script:
-                    roman = roman_from_tamil(script)
-                    st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
-                                f'<div class="wotd">{html_safe(roman)}</div>'
-                                f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
-                                f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
-                                unsafe_allow_html=True)
-                    say_buttons([("Say it", roman, script)])
-                    st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
-                              args=(qq, roman, script))
+                        say_buttons([("Say it", roman, script)])
+                        st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
+                                  args=(qq, roman, script))
+                    st.markdown("**Word by word:**")
+                if found:
+                    for res in found:
+                        if res[0] == "word":
+                            _k, en, ta, note, cat = res
+                            st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(en)}</div>'
+                                        f'<div class="wotd">{html_safe(ta)}</div>'
+                                        f'{"<div style=color:#5a2d66><i>" + html_safe(note) + "</i></div>" if note else ""}'
+                                        f'<div style="color:#a99bb0;font-size:.85rem">{html_safe(cat)}</div></div>',
+                                        unsafe_allow_html=True)
+                            say_buttons([("Say it", ta.split(" / ")[0].replace("…", "").strip())])
+                            st.button(f"⭐ Save '{en}' to My Tamil words", key=f"tsave_{en}", on_click=save_my_word, args=(en,))
+                        else:
+                            verb_card(*res)
+                            base = (TAMIL_VERBS if res[0] == "verb" else TAMIL_SPECIAL_VERBS)[res[1]][0]
+                            if res[0] == "verb":
+                                st.button(f"⭐ Save '{base}' to My Tamil words", key=f"tsave_v_{base}", on_click=save_my_word,
+                                          args=(base,))
                 else:
-                    st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
-                if sugg:
-                    st.markdown("Did you mean: " + ", ".join(f"**{md_safe(s_)}**" for s_ in sugg) + "?")
-    tip_i = today.toordinal() % len(TAMIL_TIPS)
-    st.markdown(f'<div class="fact">🗣️ <b>Speaking tip:</b> {html_safe(TAMIL_TIPS[tip_i])}</div>', unsafe_allow_html=True)
-    saved = [w for w in data.get("tamil_saved", []) if w in words]
-    if saved:
-        st.markdown("### ⭐ My Tamil words")
-        st.markdown("".join(f'<span class="pill">{html_safe(w)} → <b>{html_safe(words[w][0])}</b></span>' for w in saved),
-                    unsafe_allow_html=True)
-    st.markdown("### 📚 Browse words by topic")
-    cats = (["🏃 Doing words (verb table)", "💛 Feeling words (I know, I like…)"] + list(TAMIL_WORDS)
-            + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else [])
-            + (["🌐 Looked up online"] if data.get("tamil_online") else []))
-    cat = st.selectbox("Topic", cats, key="tamil_cat")
-    if cat.startswith("🏃"):
-        rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
-                       f"<td>{html_safe(v[5])}</td><td>{html_safe(v[6])}</td></tr>" for v in sorted(TAMIL_VERBS))
-        st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Command</th><th>I do / am doing</th>"
-                    f"<th>I did</th><th>I will</th></tr>{rows}</table></div>", unsafe_allow_html=True)
-        st.caption("💡 Swap the ending for other people: -en (I) → -a (you), -aan (he), -aa (she), -om (we), -aanga (they). "
-                   "e.g. saapten (I ate) → ava saaptaa (she ate).")
-    elif cat.startswith("💛"):
-        rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
-                       f"<td>{html_safe(v[5])}</td></tr>" for v in TAMIL_SPECIAL_VERBS)
-        st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Now</th><th>Past</th><th>Future</th></tr>"
-                    f"{rows}</table></div>", unsafe_allow_html=True)
-        st.caption("These start with 'enakku' (= to me) because in Tamil you say 'to me it is known', 'to me it is liked'.")
-    else:
-        rows = [(en, ta) for en, (ta, _n, c) in sorted(words.items()) if c == cat]
-        st.markdown("".join(f'<span class="pill">{html_safe(en)} → <b>{html_safe(ta)}</b></span>' for en, ta in rows),
-                    unsafe_allow_html=True)
-    st.caption("Spoken Tamil can be a little different in each family — check with a grown-up how your family says it. 💗")
+                    qq = re.sub(r"\s+", " ", q.strip().lower())
+                    with st.spinner("Looking it up in the online dictionary… 🌐"):
+                        script = online_tamil(qq) if len(qq) <= 60 else None
+                    if script:
+                        roman = roman_from_tamil(script)
+                        st.markdown(f'<div class="card" style="text-align:center"><div style="color:#8a6a96">{html_safe(qq)}</div>'
+                                    f'<div class="wotd">{html_safe(roman)}</div>'
+                                    f'<div style="color:#5a2d66;font-size:1.2rem">{html_safe(script)}</div>'
+                                    f'<div style="color:#a99bb0;font-size:.85rem;margin-top:4px">{html_safe(ONLINE_NOTE)}</div></div>',
+                                    unsafe_allow_html=True)
+                        say_buttons([("Say it", roman, script)])
+                        st.button(f"⭐ Save '{qq}' to My Tamil words", key=f"tsave_on_{qq}", on_click=save_online_word,
+                                  args=(qq, roman, script))
+                    else:
+                        st.warning(f"I don't know “{q.strip()}” yet. Ask a grown-up — they can add it in the Grown-ups tab! 🙋")
+                    if sugg:
+                        st.markdown("Did you mean: " + ", ".join(f"**{md_safe(s_)}**" for s_ in sugg) + "?")
+        tip_i = today.toordinal() % len(TAMIL_TIPS)
+        st.markdown(f'<div class="fact">🗣️ <b>Speaking tip:</b> {html_safe(TAMIL_TIPS[tip_i])}</div>', unsafe_allow_html=True)
+        saved = [w for w in data.get("tamil_saved", []) if w in words]
+        if saved:
+            st.markdown("### ⭐ My Tamil words")
+            st.markdown("".join(f'<span class="pill">{html_safe(w)} → <b>{html_safe(words[w][0])}</b></span>' for w in saved),
+                        unsafe_allow_html=True)
+        st.markdown("### 📚 Browse words by topic")
+        cats = (["🏃 Doing words (verb table)", "💛 Feeling words (I know, I like…)"] + list(TAMIL_WORDS)
+                + (["⭐ Added by a grown-up"] if data.get("tamil_custom") else [])
+                + (["🌐 Looked up online"] if data.get("tamil_online") else []))
+        cat = st.selectbox("Topic", cats, key="tamil_cat")
+        if cat.startswith("🏃"):
+            rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
+                           f"<td>{html_safe(v[5])}</td><td>{html_safe(v[6])}</td></tr>" for v in sorted(TAMIL_VERBS))
+            st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Command</th><th>I do / am doing</th>"
+                        f"<th>I did</th><th>I will</th></tr>{rows}</table></div>", unsafe_allow_html=True)
+            st.caption("💡 Swap the ending for other people: -en (I) → -a (you), -aan (he), -aa (she), -om (we), -aanga (they). "
+                       "e.g. saapten (I ate) → ava saaptaa (she ate).")
+        elif cat.startswith("💛"):
+            rows = "".join(f"<tr><td class='name'>{html_safe(v[0])}</td><td>{html_safe(v[3])}</td><td>{html_safe(v[4])}</td>"
+                           f"<td>{html_safe(v[5])}</td></tr>" for v in TAMIL_SPECIAL_VERBS)
+            st.markdown("<div class='scroll'><table class='week'><tr><th>English</th><th>Now</th><th>Past</th><th>Future</th></tr>"
+                        f"{rows}</table></div>", unsafe_allow_html=True)
+            st.caption("These start with 'enakku' (= to me) because in Tamil you say 'to me it is known', 'to me it is liked'.")
+        else:
+            rows = [(en, ta) for en, (ta, _n, c) in sorted(words.items()) if c == cat]
+            st.markdown("".join(f'<span class="pill">{html_safe(en)} → <b>{html_safe(ta)}</b></span>' for en, ta in rows),
+                        unsafe_allow_html=True)
+        st.caption("Spoken Tamil can be a little different in each family — check with a grown-up how your family says it. 💗")
 
 
 # ============================== HANUMAN CHALISA ==============================
@@ -4632,137 +4932,138 @@ def picture_b64(name):
     return base64.b64encode(f.read_bytes()).decode() if f.exists() else None
 
 
-with tab_chalisa:
-    pics = [(n, picture_b64(n)) for n in CHALISA_PICTURES]
-    pics = [(n, b) for n, b in pics if b]
-    if pics:
-        imgs = "".join(f'<img src="data:image/png;base64,{b}" alt="{html_safe(n)}" style="height:min(42vh,340px);'
-                       'width:auto;max-width:48%;object-fit:contain;border-radius:16px;border:3px solid #ffc98a;'
-                       'box-shadow:0 6px 18px rgba(169,79,0,.18);background:#fff">' for n, b in pics)
-        st.markdown(f'<div style="display:flex;gap:12px;justify-content:center;align-items:center;margin:4px 0 10px">'
-                    f'{imgs}</div>', unsafe_allow_html=True)
-    ch_done = data.get("chalisa", {})
-    bs = bead_status(data)
-    if "ch_fact" not in st.session_state:
-        st.session_state.ch_fact = random.randrange(len(CHALISA_FACTS))
-    st.markdown(f'<div class="fact">🌟 <b>Did you know?</b> {html_safe(CHALISA_FACTS[st.session_state.ch_fact % len(CHALISA_FACTS)])}</div>',
-                unsafe_allow_html=True)
-    st.button("✨ Another fact", on_click=next_ch_fact, key="ch_fact_btn")
-
-    st.markdown("### 🙏 Learn the Hanuman Chalisa")
-    with st.container(border=True):
-        beads_html = "".join(f'<span class="bead{" on" if j < bs["toward"] else ""}"></span>' for j in range(BEADS_FOR_MINUTES))
-        st.markdown(f'<div style="text-align:center"><div class="chalisa-head">📿 My prayer beads: {bs["beads"]}</div>'
-                    f'<div class="beads">{beads_html}</div><div class="how">{bs["toward"]}/{BEADS_FOR_MINUTES} beads toward '
-                    f'+{BEAD_MINUTES} minutes of screen time · Parts learned: {len(ch_done)}/{len(CHALISA_PARTS)}</div></div>',
+if tab_chalisa is not None:
+    with tab_chalisa:
+        pics = [(n, picture_b64(n)) for n in CHALISA_PICTURES]
+        pics = [(n, b) for n, b in pics if b]
+        if pics:
+            imgs = "".join(f'<img src="data:image/png;base64,{b}" alt="{html_safe(n)}" style="height:min(42vh,340px);'
+                           'width:auto;max-width:48%;object-fit:contain;border-radius:16px;border:3px solid #ffc98a;'
+                           'box-shadow:0 6px 18px rgba(169,79,0,.18);background:#fff">' for n, b in pics)
+            st.markdown(f'<div style="display:flex;gap:12px;justify-content:center;align-items:center;margin:4px 0 10px">'
+                        f'{imgs}</div>', unsafe_allow_html=True)
+        ch_done = data.get("chalisa", {})
+        bs = bead_status(data)
+        if "ch_fact" not in st.session_state:
+            st.session_state.ch_fact = random.randrange(len(CHALISA_FACTS))
+        st.markdown(f'<div class="fact">🌟 <b>Did you know?</b> {html_safe(CHALISA_FACTS[st.session_state.ch_fact % len(CHALISA_FACTS)])}</div>',
                     unsafe_allow_html=True)
-        pct = int(100 * len(ch_done) / len(CHALISA_PARTS))
-        st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>', unsafe_allow_html=True)
-        st.caption(f"Each part you learn by heart = {BEADS_PER_PART} 📿 beads. Every {BEADS_FOR_MINUTES} beads = "
-                   f"{BEAD_MINUTES} minutes. Learn ALL {len(CHALISA_PARTS)} parts for a special weekend outing! 🎉")
-    wc = weekend_chalisa(data, today) if WEEKEND else None
-    with st.container(border=True):
-        st.markdown('<div class="reward-head">🌞 Weekend Chalisa goal</div>', unsafe_allow_html=True)
-        if wc:
-            if wc["mode"] == "learn":
-                names = " and ".join(f"<b>Part {i + 1}</b>" for i in wc["targets"])
-                st.markdown(f'<div class="how">This weekend, learn {names} by heart. It\'s a <b>must-do</b> on Saturday '
-                            f'and Sunday!</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="how">You know the whole Chalisa! 🏆 This weekend, revise any '
-                            f'<b>{WEEKEND_CHALISA_PARTS} parts</b> and recite them to a grown-up.</div>',
-                            unsafe_allow_html=True)
-            pills = "".join(f'<span class="pill {"ok" if j < len(wc["done"]) else "no"}">'
-                            f'{"✅" if j < len(wc["done"]) else "⬜"} recited {j + 1}</span>' for j in range(wc["need"]))
-            st.markdown(pills, unsafe_allow_html=True)
-        else:
-            nxt_parts = [i for i in range(len(CHALISA_PARTS)) if str(i) not in data.get("chalisa", {})]
-            if nxt_parts:
-                st.markdown(f'<div class="how">Every Saturday & Sunday: learn <b>{WEEKEND_CHALISA_PARTS} parts</b>. '
-                            f'Next weekend: ' + " and ".join(f"<b>Part {i + 1}</b>" for i in nxt_parts[:WEEKEND_CHALISA_PARTS])
-                            + '. You can start practising now!</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="how">Every weekend: revise any {WEEKEND_CHALISA_PARTS} parts.</div>',
-                            unsafe_allow_html=True)
-        st.markdown(f'<div class="tip" style="margin-left:0">🔁 <b>The rule:</b> say every part at least '
-                    f'<b>{CHALISA_REPEATS} times</b> (tap the counter each time). Then recite it to a grown-up '
-                    '<b>without looking and without any help</b>. The grown-up approves with the PIN. 🙏</div>',
-                    unsafe_allow_html=True)
-    msg = st.session_state.pop("ch_msg", None)
-    if msg:
-        (st.success if msg[0] == "ok" else st.error)(msg[1])
+        st.button("✨ Another fact", on_click=next_ch_fact, key="ch_fact_btn")
 
-    # ---- big reward ----
-    reward = data.get("chalisa_reward")
-    if bs["all_done"]:
+        st.markdown("### 🙏 Learn the Hanuman Chalisa")
         with st.container(border=True):
-            st.markdown('<div class="reward-head">🏆 Chalisa Champion! Choose your weekend outing</div>', unsafe_allow_html=True)
-            if reward and reward.get("status") == "done":
-                st.success(f"🎉 Enjoyed on {reward.get('done_date')}: {md_safe(reward['choice'])}")
-            else:
-                if reward:
-                    st.info(f"Your choice: **{md_safe(reward['choice'])}** — a grown-up will plan it! You can still change it.")
-                st.radio("Pick one:", CHALISA_OUTINGS, key="outing_pick",
-                         index=CHALISA_OUTINGS.index(reward["choice"]) if reward and reward["choice"] in CHALISA_OUTINGS else 0)
-                st.button("💖 This is my choice", on_click=choose_outing)
-                if reward:
-                    with st.form("outing_form", border=False):
-                        oc1, oc2 = st.columns([2, 1])
-                        oc1.text_input("Grown-up PIN after the outing", type="password", key="outing_pin")
-                        oc2.write("")
-                        oc2.form_submit_button("We went! ✅", on_click=give_outing)
-
-    # ---- the parts ----
-    next_part = next((i for i in range(len(CHALISA_PARTS)) if str(i) not in ch_done), None)
-    for i, part in enumerate(CHALISA_PARTS):
-        learned = str(i) in ch_done
-        locked = not learned and i != next_part
-        icon = "✅" if learned else ("🔒" if locked else "📿")
-        label = f"{icon} Part {i + 1} of {len(CHALISA_PARTS)} · {part['title']}"
-        if learned:
-            label += f" · learned {date.fromisoformat(ch_done[str(i)]).strftime('%d %b')}"
-        with st.expander(label, expanded=(i == next_part)):
-            if locked:
-                st.caption(f"🔒 Learn Part {i} first, then this part unlocks.")
-                continue
-            hide = st.toggle("🙈 Hide the words to test myself", key=f"ch_hide_{i}")
-            lines_html = ""
-            for ln in part["lines"]:
-                if hide:
-                    first = ln.split()[0]
-                    lines_html += f'<span class="ln"><b>{html_safe(first)}</b> …</span>'
+            beads_html = "".join(f'<span class="bead{" on" if j < bs["toward"] else ""}"></span>' for j in range(BEADS_FOR_MINUTES))
+            st.markdown(f'<div style="text-align:center"><div class="chalisa-head">📿 My prayer beads: {bs["beads"]}</div>'
+                        f'<div class="beads">{beads_html}</div><div class="how">{bs["toward"]}/{BEADS_FOR_MINUTES} beads toward '
+                        f'+{BEAD_MINUTES} minutes of screen time · Parts learned: {len(ch_done)}/{len(CHALISA_PARTS)}</div></div>',
+                        unsafe_allow_html=True)
+            pct = int(100 * len(ch_done) / len(CHALISA_PARTS))
+            st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>', unsafe_allow_html=True)
+            st.caption(f"Each part you learn by heart = {BEADS_PER_PART} 📿 beads. Every {BEADS_FOR_MINUTES} beads = "
+                       f"{BEAD_MINUTES} minutes. Learn ALL {len(CHALISA_PARTS)} parts for a special weekend outing! 🎉")
+        wc = weekend_chalisa(data, today) if WEEKEND else None
+        with st.container(border=True):
+            st.markdown('<div class="reward-head">🌞 Weekend Chalisa goal</div>', unsafe_allow_html=True)
+            if wc:
+                if wc["mode"] == "learn":
+                    names = " and ".join(f"<b>Part {i + 1}</b>" for i in wc["targets"])
+                    st.markdown(f'<div class="how">This weekend, learn {names} by heart. It\'s a <b>must-do</b> on Saturday '
+                                f'and Sunday!</div>', unsafe_allow_html=True)
                 else:
-                    lines_html += f'<span class="ln">{html_safe(ln)}</span>'
-            st.markdown(f'<div class="chalisa">{lines_html}</div>', unsafe_allow_html=True)
-            with st.expander("💡 What does it mean?"):
-                st.markdown(md_safe(part["meaning"]))
+                    st.markdown(f'<div class="how">You know the whole Chalisa! 🏆 This weekend, revise any '
+                                f'<b>{WEEKEND_CHALISA_PARTS} parts</b> and recite them to a grown-up.</div>',
+                                unsafe_allow_html=True)
+                pills = "".join(f'<span class="pill {"ok" if j < len(wc["done"]) else "no"}">'
+                                f'{"✅" if j < len(wc["done"]) else "⬜"} recited {j + 1}</span>' for j in range(wc["need"]))
+                st.markdown(pills, unsafe_allow_html=True)
+            else:
+                nxt_parts = [i for i in range(len(CHALISA_PARTS)) if str(i) not in data.get("chalisa", {})]
+                if nxt_parts:
+                    st.markdown(f'<div class="how">Every Saturday & Sunday: learn <b>{WEEKEND_CHALISA_PARTS} parts</b>. '
+                                f'Next weekend: ' + " and ".join(f"<b>Part {i + 1}</b>" for i in nxt_parts[:WEEKEND_CHALISA_PARTS])
+                                + '. You can start practising now!</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<div class="how">Every weekend: revise any {WEEKEND_CHALISA_PARTS} parts.</div>',
+                                unsafe_allow_html=True)
+            st.markdown(f'<div class="tip" style="margin-left:0">🔁 <b>The rule:</b> say every part at least '
+                        f'<b>{CHALISA_REPEATS} times</b> (tap the counter each time). Then recite it to a grown-up '
+                        '<b>without looking and without any help</b>. The grown-up approves with the PIN. 🙏</div>',
+                        unsafe_allow_html=True)
+        msg = st.session_state.pop("ch_msg", None)
+        if msg:
+            (st.success if msg[0] == "ok" else st.error)(msg[1])
+
+        # ---- big reward ----
+        reward = data.get("chalisa_reward")
+        if bs["all_done"]:
+            with st.container(border=True):
+                st.markdown('<div class="reward-head">🏆 Chalisa Champion! Choose your weekend outing</div>', unsafe_allow_html=True)
+                if reward and reward.get("status") == "done":
+                    st.success(f"🎉 Enjoyed on {reward.get('done_date')}: {md_safe(reward['choice'])}")
+                else:
+                    if reward:
+                        st.info(f"Your choice: **{md_safe(reward['choice'])}** — a grown-up will plan it! You can still change it.")
+                    st.radio("Pick one:", CHALISA_OUTINGS, key="outing_pick",
+                             index=CHALISA_OUTINGS.index(reward["choice"]) if reward and reward["choice"] in CHALISA_OUTINGS else 0)
+                    st.button("💖 This is my choice", on_click=choose_outing)
+                    if reward:
+                        with st.form("outing_form", border=False):
+                            oc1, oc2 = st.columns([2, 1])
+                            oc1.text_input("Grown-up PIN after the outing", type="password", key="outing_pin")
+                            oc2.write("")
+                            oc2.form_submit_button("We went! ✅", on_click=give_outing)
+
+        # ---- the parts ----
+        next_part = next((i for i in range(len(CHALISA_PARTS)) if str(i) not in ch_done), None)
+        for i, part in enumerate(CHALISA_PARTS):
+            learned = str(i) in ch_done
+            locked = not learned and i != next_part
+            icon = "✅" if learned else ("🔒" if locked else "📿")
+            label = f"{icon} Part {i + 1} of {len(CHALISA_PARTS)} · {part['title']}"
             if learned:
-                st.success(f"✅ You learned this part! +{BEADS_PER_PART} 📿")
-                if wc and wc["mode"] == "revise":
-                    if i in wc["done"]:
-                        st.info("🙏 Recited from memory this weekend ✅")
+                label += f" · learned {date.fromisoformat(ch_done[str(i)]).strftime('%d %b')}"
+            with st.expander(label, expanded=(i == next_part)):
+                if locked:
+                    st.caption(f"🔒 Learn Part {i} first, then this part unlocks.")
+                    continue
+                hide = st.toggle("🙈 Hide the words to test myself", key=f"ch_hide_{i}")
+                lines_html = ""
+                for ln in part["lines"]:
+                    if hide:
+                        first = ln.split()[0]
+                        lines_html += f'<span class="ln"><b>{html_safe(first)}</b> …</span>'
                     else:
-                        reps_box(i)
-                        with st.form(f"rv_form_{i}", border=False):
-                            v1, v2 = st.columns([2, 1])
-                            v1.text_input("Grown-up PIN: recited without looking or help", type="password",
-                                          key=f"rv_pin_{i}")
-                            v2.write("")
-                            v2.form_submit_button("Recited ✅", on_click=revise_part, args=(i,))
-                continue
-            n_reps = reps_box(i)
-            if hasattr(st, "audio_input"):
-                st.audio_input("🎙️ Practice recorder (optional: tap to record, then play it back)", key=f"ch_rec_{i}")
-            ready_ok = n_reps >= CHALISA_REPEATS
-            if not ready_ok:
-                st.caption(f"🔒 Say this part {CHALISA_REPEATS} times first, then you can recite it to a grown-up.")
-            st.checkbox(f"I recited all {len(part['lines'])} lines to a grown-up — without looking and without any help",
-                        key=f"ch_ready_{i}", disabled=not ready_ok)
-            if CHALISA_NEEDS_PIN:
-                st.text_input("Grown-up PIN", type="password", key=f"ch_pin_{i}")
-            st.button(f"🙏 I've learned Part {i + 1}! (+{BEADS_PER_PART} 📿)", key=f"ch_submit_{i}", type="primary",
-                      on_click=learn_part, args=(i,),
-                      disabled=not (ready_ok and st.session_state.get(f"ch_ready_{i}")))
+                        lines_html += f'<span class="ln">{html_safe(ln)}</span>'
+                st.markdown(f'<div class="chalisa">{lines_html}</div>', unsafe_allow_html=True)
+                with st.expander("💡 What does it mean?"):
+                    st.markdown(md_safe(part["meaning"]))
+                if learned:
+                    st.success(f"✅ You learned this part! +{BEADS_PER_PART} 📿")
+                    if wc and wc["mode"] == "revise":
+                        if i in wc["done"]:
+                            st.info("🙏 Recited from memory this weekend ✅")
+                        else:
+                            reps_box(i)
+                            with st.form(f"rv_form_{i}", border=False):
+                                v1, v2 = st.columns([2, 1])
+                                v1.text_input("Grown-up PIN: recited without looking or help", type="password",
+                                              key=f"rv_pin_{i}")
+                                v2.write("")
+                                v2.form_submit_button("Recited ✅", on_click=revise_part, args=(i,))
+                    continue
+                n_reps = reps_box(i)
+                if hasattr(st, "audio_input"):
+                    st.audio_input("🎙️ Practice recorder (optional: tap to record, then play it back)", key=f"ch_rec_{i}")
+                ready_ok = n_reps >= CHALISA_REPEATS
+                if not ready_ok:
+                    st.caption(f"🔒 Say this part {CHALISA_REPEATS} times first, then you can recite it to a grown-up.")
+                st.checkbox(f"I recited all {len(part['lines'])} lines to a grown-up — without looking and without any help",
+                            key=f"ch_ready_{i}", disabled=not ready_ok)
+                if CHALISA_NEEDS_PIN:
+                    st.text_input("Grown-up PIN", type="password", key=f"ch_pin_{i}")
+                st.button(f"🙏 I've learned Part {i + 1}! (+{BEADS_PER_PART} 📿)", key=f"ch_submit_{i}", type="primary",
+                          on_click=learn_part, args=(i,),
+                          disabled=not (ready_ok and st.session_state.get(f"ch_ready_{i}")))
 
 
 # ============================ SPIN & REWARDS ============================
@@ -5356,7 +5657,10 @@ def reset_all():
         st.session_state.flash = "All progress reset."
 
 
-if st.session_state.get("parent_ok") and \
+if IS_PARENT:
+    st.session_state.parent_ok = True          # signed in as the grown-up: no PIN needed
+    st.session_state.parent_ok_at = datetime.now().timestamp()
+elif st.session_state.get("parent_ok") and \
         datetime.now().timestamp() - st.session_state.get("parent_ok_at", 0) > PARENT_AUTOLOCK_MINUTES * 60:
     st.session_state.parent_ok = False     # auto-lock
 
@@ -5387,10 +5691,18 @@ with tab_parent:
         note = st.session_state.pop("parent_note", None)
         if note:
             st.success(note)
-        st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
+        if not IS_PARENT:
+            st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
 
         kms = data.get("kid_messages", [])
         st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
+        ecfg = email_cfg()
+        if ecfg:
+            ec1, ec2 = st.columns([3, 1])
+            ec1.caption(f"📧 Email alerts are ON — new messages are emailed to {', '.join(ecfg['to'])}.")
+            ec2.button("Send test 📧", on_click=send_test_email, key="email_test")
+        else:
+            st.caption("📧 Email alerts are off. Add an [email] section to the app's Secrets to get messages by email.")
         if not kms:
             st.caption(f"No messages yet. {STUDENT_NAME} can send one from the bottom of her Today page.")
         for km in reversed(kms[-10:]):
@@ -5436,7 +5748,7 @@ with tab_parent:
             st.caption("Nothing waiting. 🎉")
 
         st.markdown("#### 💌 Send a message")
-        st.text_area("Message", key="parent_msg", placeholder="So proud of your maths today, Andal! 💖", height=80)
+        st.text_area("Message", key="parent_msg", placeholder=f"So proud of your maths today, {STUDENT_NAME}! 💖", height=80)
         st.button("Send 💌", on_click=send_message)
         msgs = data.get("messages", [])
         if msgs:
@@ -5470,17 +5782,18 @@ with tab_parent:
             for x in sents:
                 st.markdown(f"• {md_safe(x)}")
 
-        st.markdown("#### 🙏 Hanuman Chalisa")
         chd = data.get("chalisa", {})
-        bsx = bead_status(data)
-        st.write(f"Parts learned: **{len(chd)}/{len(CHALISA_PARTS)}** · beads: **{bsx['beads']}** · "
-                 f"screen-time rewards given: {data.get('bead_rewards_given', 0)} × {BEAD_MINUTES} min")
-        if data.get("chalisa_reward"):
-            r_ = data["chalisa_reward"]
-            st.write(f"Outing choice: {md_safe(r_['choice'])} ({r_['status']})")
-        if chd:
-            last_i = max(int(k) for k in chd)
-            st.button(f"↩️ Undo Part {last_i + 1} (needs more practice)", on_click=undo_part, args=(last_i,))
+        if SHOW_CHALISA:
+            st.markdown("#### 🙏 Hanuman Chalisa")
+            bsx = bead_status(data)
+            st.write(f"Parts learned: **{len(chd)}/{len(CHALISA_PARTS)}** · beads: **{bsx['beads']}** · "
+                     f"screen-time rewards given: {data.get('bead_rewards_given', 0)} × {BEAD_MINUTES} min")
+            if data.get("chalisa_reward"):
+                r_ = data["chalisa_reward"]
+                st.write(f"Outing choice: {md_safe(r_['choice'])} ({r_['status']})")
+            if chd:
+                last_i = max(int(k) for k in chd)
+                st.button(f"↩️ Undo Part {last_i + 1} (needs more practice)", on_click=undo_part, args=(last_i,))
 
         st.markdown("#### 😊 Mood check-ins")
         moods = data.get("moods", [])
@@ -5522,20 +5835,21 @@ with tab_parent:
                     value="star" in done_on(data, st.session_state.edit_date), key=f"edit_star_{d_iso}")
         st.button("Save this day", on_click=save_edit)
 
-        st.markdown("#### 🗣️ Add a Tamil word")
-        st.caption("Add words she looks up that aren't in the list yet (or change how your family says one).")
-        tc1, tc2, tc3 = st.columns(3)
-        tc1.text_input("English", key="tw_en")
-        tc2.text_input("Tamil (in English letters)", key="tw_ta")
-        tc3.text_input("Note (optional)", key="tw_note")
-        st.button("Add word", on_click=add_tamil_word)
-        with st.expander("➕ Add many words at once"):
-            st.caption("One word per line: english = tamil   (optionally add  | note). Example:\n"
-                       "rainbow = vaanavil\nkite = pattam | also 'paattam'")
-            st.text_area("Words", key="tw_bulk", height=140, placeholder="rainbow = vaanavil\nkite = pattam")
-            st.button("Add all", on_click=add_tamil_bulk)
-        if data.get("tamil_custom"):
-            st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
+        if SHOW_TAMIL:
+            st.markdown("#### 🗣️ Add a Tamil word")
+            st.caption("Add words she looks up that aren't in the list yet (or change how your family says one).")
+            tc1, tc2, tc3 = st.columns(3)
+            tc1.text_input("English", key="tw_en")
+            tc2.text_input("Tamil (in English letters)", key="tw_ta")
+            tc3.text_input("Note (optional)", key="tw_note")
+            st.button("Add word", on_click=add_tamil_word)
+            with st.expander("➕ Add many words at once"):
+                st.caption("One word per line: english = tamil   (optionally add  | note). Example:\n"
+                           "rainbow = vaanavil\nkite = pattam | also 'paattam'")
+                st.text_area("Words", key="tw_bulk", height=140, placeholder="rainbow = vaanavil\nkite = pattam")
+                st.button("Add all", on_click=add_tamil_bulk)
+            if data.get("tamil_custom"):
+                st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
 
         st.markdown("#### 🎁 Rewards & prizes history")
         hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
@@ -5554,9 +5868,53 @@ with tab_parent:
             confirm = st.checkbox(f"Yes, delete all of {STUDENT_NAME}'s progress")
             st.button("Reset all progress", on_click=reset_all, disabled=not confirm)
 
-        if st.button("🔒 Lock"):
+        if CHAT_ON:
+            st.markdown("#### 💬 The girls' chat")
+            st.caption(f"Everything {STUDENT_NAME} and {CHAT_FRIEND} write to each other. Both families' grown-ups "
+                       "can read it and remove a message if needed.")
+            try:
+                _cm, _ = chat_load()
+            except Exception:
+                _cm = []
+            if not _cm:
+                st.caption("No chat messages yet.")
+            for m in reversed(_cm[-40:]):
+                c1, c2 = st.columns([6, 1])
+                c1.markdown(f"**{md_safe(m['name'])}** · {m['time'][5:16].replace('T', ' ')} — {md_safe(m['text'])}")
+                c2.button("🗑️", key=f"chdel_{m['id']}", on_click=chat_delete, args=(m["id"],), help="Remove this message")
+        if not IS_PARENT and st.button("🔒 Lock"):
             st.session_state.parent_ok = False
             st.rerun()
+
+
+# ==================================== CHAT ====================================
+if tab_chat is not None:
+    with tab_chat:
+        st.markdown(f"### 💬 Chat with {CHAT_FRIEND}" if not IS_PARENT else "### 💬 The girls' chat")
+        st.markdown('<style>.chatbox{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;'
+                    'padding:8px;background:rgba(255,255,255,.85);border-radius:18px;border:2px solid #ffd1e8}'
+                    '.cb{max-width:78%;padding:8px 12px;border-radius:16px;font-size:1.02rem;color:#3b2350;line-height:1.35}'
+                    '.cb.me{align-self:flex-end;background:#ffe0f0;border-bottom-right-radius:4px}'
+                    '.cb.them{align-self:flex-start;background:#e6f3ff;border-bottom-left-radius:4px}'
+                    '.cn{font-size:.75rem;color:#8a6a96;margin-bottom:2px}</style>', unsafe_allow_html=True)
+        if IS_PARENT:
+            st.caption("Grown-ups can read the chat here. To remove a message, use the 💬 section in the 🔐 Grown-ups tab.")
+        else:
+            st.markdown(f'<div class="tip" style="margin-left:0">💖 Chat about homework, school, books and fun stuff. '
+                        f'Be kind — grown-ups from both families can read this chat.</div>', unsafe_allow_html=True)
+        if hasattr(st, "fragment"):
+            st.fragment(run_every=15)(chat_view)()     # refreshes by itself every 15 seconds
+        else:
+            chat_view()
+        if not IS_PARENT:
+            with st.form("chat_form", clear_on_submit=False, border=False):
+                cc1, cc2 = st.columns([5, 1])
+                cc1.text_input("Message", key="chat_in", max_chars=CHAT_MAX, label_visibility="collapsed",
+                               placeholder=f"Write to {CHAT_FRIEND}…")
+                cc2.form_submit_button("Send 📨", on_click=chat_send, use_container_width=True)
+        if err := st.session_state.pop("chat_err", None):
+            st.error(err)
+        st.button("🔄 Refresh chat", key="chat_refresh")
 
 
 # ---- hopping friends (purely decorative, never block taps) ----
