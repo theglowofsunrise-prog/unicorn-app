@@ -1038,6 +1038,122 @@ EXTRA_MATHS_TOPICS = [
 ]
 EXTRA_MATHS_CARROTS = 1        # carrots per correct bonus answer
 
+
+# ================================ CALM CORNER & ANGELS (Andal only) ================================
+SHOW_MINDFUL = True                  # the 🧘 Calm corner page
+ANGELS_ON = True                     # angels fly in with kind words
+ANGEL_EVERY_SECONDS = (240, 360)     # an angel visits every 4–6 minutes
+ANGEL_FIRST_SECONDS = 45             # first angel about 45 seconds after opening
+
+# {name} becomes the student's name
+ANGEL_WORDS = [
+    "{name}, you are so brilliant! Your clever brain can solve anything you set your mind to. ✨",
+    "{name}, you are so kind. The way you care for others makes the whole world brighter. 💖",
+    "{name}, you can do so much more than you think you can. Never put a fence around your dreams! 🌈",
+    "Don't limit yourself, {name}. You are capable of amazing, big, wonderful things! 🚀",
+    "{name}, you are too good! The angels are so proud of you. 👼",
+    "{name}, you are so strong — strong in your body, strong in your mind, and strong in your heart. 💪",
+    "{name}, you are so disciplined. Doing your tasks every day is a real superpower! 🌟",
+    "{name}, you listen so well and you follow the rules so nicely. That makes your family so proud. 🤍",
+    "When something feels hard, {name}, remember: hard means you are growing! 🌱",
+    "{name}, you are braver than you believe and smarter than you think. 🦁",
+    "{name}, your heart is full of light. Keep shining! ☀️",
+    "{name}, every time you try, you get stronger. Trying is the bravest thing of all! ⭐",
+    "{name}, you have a beautiful mind and a beautiful heart. 💫",
+    "{name}, you are a superstar learner! Every page, every sum, every word makes you shine brighter. 📚",
+    "The sky is not your limit, {name} — it's only the beginning! 🌌",
+    "{name}, you are a wonderful daughter, a caring friend and a fantastic student. 💝",
+    "{name}, you finish what you start. That is what champions do! 🏆",
+    "{name}, mistakes are just stepping stones. You are learning and growing every single day. 🪜",
+    "{name}, you are calm, you are focused, and you can do this! 🧘",
+    "Believe in yourself, {name}. The angels already believe in you, one hundred percent! 💯",
+    "{name}, your kindness is a gift to everyone you meet. 🎁",
+    "{name}, you are so obedient and respectful — such a lovely way to be. 🌸",
+    "{name}, you have the power to learn anything. Your brain grows every time you practise! 🧠",
+    "{name}, you are a bright, bright star — and stars never stop shining. 🌠",
+    "{name}, you are stronger than any challenge. You've got this! ⚡",
+    "{name}, you make good choices, even when they're not the easy ones. That's real strength. 🌿",
+    "{name}, you are more capable than you know. Aim high — higher than the clouds! ☁️",
+    "{name}, being disciplined today makes your dreams come true tomorrow. 🗝️",
+    "{name}, your smile can light up a whole room. 😊",
+    "{name}, you are gentle, wise and wonderful. 🦋",
+    "{name}, you never give up. That's what makes you so special. 🌈",
+    "{name}, don't ever think 'I can't'. Think 'I can't YET' — and then you will! 🌟",
+    "{name}, you are doing such a great job. Keep going, little champion! 🥇",
+    "{name}, you have a heart of gold and a mind like a shining star. 💛",
+    "{name}, your effort today is planting seeds for a beautiful tomorrow. 🌻",
+    "{name}, you are loved, you are clever, and you are enough — just as you are. 💗",
+    "{name}, you can climb any mountain, one little step at a time. ⛰️",
+    "{name}, you have so much more inside you than you can imagine. Let it shine! ✨",
+    "{name}, you are strong like Hanuman — brave, devoted and full of power! 🙏",
+    "{name}, being kind is your superpower — and you use it every day. 🦸‍♀️",
+]
+
+# A calm idea for each day (rotates)
+CALM_TIPS = [
+    ("🎈 Balloon breathing", "Put your hands on your tummy. Breathe in and fill your tummy like a balloon. "
+     "Breathe out slowly and let the balloon go down. Do it 5 times."),
+    ("🌸 Smell the flower, blow the candle", "Breathe in through your nose like you're smelling a flower. "
+     "Breathe out through your mouth like you're gently blowing out a birthday candle."),
+    ("⭐ Star hand breathing", "Spread your fingers like a star. Trace up each finger while you breathe in, "
+     "and down each finger while you breathe out."),
+    ("🐢 Turtle time", "Pretend you're a turtle going into its shell. Curl up, close your eyes and count 10 slow breaths. "
+     "Then come out slowly, feeling calm."),
+    ("👂 Listening game", "Close your eyes for one minute. How many different sounds can you hear? Count them on your fingers."),
+    ("🌈 Rainbow walk", "Look around the room and find something red, orange, yellow, green, blue and purple."),
+    ("🧊 Melting snowman", "Stand tall and stiff like a snowman. Then slowly melt down to the floor, relaxing every part of you."),
+    ("🌳 Strong tree", "Stand with your feet planted like roots. Reach your arms up like branches. "
+     "Sway gently in the wind and breathe slowly."),
+    ("🍫 Mindful snack", "Eat one small piece of fruit really slowly. Notice the colour, the smell, the taste and the crunch."),
+    ("🦋 Butterfly hug", "Cross your arms over your chest and tap your shoulders slowly, left then right, like butterfly wings."),
+    ("☁️ Cloud thoughts", "Imagine your thoughts are clouds floating across the sky. Watch them drift past — you don't have to chase them."),
+    ("🐝 Bee breathing", "Breathe in, then hum like a bee as you breathe out: hmmmmm. Feel the buzz! Do it 5 times."),
+    ("💗 Heart listening", "Put your hand on your heart. Can you feel it beating? Breathe slowly and feel it get calmer."),
+    ("🧸 Teddy breathing", "Lie down with a teddy on your tummy. Breathe slowly and watch teddy ride up and down."),
+]
+
+GRATITUDE_PROMPTS = [
+    "a person who made me smile today", "something yummy I ate", "something in nature I love",
+    "something my body can do", "a friend I'm glad to have", "something that made me laugh",
+    "something cosy in my home", "something I learned today", "someone who helped me",
+    "a toy or book I love", "something beautiful I saw", "a happy memory",
+]
+
+KIND_IDEAS = [
+    "Give someone in your family a big hug. 🤗", "Say thank you to your teacher today. 🍎",
+    "Help set the table for dinner. 🍽️", "Draw a picture for someone you love. 🎨",
+    "Tell a friend one thing you like about them. 💬", "Share a toy or a snack with someone. 🍪",
+    "Help tidy up without being asked. 🧹", "Make someone laugh today. 😂",
+    "Water a plant or help in the garden. 🌱", "Say something kind to yourself in the mirror. 🪞",
+    "Ask a grown-up 'How was your day?' 💗", "Help someone who looks a bit sad. 🫶",
+    "Write a little thank-you note. 💌", "Be patient and wait your turn nicely. ⏳",
+]
+
+I_AM = [
+    "I am brave 🦁", "I am kind 💖", "I am clever 🧠", "I am strong 💪", "I am loved 💗", "I am calm 🧘",
+    "I am a good friend 🤝", "I can do hard things ⛰️", "I am disciplined 🗓️", "I am honest 🌟",
+    "I am a great learner 📚", "I am creative 🎨", "I am patient 🐢", "I am helpful 🙌", "I believe in myself ✨",
+    "I am grateful 🙏", "I am focused 🎯", "I am gentle 🦋", "I make good choices 🌿", "I never give up 🌈",
+]
+
+# What to try for each feeling (uses the ids in MOODS)
+FEELING_HELP = {
+    "happy": ["Share your happy feeling — tell someone what made you smile!", "Do a happy dance for 30 seconds 💃",
+              "Put a note in your gratitude jar 🫙"],
+    "excited": ["Take 3 big breaths so your excitement doesn't bounce away 🎈", "Draw what you're excited about 🎨",
+                "Tell a grown-up all about it!"],
+    "calm": ["Enjoy it! Notice how your body feels when it's calm 🌿", "Read a book quietly 📚",
+             "Try the breathing bubble below to stay calm"],
+    "tired": ["Drink a glass of water 💧", "Stretch up high like a tall tree 🌳",
+              "If it's late, it might be time for bed 🌙"],
+    "worried": ["Tell a grown-up what's worrying you — sharing makes it smaller 💗",
+                "Try 5 slow balloon breaths 🎈", "Do the 5-4-3-2-1 senses game below 👀"],
+    "sad": ["Ask for a hug 🤗", "It's okay to cry — tears help feelings come out 💧",
+            "Hug a teddy and do butterfly taps 🦋"],
+    "cross": ["Stop, and take 3 bee breaths — hmmmm 🐝", "Squeeze your hands tight, then let go. Do it 3 times ✊",
+              "Walk away and come back when you feel calmer 🚶‍♀️"],
+}
+
 # ============================ ENGLISH → TAMIL WORDS ============================
 # Spoken Tamil written in English letters. Format: "english": ("tamil", "optional note")
 # Grown-ups can add more words from the Grown-ups tab without editing this file.
@@ -1783,7 +1899,7 @@ TAMIL_WORDS.update({
 
 BASE_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;700;800&display=swap');
 h1, h2, h3, p, label, li, input, textarea, .stMarkdown, [data-baseweb="tab"] p { font-family: 'Fredoka', sans-serif !important; }
 h3 { color: #5a2d66 !important; }
 .block-container { max-width: 820px; padding-top: 2rem; }
@@ -1915,6 +2031,99 @@ table.week tr.star td { font-weight: 600; background: #fffbe6; }
 @keyframes run-across { 0% { transform: translateX(110vw); } 16% { transform: translateX(-80px); } 100% { transform: translateX(-80px); } }
 @keyframes hop-small { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 @keyframes hop-big { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-26px) rotate(-8deg); } }
+/* ===================== polish (Oct 2026) ===================== */
+html, body, .stApp, .stApp p, .stApp li, .stApp label, .stApp span, .stApp div, .stApp button, .stApp input, .stApp textarea,
+.stApp [data-testid="stMarkdownContainer"] { font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif !important; }
+.stApp { -webkit-font-smoothing: antialiased; color: #2f1d40; }
+.stApp p, .stApp li { font-size: 1.06rem; line-height: 1.5; }
+.stApp [data-testid="stIconMaterial"], .stApp .material-symbols-rounded { font-family: 'Material Symbols Rounded' !important; }
+.stAppDeployButton, [data-testid="stStatusWidget"] { display: none !important; }
+[data-testid="stHeader"] { background: transparent !important; }
+.block-container { max-width: 860px; padding-top: 1.2rem !important; }
+.hero { border-width: 0 !important; background: rgba(255,255,255,.92) !important;
+  box-shadow: 0 2px 0 rgba(255,255,255,.9) inset, 0 14px 40px rgba(120,60,160,.16) !important; }
+.hero .title { font-size: 2.9rem; letter-spacing: .01em; }
+.balance { font-size: 1.45rem; padding: 10px 24px; box-shadow: 0 8px 22px rgba(155,107,255,.42); }
+[data-testid="stVerticalBlockBorderWrapper"] { background: rgba(255,255,255,.93) !important;
+  box-shadow: 0 10px 30px rgba(120,60,160,.10); border-width: 2px !important; }
+.card, .quote, .fact, .msg { box-shadow: 0 8px 24px rgba(120,60,160,.09); }
+h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
+.stButton > button, .stFormSubmitButton > button { border-radius: 16px !important; font-weight: 600 !important;
+  min-height: 46px; font-size: 1.02rem !important; border-width: 2px !important; transition: transform .12s, box-shadow .12s; }
+.stButton > button:hover, .stFormSubmitButton > button:hover { transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(155,107,255,.25); }
+.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+  background: linear-gradient(90deg,#ff5fa2,#9b6bff) !important; border: 0 !important; color: #fff !important; }
+.stTextInput input, .stNumberInput input, .stTextArea textarea { border-radius: 14px !important; font-size: 1.05rem !important; }
+[data-testid="stExpander"] details { border-radius: 18px !important; background: rgba(255,255,255,.9); }
+[data-testid="stExpander"] summary p { font-weight: 600; font-size: 1.05rem; }
+
+/* ---- big category buttons ---- */
+.st-key-navbar { position: sticky; top: 0; z-index: 50; padding: 8px 6px; margin: 4px 0 6px; border-radius: 24px;
+  background: rgba(255,255,255,.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 26px rgba(120,60,160,.14); }
+.st-key-navbar [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 6px !important; }
+.st-key-navbar [data-testid="stColumn"] { min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
+.st-key-navbar button { min-height: 62px !important; border-radius: 20px !important; padding: 4px 6px !important;
+  background: #f7f1ff !important; border: 2px solid transparent !important; color: #4a2a63 !important; }
+.st-key-navbar button p { font-size: 1.08rem !important; font-weight: 700 !important; line-height: 1.15; white-space: normal; }
+.st-key-navbar button[kind="primary"] { background: linear-gradient(135deg,#ff5fa2,#9b6bff) !important; color: #fff !important;
+  box-shadow: 0 8px 18px rgba(155,107,255,.40); }
+.st-key-navbar button[kind="primary"] p { color: #fff !important; }
+.st-key-navhidden { display: none !important; }
+.st-key-call_angel button { background: linear-gradient(90deg,#ffe9a8,#ffd1e8) !important; border: 2px solid #ffd36b !important;
+  color: #5a3d00 !important; }
+.st-key-call_angel button p { font-size: 1.12rem !important; font-weight: 700 !important; }
+@media (max-width: 560px) { .st-key-navbar button p { font-size: .86rem !important; }
+  .st-key-navbar button { min-height: 58px !important; padding: 2px !important; } .hero .title { font-size: 2.2rem; } }
+
+/* ---- sub-tabs as pills that wrap (no sideways scrolling) ---- */
+[role="tablist"] { flex-wrap: wrap !important; gap: 8px !important; padding: 4px 0 8px; border: 0 !important;
+  overflow: visible !important; }
+[role="tablist"]::after, .react-aria-SelectionIndicator { display: none !important; }
+[data-testid="stTab"], [role="tab"] { background: rgba(255,255,255,.92) !important; border-radius: 999px !important;
+  padding: 8px 18px !important; border: 2px solid #eadcf7 !important; height: auto !important; margin: 0 !important;
+  box-shadow: 0 3px 10px rgba(120,60,160,.06); }
+[data-testid="stTab"] p, [role="tab"] p { font-size: 1.06rem !important; font-weight: 600 !important; color: #5a2d66 !important; }
+[data-testid="stTab"][aria-selected="true"], [role="tab"][aria-selected="true"] { background: linear-gradient(135deg,#fff0f8,#f3ecff) !important;
+  border-color: #ff7fbf !important; box-shadow: 0 6px 16px rgba(255,95,162,.25); }
+[data-testid="stTab"][aria-selected="true"] p, [role="tab"][aria-selected="true"] p { color: #d6337f !important; }
+/* bordered boxes (each st.container(border=True) gets a "card" key automatically) */
+[class*="st-key-card"] { background: rgba(255,255,255,.94) !important; border-radius: 24px !important;
+  border: 2px solid #f1dcf0 !important; box-shadow: 0 10px 30px rgba(120,60,160,.10); padding: 16px 18px !important; }
+
+/* ---- calm corner ---- */
+.calm-hero { text-align: center; padding: 20px 14px 16px; border-radius: 26px; margin: 4px 0 12px;
+  background: linear-gradient(135deg,#e9fbf3 0%,#eef4ff 50%,#fdf0ff 100%); box-shadow: 0 10px 30px rgba(90,160,150,.15); }
+.ch-title { font-size: 1.9rem; font-weight: 700; color: #2f6f68; }
+.ch-sub { color: #5d7a86; font-size: 1.05rem; margin-top: 2px; }
+.angel-card { position: relative; text-align: center; padding: 18px 18px 16px; margin: 0 0 8px; border-radius: 26px;
+  background: linear-gradient(160deg,#fffdf3 0%,#fff1f8 55%,#f3ecff 100%); border: 3px solid #ffd36b;
+  box-shadow: 0 0 26px rgba(255,207,90,.55); }
+.ac-wing { font-size: 2.6rem; line-height: 1; filter: drop-shadow(0 0 10px rgba(255,214,90,.9)); }
+.ac-head { font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #b58a00; margin: 6px 0 4px; }
+.ac-text { font-size: 1.3rem; font-weight: 600; color: #3b2350; line-height: 1.4; }
+.calm-h { font-size: 1.3rem; font-weight: 700; color: #4a2a63; }
+.calm-s { color: #7a6386; margin: 2px 0 8px; }
+.feel-card { display: flex; gap: 14px; align-items: flex-start; background: #f2fbf7; border: 2px solid #bfe9d6;
+  border-radius: 20px; padding: 12px 16px; margin-top: 8px; color: #24514a; }
+.feel-card .fc-big { font-size: 3rem; line-height: 1; }
+.feel-card ul { margin: 6px 0 0 0; padding-left: 18px; }
+.gjar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.gnote { width: 150px; min-height: 70px; padding: 10px 12px; border-radius: 6px 6px 18px 6px; font-weight: 500; color: #3b2350;
+  box-shadow: 0 6px 14px rgba(0,0,0,.08); font-size: .98rem; line-height: 1.3; }
+.gnote span { display: block; margin-top: 6px; font-size: .75rem; color: #8a6a96; }
+.iam-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 8px; }
+.iam { flex: 1 1 150px; text-align: center; font-size: 1.3rem; font-weight: 700; color: #fff; padding: 16px 10px;
+  border-radius: 20px; background: linear-gradient(135deg,#ff7fbf,#9b6bff); box-shadow: 0 8px 18px rgba(155,107,255,.3); }
+.iam:nth-child(2) { background: linear-gradient(135deg,#4cc3ff,#7a7bff); }
+.iam:nth-child(3) { background: linear-gradient(135deg,#ffb347,#ff6f91); }
+.calm-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 10px; }
+.cg { flex: 1 1 260px; border-radius: 22px; padding: 14px 16px; box-shadow: 0 8px 22px rgba(120,60,160,.08); }
+.cg1 { background: #ecfbf1; border: 2px solid #bfe9cc; color: #24514a; }
+.cg2 { background: #fff8e1; border: 2px solid #ffe28a; color: #5a4300; }
+.cg-h { font-weight: 700; font-size: 1.12rem; margin-bottom: 4px; }
+.cg-t { font-size: 1.04rem; line-height: 1.45; }
 </style>
 """
 
@@ -3368,6 +3577,147 @@ def online_tamil(q: str):
         return None
 
 
+# ------------------------------- angels (Andal only) -------------------------------
+ANGEL_ENGINE = r"""
+(function(){
+  if (window.__andalAngels) return; window.__andalAngels = true;
+  var WORDS = __WORDS__, MIN = __MIN__, MAX = __MAX__, FIRST = __FIRST__, last = -1, busy = false;
+  function rnd(a, b){ return a + Math.random() * (b - a); }
+  function pick(l){ return l[Math.floor(Math.random() * l.length)]; }
+  var css = document.createElement('style');
+  css.textContent = '@keyframes angelGlow{0%,100%{box-shadow:0 0 22px rgba(255,207,90,.55),0 10px 30px rgba(155,107,255,.25)}'
+    + '50%{box-shadow:0 0 42px rgba(255,207,90,.95),0 10px 30px rgba(155,107,255,.35)}}'
+    + '#andal-angel-card{position:fixed;left:50%;z-index:99996;width:min(380px,88vw);padding:16px 20px 14px;border-radius:26px;'
+    + 'text-align:center;cursor:pointer;background:linear-gradient(160deg,#fffdf3 0%,#fff1f8 55%,#f3ecff 100%);'
+    + 'border:3px solid #ffd36b;color:#3b2350;font-family:Fredoka,Nunito,system-ui,sans-serif;animation:angelGlow 2.2s ease-in-out infinite;'
+    + 'transition:opacity .45s, transform .45s;opacity:0;transform:translate(-50%,10px) scale(.8)}'
+    + '#andal-angel-card .ah{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#b58a00;margin-bottom:6px}'
+    + '#andal-angel-card .am{font-size:21px;font-weight:600;line-height:1.35}'
+    + '#andal-angel-card .ax{font-size:12px;color:#9a7aa6;margin-top:8px}';
+  document.head.appendChild(css);
+  function sparkle(x, y){
+    var s = document.createElement('div'); s.textContent = pick(['✨','⭐','💫','🌟','💖','✨']);
+    s.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;z-index:99993;pointer-events:none;font-size:'
+      + Math.round(rnd(13, 24)) + 'px';
+    document.body.appendChild(s);
+    var a = s.animate([{opacity: 1, transform: 'translate(0,0) scale(1)'},
+      {opacity: 0, transform: 'translate(' + rnd(-24, 24) + 'px,' + rnd(24, 60) + 'px) scale(.3) rotate(' + rnd(-90, 90) + 'deg)'}],
+      {duration: 1500, easing: 'ease-out'});
+    a.onfinish = function(){ s.remove(); };
+  }
+  function angel(size, delay, dx, dy, path, T){
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:0;top:0;z-index:99995;pointer-events:none;will-change:transform';
+    var em = document.createElement('div'); em.textContent = '👼';
+    em.style.cssText = 'font-size:' + size + 'px;filter:drop-shadow(0 0 14px rgba(255,214,90,.95)) drop-shadow(0 4px 6px rgba(0,0,0,.15))';
+    wrap.appendChild(em); document.body.appendChild(wrap);
+    try { em.animate([{transform: 'translateY(0) rotate(-6deg) scale(1)'}, {transform: 'translateY(-14px) rotate(6deg) scale(1.06)'},
+      {transform: 'translateY(0) rotate(-6deg) scale(1)'}], {duration: 1300, iterations: Infinity, easing: 'ease-in-out'}); } catch (e) {}
+    var kf = path.map(function(p){ var o = {transform: 'translate(' + (p[0] + dx) + 'px,' + (p[1] + dy) + 'px)'};
+      if (p[2] !== undefined) o.offset = p[2]; return o; });
+    var anim = wrap.animate(kf, {duration: T, delay: delay, easing: 'ease-in-out', fill: 'both'});
+    var timer = setInterval(function(){ var r = wrap.getBoundingClientRect();
+      if (r.left > -60 && r.left < innerWidth && r.top > -60 && r.top < innerHeight) sparkle(r.left + size * .4 + rnd(-10, 10), r.top + size * .7); }, 110);
+    anim.onfinish = function(){ clearInterval(timer); wrap.remove(); };
+    return anim;
+  }
+  function showCard(text, top, ms){
+    var old = document.getElementById('andal-angel-card'); if (old) old.remove();
+    var c = document.createElement('div'); c.id = 'andal-angel-card';
+    c.innerHTML = '<div class="ah">✨ A message from the angels ✨</div><div class="am"></div><div class="ax">tap to close</div>';
+    c.querySelector('.am').textContent = text; c.style.top = top + 'px';
+    document.body.appendChild(c);
+    requestAnimationFrame(function(){ c.style.opacity = '1'; c.style.transform = 'translate(-50%,0) scale(1)'; });
+    function close(){ c.style.opacity = '0'; c.style.transform = 'translate(-50%,-10px) scale(.9)'; setTimeout(function(){ c.remove(); }, 500); }
+    c.onclick = close; setTimeout(close, ms);
+  }
+  function fly(manual){
+    if (busy || (!manual && document.hidden)) { if (!manual) schedule(); return; }
+    busy = true;
+    var W = innerWidth, H = innerHeight, left = Math.random() < .5, T = 16000;
+    var i; do { i = Math.floor(Math.random() * WORDS.length); } while (WORDS.length > 1 && i === last); last = i;
+    var hy = Math.max(70, H * .14), hx = W / 2 - 34;
+    var path = [[left ? -100 : W + 30, rnd(.35, .6) * H], [hx, hy, .3], [hx, hy, .72], [left ? W + 40 : -120, -120]];
+    var lead = angel(64, 0, 0, 0, path, T);
+    if (Math.random() < .4) { angel(40, 350, -70, 34, path, T); angel(40, 650, 74, 30, path, T); }
+    setTimeout(function(){ try { window.__andalPlay && window.__andalPlay('chime'); } catch (e) {} showCard(WORDS[i], hy + 86, T * .4); }, T * .3);
+    lead.onfinish = function(){ busy = false; if (!manual) schedule(); };
+  }
+  function schedule(){ setTimeout(function(){ fly(false); }, rnd(MIN, MAX) * 1000); }
+  window.__andalAngel = function(){ fly(true); };
+  setTimeout(function(){ fly(false); }, FIRST * 1000);
+})();
+"""
+
+
+def install_angels(words):
+    code = (ANGEL_ENGINE.replace("__WORDS__", json.dumps(words, ensure_ascii=False))
+            .replace("__MIN__", str(ANGEL_EVERY_SECONDS[0])).replace("__MAX__", str(ANGEL_EVERY_SECONDS[1]))
+            .replace("__FIRST__", str(ANGEL_FIRST_SECONDS)))
+    _embed("<script>try{var P=window.parent;if(!P.__andalAngels){var s=P.document.createElement('script');"
+           f"s.textContent={json.dumps(code)};P.document.head.appendChild(s);}}}}catch(e){{}}</script>", 1)
+
+
+def call_angel_now():
+    _embed(f"<script>/*{random.random()}*/setTimeout(function(){{try{{window.parent.__andalAngel()}}catch(e){{}}}},300);"
+           "</script>", 1)
+
+
+# ------------------------------- breathing bubble -------------------------------
+BREATH_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Fredoka,Nunito,system-ui,-apple-system,sans-serif;text-align:center;background:transparent;color:#3b2350}
+.stage{position:relative;height:250px;display:flex;align-items:center;justify-content:center}
+.ring{position:absolute;width:230px;height:230px;border-radius:50%;border:3px dashed rgba(155,107,255,.35)}
+.bub{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;
+ background:radial-gradient(circle at 35% 30%,#fff 0,__C1__ 30%,__C2__ 100%);box-shadow:0 0 40px __C1__;
+ transition:width __IN__s ease-in-out,height __IN__s ease-in-out}
+.bub.big{width:220px;height:220px}
+.say{font-size:24px;font-weight:600;min-height:34px;margin-top:4px}
+.count{font-size:14px;color:#8a6a96;margin-top:2px}
+button{margin-top:10px;font:600 18px Fredoka,Nunito,system-ui,sans-serif;padding:10px 26px;border-radius:999px;border:0;
+ color:#fff;background:linear-gradient(90deg,#ff5fa2,#9b6bff);box-shadow:0 6px 16px rgba(155,107,255,.35);cursor:pointer}
+</style></head><body>
+<div class="stage"><div class="ring"></div><div class="bub" id="b">__EMOJI__</div></div>
+<div class="say" id="s">Press start when you're ready</div><div class="count" id="c"></div>
+<button id="go">▶ Start</button>
+<script>
+var IN=__IN__, HOLD=__HOLD__, OUT=__OUT__, N=__N__, b=document.getElementById('b'), s=document.getElementById('s'),
+    c=document.getElementById('c'), go=document.getElementById('go'), running=false, timers=[];
+function later(f,ms){ timers.push(setTimeout(f,ms)); }
+function stop(msg){ timers.forEach(clearTimeout); timers=[]; running=false; b.classList.remove('big'); s.textContent=msg; go.textContent='▶ Again'; }
+function round(i){
+  if(i>=N){ stop('Well done! You are calm and strong ✨'); c.textContent=''; return; }
+  c.textContent='Breath '+(i+1)+' of '+N;
+  b.style.transition='width '+IN+'s ease-in-out,height '+IN+'s ease-in-out'; b.classList.add('big'); s.textContent='__SAYIN__';
+  later(function(){ s.textContent='Hold… '; }, IN*1000);
+  later(function(){ b.style.transition='width '+OUT+'s ease-in-out,height '+OUT+'s ease-in-out'; b.classList.remove('big');
+    s.textContent='__SAYOUT__'; }, (IN+HOLD)*1000);
+  later(function(){ round(i+1); }, (IN+HOLD+OUT)*1000+400);
+}
+go.onclick=function(){ if(running){ stop('Paused — press start again'); return; } running=true; go.textContent='⏸ Pause'; round(0); };
+</script></body></html>"""
+
+BREATH_STYLES = {
+    "🎈 Balloon": dict(EMOJI="🎈", SAYIN="Breathe in… fill your balloon", SAYOUT="Breathe out… let it go slowly",
+                      C1="#ff9fcf", C2="#ff5fa2", IN=4, HOLD=1, OUT=5, N=5),
+    "🌸 Flower & candle": dict(EMOJI="🌸", SAYIN="Smell the flower… 🌸", SAYOUT="Blow out the candle… 🕯️",
+                              C1="#ffc2dc", C2="#f78fb3", IN=4, HOLD=1, OUT=4, N=5),
+    "⭐ Star": dict(EMOJI="⭐", SAYIN="Breathe in… up the star", SAYOUT="Breathe out… down the star",
+                   C1="#ffe28a", C2="#f5b700", IN=3, HOLD=1, OUT=3, N=5),
+    "🐝 Bee hum": dict(EMOJI="🐝", SAYIN="Breathe in through your nose…", SAYOUT="Hummmm like a bee… 🐝",
+                      C1="#fff0a8", C2="#f2c200", IN=4, HOLD=1, OUT=6, N=5),
+    "🌊 Ocean wave": dict(EMOJI="🌊", SAYIN="The wave comes in…", SAYOUT="The wave goes out…",
+                         C1="#9fdcff", C2="#38a0e8", IN=5, HOLD=1, OUT=5, N=5),
+}
+
+
+def breath_html(style):
+    h = BREATH_HTML
+    for k, v in BREATH_STYLES[style].items():
+        h = h.replace(f"__{k}__", str(v))
+    return h
+
+
 # ================================ LOGINS & PROFILES ================================
 # Logins live in the app's Secrets:
 #   [logins]
@@ -3376,6 +3726,21 @@ def online_tamil(q: str):
 # With no [logins] section the app works like before (Andal only, no login, no chat).
 import hashlib
 import hmac
+
+# Every bordered box gets a "card" style key so the stylesheet can make it look nice.
+_st_container = st.container
+_card_no = [0]
+
+
+def _card_container(*args, **kwargs):
+    if kwargs.get("border") and not kwargs.get("key"):
+        _card_no[0] += 1
+        kwargs["key"] = f"card{_card_no[0]}"
+    return _st_container(*args, **kwargs)
+
+
+st.container = _card_container
+
 
 KIDS = {"andal": "Andal", "elyssa": "Elyssa"}
 
@@ -3422,7 +3787,7 @@ def apply_profile(profile):
     """Switch every child-specific setting before the app draws anything."""
     global STUDENT_NAME, LANGUAGE, TASKS, TASK_BY_ID, SECTIONS, REWARDS, BEDTIME, PARENT_WORDS, PROGRESS_PATH
     global PIN_SECRET, EMAIL_SECRET, SHOW_TAMIL, SHOW_CHALISA, WEEKEND_RULES_FROM, STAR_DAY_FIXES, BADGES
-    global BIG_PRIZES, PRIZE_BY_ID, FRIENDS
+    global BIG_PRIZES, PRIZE_BY_ID, FRIENDS, SHOW_MINDFUL, ANGELS_ON
     if profile != "elyssa":
         return
     STUDENT_NAME, LANGUAGE, BEDTIME, PARENT_WORDS = "Elyssa", "Chinese", "9:00 pm", "Mum or Dad"
@@ -3430,6 +3795,7 @@ def apply_profile(profile):
     TASK_BY_ID = {t["id"]: t for t in TASKS}
     PROGRESS_PATH, PIN_SECRET, EMAIL_SECRET = "progress_elyssa.json", "ELYSSA_PARENT_PIN", "email_elyssa"
     SHOW_TAMIL = SHOW_CHALISA = False
+    SHOW_MINDFUL = ANGELS_ON = False          # Calm corner and angels are just for Andal
     WEEKEND_RULES_FROM = "9999-12-31"          # Andal's weekend rules don't apply
     STAR_DAY_FIXES = []
     BADGES = [b for b in BADGES if b[4] not in ("chalisa_parts", "sit2_days", "sing_days")] + [
@@ -3836,14 +4202,47 @@ if party:
     st.balloons()
     play_sound("fanfare")
 
-_TAB_NAMES = (["🌈 Today", "🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
-              + (["🙏 Chalisa"] if SHOW_CHALISA else []) + ([f"💬 Chat"] if CHAT_ON else [])
-              + ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks", "🔐 Grown-ups"])
-_TABS = dict(zip(_TAB_NAMES, st.tabs(_TAB_NAMES)))
+# ------------------------------ navigation ------------------------------
+# Big, simple category buttons; each category shows only its own few tabs.
+NAV = [
+    ("day", "🌈", "My Day", ["🌈 Today"] + (["🧘 Calm corner"] if SHOW_MINDFUL else [])),
+    ("learn", "📚", "Learn", ["🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
+     + (["🙏 Chalisa"] if SHOW_CHALISA else [])),
+    ("fun", "🎁", "Prizes", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks"]),
+    ("friends", "💬", "Chat", ["💬 Chat"] if CHAT_ON else []),
+    ("grown", "🔐", "Grown-ups", ["🔐 Grown-ups"]),
+]
+NAV = [n for n in NAV if n[3]]
+if st.session_state.get("nav") not in [n[0] for n in NAV]:
+    st.session_state.nav = "grown" if IS_PARENT else "day"
+
+
+def go_nav(cid):
+    st.session_state.nav = cid
+
+
+with st.container(key="navbar"):
+    _ncols = st.columns(len(NAV))
+    for _col, (_cid, _emo, _label, _names) in zip(_ncols, NAV):
+        _dot = " ✨" if _cid == "fun" and (small_ws["ok"] or big_ws["ok"]) else ""
+        _col.button(f"{_emo} {_label}{_dot}", key=f"nav_{_cid}", on_click=go_nav, args=(_cid,),
+                    type="primary" if _cid == st.session_state.nav else "secondary", use_container_width=True)
+_hidden = st.container(key="navhidden")      # pages that aren't open are kept here, out of sight
+_TABS = {}
+for _cid, _emo, _label, _names in NAV:
+    if _cid == st.session_state.nav:
+        if len(_names) == 1:
+            _TABS[_names[0]] = st.container()
+        else:
+            _TABS.update(zip(_names, st.tabs(_names)))
+    else:
+        for _n in _names:
+            _TABS[_n] = _hidden.container()
 (tab_today, tab_maths, tab_write, tab_spin, tab_rewards, tab_pet, tab_weeks, tab_parent) = (
     _TABS["🌈 Today"], _TABS["🧮 Maths"], _TABS["✍️ Stories"], _TABS["🎡 Spin"], _TABS["🏆 Rewards"],
     _TABS["🐰 Bunny & badges"], _TABS["📅 My weeks"], _TABS["🔐 Grown-ups"])
 tab_tamil, tab_chalisa, tab_chat = _TABS.get("🗣️ Tamil words"), _TABS.get("🙏 Chalisa"), _TABS.get("💬 Chat")
+tab_calm = _TABS.get("🧘 Calm corner")
 
 
 # ================================== TODAY ==================================
@@ -5803,6 +6202,14 @@ with tab_parent:
                                for x in reversed(moods[-20:])))
         else:
             st.caption("No check-ins yet.")
+        if SHOW_MINDFUL:
+            st.markdown("#### 🫙 Gratitude jar")
+            _gl = data.get("gratitude", [])
+            if _gl:
+                for g in reversed(_gl[-15:]):
+                    st.write(f"🙏 {date.fromisoformat(g['date']).strftime('%a %d %b')}: {md_safe(g['text'])}")
+            else:
+                st.caption("No thankful notes yet — they're written in the 🧘 Calm corner.")
 
         st.markdown("#### ⏳ Screen-time balance")
         st.write(f"Balance **{bal['balance']} min** = earned from tasks {bal['earned']} + extras {bal['credits']} "
@@ -5917,6 +6324,138 @@ if tab_chat is not None:
         st.button("🔄 Refresh chat", key="chat_refresh")
 
 
+
+# ================================== CALM CORNER (Andal only) ==================================
+def calm_mood(mid):
+    def change(d):
+        d.setdefault("moods", []).append({"date": TODAY_KEY, "time": datetime.now(ZoneInfo(TIMEZONE)).strftime("%H:%M"),
+                                          "mood": mid})
+    if update(change):
+        st.session_state.calm_mood_reply = mid
+
+
+def save_gratitude():
+    items = [" ".join(str(st.session_state.get(f"gr_{i}", "")).split())[:140] for i in range(3)]
+    items = [x for x in items if x]
+    if not items:
+        st.session_state.gr_note = ("warn", "Write at least one thing you're thankful for 💗")
+        return
+
+    def change(d):
+        d.setdefault("gratitude", []).extend({"date": TODAY_KEY, "text": x} for x in items)
+        d["gratitude"] = d["gratitude"][-400:]
+    if update(change):
+        st.session_state.gr_note = ("ok", f"🫙 {len(items)} thankful note{'s' if len(items) > 1 else ''} "
+                                          "went into your jar! A thankful heart is a happy heart 💖")
+        play_sound("chime")
+
+
+def angel_now():
+    st.session_state.angel_now = True
+
+
+def more_i_am():
+    st.session_state.i_am_shift = st.session_state.get("i_am_shift", 0) + 3
+
+
+if tab_calm is not None:
+    with tab_calm:
+        _d = today.toordinal()
+        st.markdown(f'<div class="calm-hero"><div class="ch-title">🧘 {html_safe(STUDENT_NAME)}\'s Calm Corner</div>'
+                    '<div class="ch-sub">A quiet, cosy place to breathe, notice your feelings and say thank you 💗</div>'
+                    '</div>', unsafe_allow_html=True)
+
+        # ---- angel message of the day ----
+        _aw = ANGEL_WORDS[(_d * 7) % len(ANGEL_WORDS)].format(name=STUDENT_NAME)
+        st.markdown(f'<div class="angel-card"><div class="ac-wing">👼</div><div class="ac-head">Today\'s angel message'
+                    f'</div><div class="ac-text">{html_safe(_aw)}</div></div>', unsafe_allow_html=True)
+        st.button("👼 Call an angel to visit me", key="call_angel", on_click=angel_now, use_container_width=True)
+        if st.session_state.pop("angel_now", False) and ANGELS_ON:
+            call_angel_now()
+
+        # ---- feelings ----
+        with st.container(border=True):
+            st.markdown('<div class="calm-h">💗 How am I feeling?</div>'
+                        '<div class="calm-s">All feelings are okay. Tap the one that fits you right now.</div>',
+                        unsafe_allow_html=True)
+            _fc = st.columns(4)
+            for _i, (mid, emo, label, _r) in enumerate(MOODS):
+                _fc[_i % 4].button(f"{emo} {label}", key=f"calm_mood_{mid}", on_click=calm_mood, args=(mid,),
+                                   use_container_width=True)
+            _fr = st.session_state.pop("calm_mood_reply", None)
+            if _fr:
+                _m = next(m for m in MOODS if m[0] == _fr)
+                _tips = "".join(f"<li>{html_safe(t)}</li>" for t in FEELING_HELP.get(_fr, []))
+                st.markdown(f'<div class="feel-card"><div class="fc-big">{_m[1]}</div><div><b>You feel '
+                            f'{_m[2].lower()}.</b> {html_safe(_m[3])}<ul>{_tips}</ul></div></div>',
+                            unsafe_allow_html=True)
+
+        # ---- breathing bubble ----
+        with st.container(border=True):
+            st.markdown('<div class="calm-h">🫧 Breathe with me</div>'
+                        '<div class="calm-s">Pick a breath, press start, and follow the bubble.</div>',
+                        unsafe_allow_html=True)
+            _bs = st.radio("Breathing style", list(BREATH_STYLES), horizontal=True, key="breath_style",
+                           label_visibility="collapsed")
+            _embed(breath_html(_bs), 360)
+
+        # ---- gratitude jar ----
+        with st.container(border=True):
+            st.markdown('<div class="calm-h">🫙 My gratitude jar</div>'
+                        '<div class="calm-s">Write up to 3 things you are thankful for today.</div>',
+                        unsafe_allow_html=True)
+            _gp = [GRATITUDE_PROMPTS[(_d + k * 5) % len(GRATITUDE_PROMPTS)] for k in range(3)]
+            with st.form("gratitude", clear_on_submit=True, border=False):
+                for _i in range(3):
+                    st.text_input(f"Thankful {_i + 1}", key=f"gr_{_i}", max_chars=140, label_visibility="collapsed",
+                                  placeholder=f"🙏 I'm thankful for {_gp[_i]}…")
+                st.form_submit_button("💖 Put them in my jar", on_click=save_gratitude, use_container_width=True)
+            if _gn := st.session_state.pop("gr_note", None):
+                (st.success if _gn[0] == "ok" else st.warning)(_gn[1])
+            _grat = data.get("gratitude", [])
+            if _grat:
+                _cols = ["#ffe3f1", "#e8e1ff", "#dff4ff", "#fff3c4", "#dcf8e2", "#ffe6d6"]
+                _notes = "".join(
+                    f'<div class="gnote" style="background:{_cols[k % len(_cols)]};transform:rotate({(k % 5) - 2}deg)">'
+                    f'{html_safe(g["text"])}<span>{date.fromisoformat(g["date"]).strftime("%d %b")}</span></div>'
+                    for k, g in enumerate(reversed(_grat[-12:])))
+                st.markdown(f'<div class="calm-s" style="margin-top:6px">✨ <b>{len(_grat)}</b> thankful note{"" if len(_grat) == 1 else "s"} '
+                            f'in your jar so far!</div><div class="gjar">{_notes}</div>', unsafe_allow_html=True)
+
+        # ---- I am... ----
+        with st.container(border=True):
+            st.markdown('<div class="calm-h">🌟 Say it out loud: I am…</div>'
+                        '<div class="calm-s">Read each one in a strong, proud voice.</div>', unsafe_allow_html=True)
+            _sh = st.session_state.get("i_am_shift", 0)
+            _ia = [I_AM[(_d * 3 + _sh + k) % len(I_AM)] for k in range(3)]
+            st.markdown('<div class="iam-row">' + "".join(f'<div class="iam">{html_safe(x)}</div>' for x in _ia)
+                        + '</div>', unsafe_allow_html=True)
+            st.button("🔄 Show me 3 more", key="iam_more", on_click=more_i_am)
+
+        # ---- calm idea + mindful quote + kindness mission ----
+        _ct = CALM_TIPS[_d % len(CALM_TIPS)]
+        _mq = MINDFUL_QUOTES[(_d * 5) % len(MINDFUL_QUOTES)]
+        st.markdown(
+            f'<div class="calm-grid"><div class="cg cg1"><div class="cg-h">🌿 Calm idea for today</div>'
+            f'<div class="cg-t"><b>{html_safe(_ct[0])}</b><br>{html_safe(_ct[1])}</div></div>'
+            f'<div class="cg cg2"><div class="cg-h">💛 Kindness mission</div>'
+            f'<div class="cg-t">{html_safe(KIND_IDEAS[_d % len(KIND_IDEAS)])}</div></div></div>'
+            f'<div class="quote"><div class="qmark">“</div><div class="qtext">{html_safe(_mq[0])}</div>'
+            f'<div class="qwho">— {html_safe(_mq[1])}, <span>{html_safe(_mq[2])}</span></div>'
+            f'<div class="qmean">💡 {html_safe(_mq[3])}</div></div>', unsafe_allow_html=True)
+
+        with st.expander("👀 The 5-4-3-2-1 senses game (for worried or busy feelings)"):
+            st.markdown("Look around you and find:\n\n"
+                        "- 👀 **5** things you can **see**\n- ✋ **4** things you can **touch**\n"
+                        "- 👂 **3** things you can **hear**\n- 👃 **2** things you can **smell**\n"
+                        "- 👅 **1** thing you can **taste**\n\nWell done — you brought your mind back to right now. 🌈")
+        with st.expander("🧰 My calm-down toolbox"):
+            st.markdown("When feelings get really big, try one of these:\n\n"
+                        + "\n".join(f"- **{t[0]}** — {t[1]}" for t in CALM_TIPS[:8]))
+
 # ---- hopping friends (purely decorative, never block taps) ----
 if ANIMATED_FRIENDS:
     install_visitors()
+# ---- angels with kind words (Andal only) ----
+if ANGELS_ON and not IS_PARENT:
+    install_angels([w.format(name=STUDENT_NAME) for w in ANGEL_WORDS])
