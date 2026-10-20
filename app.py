@@ -85,7 +85,7 @@ TASKS = [
     {"id": "comb", "emoji": "💇‍♀️", "name": "Comb my hair nicely", "minutes": 2, "required": True,
      "section": "must", "days": "weekend", "from": "NEW_MUSTS"},
 ]
-NEW_MUSTS_FROM = "2026-10-21"     # the daily-routine must-dos above start on this day
+NEW_MUSTS_FROM = "2026-10-20"     # the daily-routine must-dos above start on this day
 
 
 def _as_date(d):
