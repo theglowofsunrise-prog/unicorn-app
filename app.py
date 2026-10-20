@@ -70,7 +70,22 @@ TASKS = [
      "section": "learn", "days": "weekend"},
     {"id": "tidy", "emoji": "🧹", "name": "Tidy & organise my room, desk and play space for 20 minutes",
      "minutes": 5, "section": "body", "days": "weekend"},
+    # ---- daily routines (must do, from NEW_MUSTS_FROM) ----
+    {"id": "schoolnotes", "emoji": "🏫", "name": "Write in Notes (with Scribble) what I learnt at school today",
+     "minutes": 2, "required": True, "section": "must", "days": "school", "from": "NEW_MUSTS"},
+    {"id": "lunchbox", "emoji": "🍱", "name": "Put my lunch box from my school bag at the sink for washing",
+     "minutes": 2, "required": True, "section": "must", "days": "school", "from": "NEW_MUSTS"},
+    {"id": "bagpack", "emoji": "🎒", "name": "Packed my school bag last night before bed "
+     "(homework book, library book and everything for today)", "minutes": 2, "required": True, "section": "must",
+     "days": "school", "from": "NEW_MUSTS"},
+    {"id": "paati", "emoji": "👵🏽", "name": "Maths with Paati for 10–12 minutes (work it out on paper)",
+     "minutes": 2, "required": True, "section": "must", "from": "NEW_MUSTS"},
+    {"id": "mindful", "emoji": "🫧", "name": "One easy mindfulness activity (try the 🧘 Calm corner)",
+     "minutes": 2, "required": True, "section": "must", "from": "NEW_MUSTS"},
+    {"id": "comb", "emoji": "💇‍♀️", "name": "Comb my hair nicely", "minutes": 2, "required": True,
+     "section": "must", "days": "weekend", "from": "NEW_MUSTS"},
 ]
+NEW_MUSTS_FROM = "2026-10-21"     # the daily-routine must-dos above start on this day
 
 
 def _as_date(d):
@@ -85,12 +100,27 @@ def weekend_rules(d) -> bool:
     return d.weekday() >= 5 and d.isoformat() >= WEEKEND_RULES_FROM
 
 
+def task_on(t, d) -> bool:
+    """Does this task apply on day d?  days: weekend / school (Mon–Fri) / none = every day."""
+    if d is None:
+        return not t.get("days") and not t.get("from")
+    d = _as_date(d)
+    if t.get("from") == "NEW_MUSTS" and d.isoformat() < NEW_MUSTS_FROM:
+        return False
+    days = t.get("days")
+    if days == "weekend":
+        return weekend_rules(d)
+    if days == "school":
+        return d.weekday() < 5
+    return True
+
+
 def tasks_for(d):
-    return [t for t in TASKS if t.get("days") != "weekend" or weekend_rules(d)]
+    return [t for t in TASKS if task_on(t, d)]
 
 
 def required_ids(d) -> set:
-    req = {t["id"] for t in TASKS if t.get("required")}
+    req = {t["id"] for t in TASKS if t.get("required") and task_on(t, d)}
     if weekend_rules(d):
         req |= set(WEEKEND_MUST)
     return req
@@ -2124,6 +2154,12 @@ h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
 .cg2 { background: #fff8e1; border: 2px solid #ffe28a; color: #5a4300; }
 .cg-h { font-weight: 700; font-size: 1.12rem; margin-bottom: 4px; }
 .cg-t { font-size: 1.04rem; line-height: 1.45; }
+.char-prev { display: flex; align-items: center; justify-content: center; min-height: 140px; border-radius: 20px; margin: 4px 0 10px;
+  background-color: #fff; background-image: radial-gradient(#ece3f6 1.2px, transparent 1.2px); background-size: 18px 18px;
+  box-shadow: inset 0 0 0 2px #f1e4f7; }
+.char-prev img { max-width: 220px; max-height: 200px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.15)); }
+.char-prev.small { min-height: 110px; } .char-prev.small img { max-width: 120px; max-height: 120px; }
+.char-say { background: #fff3fa; border-radius: 14px; padding: 4px 10px; margin: 4px 0; color: #5a2d66; font-size: .98rem; }
 </style>
 """
 
@@ -3302,7 +3338,11 @@ VISITOR_ENGINE = r"""
       {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .35},
       {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .65},
       {transform: 'translate(' + p2[0] + 'px,' + p2[1] + 'px)'}], {duration: T, easing: 'ease-in-out'});
-    setTimeout(function(){ if (f.says && f.says.length) say(em, pick(f.says)); }, T * .37);
+    setTimeout(function(){
+      var h = new Date().getHours(), todo = (window.__andalTodo || []).filter(function(r){ return h >= r[1] && h < r[2]; });
+      if (todo.length && Math.random() < .5) say(em, pick(todo)[0]);
+      else if (f.says && f.says.length) say(em, pick(f.says));
+    }, T * .37);
     anim.onfinish = function(){ wrap.remove(); schedule(); };
   }
   function schedule(){ setTimeout(visit, rnd(MIN, MAX) * 1000); }
@@ -3942,7 +3982,7 @@ def chat_send():
         msgs.append(msg)
     if chat_change(change):
         st.session_state.chat_in = ""
-        play_sound("pop")
+        st.session_state.sound_next = "pop"
 
 
 def chat_delete(mid):
@@ -3969,6 +4009,401 @@ def chat_view():
         html_rows.append(f'<div class="cb {"me" if mine else "them"}"><div class="cn">{html_safe(m["name"])} · {when}</div>'
                          f'{html_safe(m["text"])}</div>')
     st.markdown('<div class="chatbox">' + "".join(html_rows) + "</div>", unsafe_allow_html=True)
+
+
+# ================================ MY CHARACTERS (draw → comes alive) ================================
+import os
+import tempfile
+import streamlit.components.v1 as _components
+
+DRAW_HTML = r"""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+html,body{margin:0;padding:0;background:transparent;font-family:Fredoka,Nunito,system-ui,-apple-system,sans-serif;
+ user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;color:#3b2350}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px}
+.sw{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #e4d8ef;cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 3px #9b6bff;transform:scale(1.12)}
+.b{font:600 15px Fredoka,Nunito,system-ui,sans-serif;padding:7px 12px;border-radius:14px;border:2px solid #eadcf7;
+ background:#fff;color:#4a2a63;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.b.on{background:#f3ecff;border-color:#9b6bff}
+.dot{display:inline-block;border-radius:50%;background:#4a2a63;vertical-align:middle}
+.go{background:linear-gradient(90deg,#ff5fa2,#9b6bff);color:#fff;border:0;font-size:17px;padding:10px 20px;
+ box-shadow:0 6px 16px rgba(155,107,255,.35)}
+#wrap{position:relative;border-radius:22px;overflow:hidden;background-color:#fff;box-shadow:inset 0 0 0 2px #eadcf7;
+ background-image:radial-gradient(#ece3f6 1.2px,transparent 1.2px);background-size:22px 22px}
+canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c2b0d3;font-size:20px;
+ pointer-events:none;text-align:center;padding:20px}
+.msg{font-size:15px;color:#7a6386;margin-left:6px}
+</style></head><body>
+<div class="bar" id="cols"></div>
+<div class="bar" id="tools"></div>
+<div id="wrap"><canvas id="c"></canvas><div class="hint" id="hint">✏️ Draw your character here with your Apple Pencil<br>(a big, colourful drawing works best!)</div></div>
+<div class="bar" style="margin-top:10px"><button class="b go" id="use">✅ Use this drawing</button><span class="msg" id="msg"></span></div>
+<script>
+var COLS=['#222222','#ff4fa3','#ff8a00','#f5c400','#2fbf5a','#16b5c9','#3a7bff','#8b5cf6','#a0522d','#ffffff','#ffc8a8','#9aa0a6'];
+var SIZES=[['S',3],['M',7],['L',14],['XL',26]];
+var H=__HEIGHT__, cv=document.getElementById('c'), ctx=cv.getContext('2d'), wrap=document.getElementById('wrap');
+var strokes=[], cur=null, colour='#222222', size=7, eraser=false, fingerOK=true, sawPen=false, dpr=window.devicePixelRatio||1;
+function post(type,extra){ var m={isStreamlitMessage:true,type:type}; for(var k in extra) m[k]=extra[k]; window.parent.postMessage(m,'*'); }
+function height(){ post('streamlit:setFrameHeight',{height:document.body.scrollHeight+4}); }
+function setup(){ var w=wrap.clientWidth; cv.width=Math.round(w*dpr); cv.height=Math.round(H*dpr); cv.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0); redraw(); height(); }
+function drawStroke(s){
+  ctx.save(); ctx.globalCompositeOperation=s.erase?'destination-out':'source-over'; ctx.strokeStyle=s.c; ctx.fillStyle=s.c;
+  ctx.lineCap='round'; ctx.lineJoin='round'; var p=s.p;
+  if(p.length===1){ ctx.beginPath(); ctx.arc(p[0][0],p[0][1],s.w*p[0][2]/2,0,7); ctx.fill(); ctx.restore(); return; }
+  for(var i=1;i<p.length;i++){ var a=p[i-1], b=p[i]; ctx.lineWidth=s.w*(a[2]+b[2])/2; ctx.beginPath();
+    var mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+    if(i>1){ var z=p[i-2]; ctx.moveTo((z[0]+a[0])/2,(z[1]+a[1])/2); ctx.quadraticCurveTo(a[0],a[1],mx,my); }
+    else { ctx.moveTo(a[0],a[1]); ctx.lineTo(mx,my); }
+    ctx.stroke(); }
+  ctx.restore(); }
+function redraw(){ ctx.clearRect(0,0,cv.width,cv.height); strokes.forEach(drawStroke);
+  document.getElementById('hint').style.display=strokes.length?'none':'flex'; }
+function pt(e){ var r=cv.getBoundingClientRect(); var pr=(e.pointerType==='pen'&&e.pressure>0)?(0.35+e.pressure*1.3):1;
+  return [e.clientX-r.left,e.clientY-r.top,pr]; }
+cv.addEventListener('pointerdown',function(e){
+  if(e.pointerType==='pen') sawPen=true;
+  if(e.pointerType==='touch' && (sawPen || !fingerOK)) return;      // palm rejection
+  e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  cur={c:colour,w:eraser?size*2.2:size,erase:eraser,p:[pt(e)],id:e.pointerId}; strokes.push(cur); redraw(); });
+cv.addEventListener('pointermove',function(e){ if(!cur||e.pointerId!==cur.id) return; e.preventDefault();
+  var ev=e.getCoalescedEvents?e.getCoalescedEvents():[e]; if(!ev.length) ev=[e];
+  ev.forEach(function(x){ cur.p.push(pt(x)); }); redraw(); });
+function end(e){ if(cur&&e.pointerId===cur.id) cur=null; }
+cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+document.addEventListener('touchmove',function(e){ if(e.target===cv) e.preventDefault(); },{passive:false});
+var cols=document.getElementById('cols');
+COLS.forEach(function(c){ var b=document.createElement('button'); b.className='sw'+(c===colour?' on':''); b.style.background=c;
+  b.onclick=function(){ colour=c; eraser=false; [].forEach.call(cols.children,function(x){x.classList.remove('on');}); b.classList.add('on'); tools(); };
+  cols.appendChild(b); });
+var tb=document.getElementById('tools');
+function tools(){ tb.innerHTML='';
+  SIZES.forEach(function(s){ var b=document.createElement('button'); b.className='b'+(size===s[1]?' on':'');
+    var d=Math.min(s[1],22); b.innerHTML='<span class="dot" style="width:'+d+'px;height:'+d+'px"></span> '+s[0];
+    b.onclick=function(){ size=s[1]; tools(); }; tb.appendChild(b); });
+  var er=document.createElement('button'); er.className='b'+(eraser?' on':''); er.textContent='🧽 Eraser';
+  er.onclick=function(){ eraser=!eraser; tools(); }; tb.appendChild(er);
+  var un=document.createElement('button'); un.className='b'; un.textContent='↩️ Undo';
+  un.onclick=function(){ strokes.pop(); redraw(); }; tb.appendChild(un);
+  var cl=document.createElement('button'); cl.className='b'; cl.textContent='🗑️ Clear';
+  cl.onclick=function(){ if(!strokes.length||confirm('Clear the whole drawing?')){ strokes=[]; redraw(); } }; tb.appendChild(cl);
+  var fg=document.createElement('button'); fg.className='b'+(fingerOK&&!sawPen?' on':''); fg.textContent=sawPen?'✏️ Pencil only':(fingerOK?'👆 Finger: on':'👆 Finger: off');
+  fg.onclick=function(){ if(sawPen){ sawPen=false; fingerOK=true; } else fingerOK=!fingerOK; tools(); }; tb.appendChild(fg);
+}
+tools();
+document.getElementById('use').onclick=function(){
+  var msg=document.getElementById('msg');
+  var d=ctx.getImageData(0,0,cv.width,cv.height).data, W=cv.width, Hh=cv.height, x0=W, y0=Hh, x1=-1, y1=-1;
+  for(var y=0;y<Hh;y+=2){ for(var x=0;x<W;x+=2){ if(d[(y*W+x)*4+3]>16){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } } }
+  if(x1<0){ msg.textContent='Draw something first! ✏️'; return; }
+  var pad=6*dpr; x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(W,x1+pad); y1=Math.min(Hh,y1+pad);
+  var w=x1-x0, h=y1-y0, sc=Math.min(1,__MAXPX__/Math.max(w,h)), o=document.createElement('canvas');
+  o.width=Math.max(1,Math.round(w*sc)); o.height=Math.max(1,Math.round(h*sc));
+  o.getContext('2d').drawImage(cv,x0,y0,w,h,0,0,o.width,o.height);
+  post('streamlit:setComponentValue',{value:{img:o.toDataURL('image/png'),w:o.width,h:o.height,n:Date.now()},dataType:'json'});
+  msg.textContent='Got it! Now give your character a name below 👇';
+};
+window.addEventListener('message',function(e){ if(e.data&&e.data.type==='streamlit:render'){ if(!cv.width) setup(); } });
+window.addEventListener('resize',function(){ setup(); });
+post('streamlit:componentReady',{apiVersion:1});
+setTimeout(setup,60);
+</script></body></html>"""
+
+_DRAW_DIR = os.path.join(tempfile.gettempdir(), "earn_stars_drawpad_v1")
+
+
+def draw_pad(key, height=420):
+    html = DRAW_HTML.replace("__HEIGHT__", str(int(height))).replace("__MAXPX__", "260")
+    d = f"{_DRAW_DIR}_{int(height)}"
+    os.makedirs(d, exist_ok=True)
+    f = os.path.join(d, "index.html")
+    if not os.path.exists(f) or open(f, encoding="utf-8").read() != html:
+        with open(f, "w", encoding="utf-8") as fh:
+            fh.write(html)
+    comp = _components.declare_component(f"earn_stars_drawpad_{int(height)}", path=d)
+    return comp(key=key, default=None)
+
+
+# ---------------------------- saving characters ----------------------------
+CHARS_MAX = 8
+CHAR_MOVES = {"hop": "🐰 Hop", "fly": "🕊️ Float", "spin": "🌀 Spin", "wiggle": "🪱 Wiggle", "bounce": "🏀 Bounce",
+              "zoom": "🚀 Zoom"}
+CHAR_VOICES = {"squeaky": ("🐭 Squeaky", 1.9, 1.1), "sweet": ("🧚 Sweet", 1.45, 1.0), "normal": ("🙂 Normal", 1.0, 1.0),
+               "deep": ("🐻 Deep", 0.55, 0.9), "robot": ("🤖 Robot", 0.25, 0.85)}
+
+
+def chars_path():
+    return f"characters_{AUTH['profile']}.json"
+
+
+def _chars_cfg():
+    cfg = storage_cfg()
+    return dict(cfg, path=chars_path()) if cfg else None
+
+
+def chars_load(force=False):
+    cache = st.session_state.get("_chars_cache")
+    if cache is not None and not force:
+        return cache
+    try:
+        cfg = _chars_cfg()
+        if cfg:
+            url, headers = _gh(cfg)
+            r = requests.get(url, headers=headers, timeout=15)
+            if r.status_code == 404:
+                chars = []
+            else:
+                r.raise_for_status()
+                chars = json.loads(base64.b64decode(r.json()["content"]).decode())
+        else:
+            f = Path(chars_path().replace(".json", "_local.json"))
+            chars = json.loads(f.read_text()) if f.exists() else []
+    except Exception:
+        chars = []
+    st.session_state._chars_cache = chars
+    return chars
+
+
+def chars_change(change) -> bool:
+    for attempt in range(3):
+        try:
+            cfg = _chars_cfg()
+            sha = None
+            if cfg:
+                url, headers = _gh(cfg)
+                r = requests.get(url, headers=headers, timeout=15)
+                if r.status_code == 404:
+                    chars = []
+                else:
+                    r.raise_for_status()
+                    body = r.json()
+                    chars, sha = json.loads(base64.b64decode(body["content"]).decode()), body["sha"]
+            else:
+                f = Path(chars_path().replace(".json", "_local.json"))
+                chars = json.loads(f.read_text()) if f.exists() else []
+            if change(chars) is False:
+                return False
+            text = json.dumps(chars, ensure_ascii=False)
+            if cfg:
+                payload = {"message": "characters", "content": base64.b64encode(text.encode()).decode()}
+                if sha:
+                    payload["sha"] = sha
+                requests.put(url, headers=headers, json=payload, timeout=20).raise_for_status()
+            else:
+                f.write_text(text)
+            st.session_state._chars_cache = chars
+            return True
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code in (409, 422) and attempt < 2:
+                continue
+            st.session_state.char_err = "Your character couldn't be saved just now — please try again."
+            return False
+        except Exception:
+            st.session_state.char_err = "Your character couldn't be saved just now — please try again."
+            return False
+    return False
+
+
+# ---------------------------- reminders from the floating friends ----------------------------
+REMIND_TEXT = {
+    "homework": "Have you finished today's homework? 📒",
+    "speak": f"Let's speak {LANGUAGE} for 10 minutes today! 🗣️",
+    "schoolnotes": "Write in Notes what you learnt at school today! 🏫✏️",
+    "lunchbox": "Lunch box out of your school bag and onto the sink, please! 🍱",
+    "bagpack": "Did you pack your school bag last night? Tick it in your must-do list! 🎒",
+    "paati": "Time for 10 minutes of maths with Paati — on paper! 👵🏽",
+    "mindful": "Take a calm minute in the Calm corner! 🫧",
+    "comb": "Don't forget to comb your hair nicely! 💇‍♀️",
+    "exercise": "Let's get moving and do some exercise! 🤸",
+    "meditate": "Time for a quiet meditation! 🧘",
+    "sit1": "Can you sit perfectly still for 1 minute? 🪷",
+    "sit2": "Can you sit perfectly still for 2 minutes? 🦢",
+    "chalisa": "Practise your Hanuman Chalisa parts today! 🙏",
+    "tidy": "20 minutes of tidy-up time! 🧹",
+    "bed": "Did you get to bed on time last night? Tick it! 🌙",
+}
+REMIND_HOURS = {"lunchbox": (15, 21), "schoolnotes": (15, 21), "bagpack": (6, 12), "bed": (6, 12)}
+
+
+def build_reminders(today_d, ticked: set, required: set):
+    """[text, from_hour, to_hour] — the browser only uses the ones that fit the current hour."""
+    out = []
+    for tid in sorted(required - ticked):
+        t = TASK_BY_ID.get(tid)
+        if not t:
+            continue
+        txt = REMIND_TEXT.get(tid) or f"Don't forget your must-do: {t['emoji']} {t['name']}!"
+        h0, h1 = REMIND_HOURS.get(tid, (6, 21))
+        out.append([f"{STUDENT_NAME}, {txt[0].lower() + txt[1:]}", h0, h1])
+    if "bagpack" in TASK_BY_ID and today_d.weekday() in (6, 0, 1, 2, 3):
+        out.append([f"{STUDENT_NAME}, pack your school bag tonight before bed: homework book, library book… 🎒", 18, 22])
+    out.append([f"{STUDENT_NAME}, bedtime is {BEDTIME} — time to get ready for bed! 🌙", 20, 22])
+    return out
+
+
+# ---------------------------- the drawn characters come alive ----------------------------
+CHAR_ENGINE = r"""
+(function(){
+  if (window.__andalChars) return; window.__andalChars = true;
+  var MIN = __MIN__, MAX = __MAX__, last = -1, busy = false;
+  function rnd(a, b){ return a + Math.random() * (b - a); }
+  function pick(l){ return l[Math.floor(Math.random() * l.length)]; }
+  var MV = {
+    hop: [[{transform:'translateY(0)'},{transform:'translateY(-26px)'},{transform:'translateY(0)'}], 520],
+    fly: [[{transform:'translateY(0) rotate(-5deg)'},{transform:'translateY(-22px) rotate(5deg)'},{transform:'translateY(0) rotate(-5deg)'}], 1500],
+    spin: [[{transform:'rotate(0)'},{transform:'rotate(360deg)'}], 1400],
+    wiggle: [[{transform:'rotate(-12deg)'},{transform:'rotate(12deg)'},{transform:'rotate(-12deg)'}], 600],
+    bounce: [[{transform:'translateY(0) scale(1.1,.9)'},{transform:'translateY(-40px) scale(.95,1.05)'},{transform:'translateY(0) scale(1.1,.9)'}], 800],
+    zoom: [[{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}], 900]
+  };
+  var unlocked = false;
+  function unlock(){ if (unlocked) return; unlocked = true;
+    try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {} }
+  document.addEventListener('pointerdown', unlock, {once: true, capture: true});
+  function voice(){ try { var v = speechSynthesis.getVoices().filter(function(x){ return /^en/i.test(x.lang); });
+    return v.find(function(x){ return /en-AU/i.test(x.lang); }) || v.find(function(x){ return /en-GB/i.test(x.lang); }) || v[0]; } catch (e) { return null; } }
+  function talk(text, c){
+    if (!window.__andalCharVoice) return;
+    try { var clean = text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '').trim(); if (!clean) return;
+      var u = new SpeechSynthesisUtterance(clean); u.pitch = c.pitch || 1.4; u.rate = c.rate || 1; var v = voice(); if (v) u.voice = v;
+      speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+  }
+  function say(el, name, text){
+    var old = document.getElementById('andal-cbubble'); if (old) old.remove();
+    var r = el.getBoundingClientRect(), b = document.createElement('div'); b.id = 'andal-cbubble';
+    b.innerHTML = '<div style="font-size:12px;color:#9b6bff;font-weight:700;margin-bottom:2px"></div><div></div>';
+    b.children[0].textContent = name; b.children[1].textContent = text;
+    b.style.cssText = 'position:fixed;z-index:99998;max-width:260px;padding:10px 14px;border-radius:18px;pointer-events:none;'
+      + 'background:#fff;border:3px solid #ff7fbf;color:#3b2350;font:600 16px Fredoka,Nunito,system-ui,sans-serif;'
+      + 'box-shadow:0 10px 26px rgba(255,95,162,.3);transition:opacity .3s, transform .3s;opacity:0;transform:scale(.6)';
+    document.body.appendChild(b);
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - 130), innerWidth - 276);
+    var top = r.top > 150 ? r.top - b.offsetHeight - 10 : r.bottom + 10;
+    b.style.left = left + 'px'; b.style.top = Math.max(8, top) + 'px';
+    requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'scale(1)'; });
+    setTimeout(function(){ b.style.opacity = '0'; setTimeout(function(){ b.remove(); }, 350); }, 5200);
+  }
+  function edge(e, W, H){ if (e === 'L') return [-180, rnd(.2, .7) * H]; if (e === 'R') return [W + 30, rnd(.2, .7) * H];
+    if (e === 'T') return [rnd(.1, .8) * W, -180]; return [rnd(.1, .8) * W, H + 30]; }
+  function visit(manual){
+    var isManual = manual !== false && manual !== undefined;
+    var C = (window.__andalCharList || []).filter(function(c){ return c.show !== false || isManual; });
+    if (!C.length || busy || (!isManual && document.hidden)) { if (!isManual) schedule(); return; }
+    busy = true;
+    var i = (typeof manual === 'number') ? Math.min(manual, C.length - 1) : (function(){ var k; do { k = Math.floor(Math.random() * C.length); } while (C.length > 1 && k === last); return k; })();
+    last = i; var c = C[i], W = innerWidth, H = innerHeight;
+    var E = ['L', 'R', 'T', 'B'], a = pick(E), b; do { b = pick(E); } while (b === a);
+    var p0 = edge(a, W, H), p2 = edge(b, W, H), sz = Math.min(150, W * .34), pm = [rnd(.28, .55) * W, rnd(.28, .5) * H];
+    var wrap = document.createElement('div'); wrap.style.cssText = 'position:fixed;left:0;top:0;z-index:99991;pointer-events:none;will-change:transform';
+    var img = document.createElement('img'); img.src = c.img; img.alt = c.name;
+    img.style.cssText = 'display:block;width:' + sz + 'px;height:auto;max-height:' + sz + 'px;object-fit:contain;'
+      + 'filter:drop-shadow(0 6px 10px rgba(0,0,0,.18));' + (p2[0] > p0[0] ? '' : 'transform:scaleX(1)');
+    var inner = document.createElement('div'); inner.appendChild(img); wrap.appendChild(inner); document.body.appendChild(wrap);
+    var mv = MV[c.move] || MV.hop; try { inner.animate(mv[0], {duration: mv[1], iterations: Infinity, easing: 'ease-in-out'}); } catch (e) {}
+    var T = 16000, anim = wrap.animate([
+      {transform: 'translate(' + p0[0] + 'px,' + p0[1] + 'px)'},
+      {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .33},
+      {transform: 'translate(' + pm[0] + 'px,' + pm[1] + 'px)', offset: .68},
+      {transform: 'translate(' + p2[0] + 'px,' + p2[1] + 'px)'}], {duration: T, easing: 'ease-in-out'});
+    setTimeout(function(){
+      var h = new Date().getHours(), todo = (window.__andalTodo || []).filter(function(r){ return h >= r[1] && h < r[2]; });
+      var text = (todo.length && Math.random() < .55) ? pick(todo)[0] : (c.says && c.says.length ? pick(c.says) : 'Hello!');
+      say(img, c.name, text); talk(text, c);
+    }, T * .36);
+    anim.onfinish = function(){ wrap.remove(); busy = false; if (!isManual) schedule(); };
+  }
+  function schedule(){ setTimeout(function(){ visit(false); }, rnd(MIN, MAX) * 1000); }
+  window.__andalCharVisit = function(i){ visit(typeof i === 'number' ? i : true); };
+  setTimeout(function(){ visit(false); }, 90000);
+})();
+"""
+CHAR_EVERY_SECONDS = (180, 300)
+
+
+def sync_floaters(chars, reminders, voice_on, send_chars):
+    """Keeps the browser's list of drawn characters and today's reminders up to date (characters only when changed)."""
+    code = (CHAR_ENGINE.replace("__MIN__", str(CHAR_EVERY_SECONDS[0])).replace("__MAX__", str(CHAR_EVERY_SECONDS[1])))
+    parts = ["var P=window.parent;",
+             f"P.__andalTodo={json.dumps(reminders, ensure_ascii=False)};",
+             f"P.__andalCharVoice={'true' if voice_on else 'false'};"]
+    if send_chars:
+        lst = [{"name": c["name"], "img": c["img"], "says": c.get("says", []), "move": c.get("move", "hop"),
+                "pitch": CHAR_VOICES.get(c.get("voice", "sweet"), CHAR_VOICES["sweet"])[1],
+                "rate": CHAR_VOICES.get(c.get("voice", "sweet"), CHAR_VOICES["sweet"])[2], "show": c.get("show", True)}
+               for c in chars]
+        parts.append(f"P.__andalCharList={json.dumps(lst, ensure_ascii=False)};")
+    parts.append(f"if(!P.__andalChars){{var s=P.document.createElement('script');s.textContent={json.dumps(code)};"
+                 "P.document.head.appendChild(s);}")
+    _embed("<script>try{" + "".join(parts) + "}catch(e){}</script>", 1)
+
+
+def char_visit_now(i):
+    _embed(f"<script>/*{random.random()}*/setTimeout(function(){{try{{window.parent.__andalCharVisit({int(i)})}}catch(e){{}}}},400);"
+           "</script>", 1)
+
+
+# ---------------------------- beautiful new-badge pop-up ----------------------------
+BADGE_ENGINE = r"""
+(function(){
+  if (window.__andalBadge) return;
+  var q = [], open = false;
+  var css = document.createElement('style');
+  css.textContent = '@keyframes bdgSpin{to{transform:rotate(360deg)}}@keyframes bdgPop{0%{transform:scale(.3) rotate(-12deg);opacity:0}'
+   + '60%{transform:scale(1.08) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}'
+   + '@keyframes bdgFall{0%{transform:translateY(-10vh) rotate(0)}100%{transform:translateY(110vh) rotate(720deg)}}'
+   + '@keyframes bdgShine{0%,100%{filter:drop-shadow(0 0 0 rgba(255,215,90,0))}50%{filter:drop-shadow(0 0 22px rgba(255,215,90,.95))}}'
+   + '#bdg-ov{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;'
+   + 'background:rgba(45,20,70,.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);transition:opacity .4s;opacity:0}'
+   + '#bdg-card{position:relative;width:min(340px,86vw);padding:26px 22px 22px;border-radius:30px;text-align:center;'
+   + 'background:linear-gradient(165deg,#fffdf4,#fff0f8 60%,#f1ebff);box-shadow:0 24px 60px rgba(60,20,90,.35);'
+   + 'font-family:Fredoka,Nunito,system-ui,sans-serif;color:#3b2350;animation:bdgPop .7s cubic-bezier(.2,.9,.3,1.3) both}'
+   + '#bdg-card .rays{position:absolute;left:50%;top:92px;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;'
+   + 'background:repeating-conic-gradient(rgba(255,215,90,.35) 0 10deg,transparent 10deg 20deg);animation:bdgSpin 9s linear infinite;'
+   + '-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%)}'
+   + '#bdg-card .top{position:relative;font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#d6337f}'
+   + '#bdg-card .medal{position:relative;width:120px;height:120px;margin:14px auto 10px;border-radius:50%;display:flex;'
+   + 'align-items:center;justify-content:center;font-size:62px;border:6px solid #fff;animation:bdgShine 2s ease-in-out infinite}'
+   + '#bdg-card .nm{position:relative;font-size:26px;font-weight:700;margin-top:6px}'
+   + '#bdg-card .ds{position:relative;font-size:16px;color:#7a6386;margin:4px 0 16px}'
+   + '#bdg-card button{position:relative;font:700 18px Fredoka,Nunito,system-ui,sans-serif;color:#fff;border:0;border-radius:999px;'
+   + 'padding:12px 30px;background:linear-gradient(90deg,#ff5fa2,#9b6bff);box-shadow:0 8px 20px rgba(155,107,255,.4);cursor:pointer}'
+   + '.bdg-cf{position:fixed;top:0;z-index:100001;pointer-events:none;width:10px;height:16px;border-radius:3px;animation:bdgFall linear forwards}';
+  document.head.appendChild(css);
+  function confetti(){ var C = ['#ff4fa3','#ffb800','#2fbf5a','#38b6ff','#9b6bff','#ff7a45','#ffe14d'];
+    for (var i = 0; i < 90; i++) { var p = document.createElement('div'); p.className = 'bdg-cf';
+      p.style.left = (Math.random() * 100) + 'vw'; p.style.background = C[i % C.length];
+      p.style.animationDuration = (2.4 + Math.random() * 2.2) + 's'; p.style.animationDelay = (Math.random() * .7) + 's';
+      p.style.width = (6 + Math.random() * 8) + 'px'; document.body.appendChild(p);
+      setTimeout(function(x){ return function(){ x.remove(); }; }(p), 5600); } }
+  function next(){
+    if (open || !q.length) return; open = true; var b = q.shift();
+    var ov = document.createElement('div'); ov.id = 'bdg-ov';
+    ov.innerHTML = '<div id="bdg-card"><div class="rays"></div><div class="top">🎉 New badge earned! 🎉</div>'
+      + '<div class="medal"></div><div class="nm"></div><div class="ds"></div><button>Yay! 💖</button></div>';
+    var m = ov.querySelector('.medal'); m.textContent = b.emoji;
+    m.style.background = 'radial-gradient(circle at 35% 30%,#fff 0,' + b.c1 + ' 40%,' + b.c2 + ' 100%)';
+    m.style.boxShadow = '0 0 0 5px ' + b.c2 + ',0 12px 26px rgba(0,0,0,.18)';
+    ov.querySelector('.nm').textContent = b.name; ov.querySelector('.ds').textContent = b.desc;
+    document.body.appendChild(ov); requestAnimationFrame(function(){ ov.style.opacity = '1'; });
+    confetti(); try { window.__andalPlay && window.__andalPlay('fanfare'); } catch (e) {}
+    function close(){ ov.style.opacity = '0'; setTimeout(function(){ ov.remove(); open = false; next(); }, 420); }
+    ov.querySelector('button').onclick = close; ov.onclick = function(e){ if (e.target === ov) close(); };
+    setTimeout(function(){ if (document.body.contains(ov)) close(); }, 12000);
+  }
+  window.__andalBadge = function(list){ list.forEach(function(b){ q.push(b); }); next(); };
+})();
+"""
+
+
+def badge_popup(badges):
+    """badges: list of BADGES rows (id, emoji, name, desc, stat, need, c1, c2)."""
+    lst = [{"emoji": b[1], "name": b[2], "desc": b[3], "c1": b[6], "c2": b[7]} for b in badges]
+    _embed(f"<script>/*{random.random()}*/try{{var P=window.parent;if(!P.__andalBadge){{var s=P.document.createElement('script');"
+           f"s.textContent={json.dumps(BADGE_ENGINE)};P.document.head.appendChild(s);}}"
+           f"setTimeout(function(){{P.__andalBadge({json.dumps(lst, ensure_ascii=False)});}},350);}}catch(e){{}}</script>", 1)
 
 
 # =================================== APP ===================================
@@ -4199,8 +4634,7 @@ if party:
   with fx:
     names = ", ".join(next(f"{b[1]} {b[2]}" for b in BADGES if b[0] == bid) for bid in party)
     st.success(f"🏅 NEW BADGE{'S' if len(party) > 1 else ''}! {names}")
-    st.balloons()
-    play_sound("fanfare")
+    badge_popup([b for bid in party for b in BADGES if b[0] == bid])
 
 # ------------------------------ navigation ------------------------------
 # Big, simple category buttons; each category shows only its own few tabs.
@@ -4208,7 +4642,7 @@ NAV = [
     ("day", "🌈", "My Day", ["🌈 Today"] + (["🧘 Calm corner"] if SHOW_MINDFUL else [])),
     ("learn", "📚", "Learn", ["🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
      + (["🙏 Chalisa"] if SHOW_CHALISA else [])),
-    ("fun", "🎁", "Prizes", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks"]),
+    ("fun", "🎉", "Fun", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "🎨 My characters", "📅 My weeks"]),
     ("friends", "💬", "Chat", ["💬 Chat"] if CHAT_ON else []),
     ("grown", "🔐", "Grown-ups", ["🔐 Grown-ups"]),
 ]
@@ -4234,7 +4668,7 @@ for _cid, _emo, _label, _names in NAV:
         if len(_names) == 1:
             _TABS[_names[0]] = st.container()
         else:
-            _TABS.update(zip(_names, st.tabs(_names)))
+            _TABS.update(zip(_names, st.tabs(_names, key=f"tabs_{_cid}")))
     else:
         for _n in _names:
             _TABS[_n] = _hidden.container()
@@ -4243,6 +4677,7 @@ for _cid, _emo, _label, _names in NAV:
     _TABS["🐰 Bunny & badges"], _TABS["📅 My weeks"], _TABS["🔐 Grown-ups"])
 tab_tamil, tab_chalisa, tab_chat = _TABS.get("🗣️ Tamil words"), _TABS.get("🙏 Chalisa"), _TABS.get("💬 Chat")
 tab_calm = _TABS.get("🧘 Calm corner")
+tab_chars = _TABS["🎨 My characters"]
 
 
 # ================================== TODAY ==================================
@@ -4407,7 +4842,11 @@ with tab_today:
             return n if n.split()[0] in ("Hanuman", "English") else n[0].lower() + n[1:]
         names = ", ".join(f"{t['emoji']} {_low(t['name'])}" for t in required_left[:-1])
         names = (names + " and " if names else "") + f"{required_left[-1]['emoji']} {_low(required_left[-1]['name'])}"
-        st.warning(f"🔒 Do your **must do** tasks first to unlock screen time: {names}")
+        if len(required_left) > 4:
+            st.warning(f"🔒 **{len(required_left)} must-do tasks** to finish before screen time unlocks: "
+                       + "  ".join(t["emoji"] for t in required_left) + "  — they're in the 🦄 Must do list below.")
+        else:
+            st.warning(f"🔒 Do your **must do** tasks first to unlock screen time: {names}")
     elif task_mins >= DAILY_GOAL_MINUTES:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
     else:
@@ -4562,6 +5001,17 @@ with tab_today:
                            f"<b>without looking and without help</b>. Recited so far: <b>{len(wc_today['done'])}/"
                            f"{wc_today['need']}</b>{' ✅' if wc_today['complete'] else ''}. Tick this each day after "
                            "practising; a grown-up approves it (on Sunday, once the parts are recited).")
+    tips.update({
+        "schoolnotes": "📝 Open the <b>Notes</b> app, write today's date, and use your Apple Pencil (Scribble) to write "
+                       "<b>3 things you learnt at school today</b>. Show a grown-up, then tick this.",
+        "lunchbox": "🍱 As soon as you get home, take your lunch box out of your school bag and put it at the sink.",
+        "bagpack": "🎒 Tick this in the morning if you packed your bag <b>last night before bed</b>: homework book, "
+                   "library book on library day, and anything else you need for today.",
+        "paati": "👵🏽 Ask Paati for 10–12 minutes of maths. Work it out <b>on paper</b>, then show Paati your page.",
+        "mindful": "🫧 Do one easy calm activity: the breathing bubble, a feelings check-in or your gratitude jar in the "
+                   "<b>🧘 Calm corner</b> (in 🌈 My Day).",
+        "comb": "💇‍♀️ Comb your hair nicely, all the way through. Ask a grown-up to help with tangles.",
+    })
     for sec_id, sec_title in SECTIONS:
         sec_tasks = [t for t in TASKS_TODAY
                      if ("must" if t["id"] in REQ_TODAY else t.get("section", "learn")) == sec_id]
@@ -5875,7 +6325,7 @@ with tab_weeks:
     head = "".join(f"<th>{d_.strftime('%a')}<br>{d_.day}</th>" for d_ in days14)
     rows = ""
     for t in TASKS:
-        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else ('⏳' if t['id'] in ticked_on(data, d_) else '·')}</td>"
+        cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else ('⏳' if t['id'] in ticked_on(data, d_) else ('·' if task_on(t, d_) else ''))}</td>"
                         for d_ in days14)
         rows += f"<tr><td class='name'>{t['emoji']} {t['id']}</td>{cells}</tr>"
     stars_row = "".join(f"<td>{'⭐' if is_star_day(done_on(data, d_)) else ''}</td>" for d_ in days14)
@@ -6325,6 +6775,130 @@ if tab_chat is not None:
 
 
 
+
+# ================================== MY CHARACTERS ==================================
+def adopt_drawing(val):
+    if val and isinstance(val, dict) and val.get("img") and val.get("n") != st.session_state.get("char_draft_n"):
+        st.session_state.char_draft_n = val["n"]
+        if len(val["img"]) > 400_000:
+            st.session_state.char_note = ("warn", "That drawing is too big to save — try a smaller drawing. 🙏")
+        else:
+            st.session_state.char_draft = val
+
+
+def save_character():
+    draft = st.session_state.get("char_draft")
+    name = " ".join(str(st.session_state.get("ch_name", "")).split())[:24]
+    says = [" ".join(x.split())[:90] for x in str(st.session_state.get("ch_says", "")).splitlines() if x.strip()][:6]
+    if not draft:
+        st.session_state.char_note = ("warn", "First draw your character and press ✅ Use this drawing.")
+        return
+    if not name:
+        st.session_state.char_note = ("warn", "Give your character a name! ✨")
+        return
+    if not says:
+        says = [f"Hi {STUDENT_NAME}! I'm {name}! 👋"]
+    ch = {"id": uuid.uuid4().hex[:8], "name": name, "img": draft["img"], "says": says,
+          "move": st.session_state.get("ch_move", "hop"), "voice": st.session_state.get("ch_voice", "sweet"),
+          "show": True, "made": TODAY_KEY}
+    pos = {}
+
+    def change(chars):
+        if len(chars) >= CHARS_MAX:
+            st.session_state.char_err = f"You can have up to {CHARS_MAX} characters. Delete one to make room. 🙂"
+            return False
+        chars.append(ch)
+        pos["i"] = len(chars) - 1
+    if chars_change(change):
+        st.session_state.char_note = ("ok", f"🎉 {name} is alive! Watch — {name} is coming to say hello!")
+        st.session_state.char_visit = pos["i"]
+        st.session_state.pop("char_draft", None)
+        st.session_state.pad_gen = st.session_state.get("pad_gen", 0) + 1
+        st.session_state.ch_name = ""
+        st.session_state.ch_says = ""
+        st.session_state.sound_next = "chime"
+
+
+def char_toggle(cid):
+    def change(chars):
+        for c in chars:
+            if c["id"] == cid:
+                c["show"] = not c.get("show", True)
+    chars_change(change)
+
+
+def char_delete(cid):
+    def change(chars):
+        chars[:] = [c for c in chars if c["id"] != cid]
+    chars_change(change)
+
+
+def char_visit(i):
+    st.session_state.char_visit = i
+
+
+def set_char_voice():
+    on = bool(st.session_state.get("char_voice_on", True))
+
+    def change(d):
+        d["char_voice"] = on
+    update(change)
+
+
+with tab_chars:
+    st.markdown('<div class="calm-hero" style="background:linear-gradient(135deg,#fff2e0,#ffe6f3 50%,#ecf0ff)">'
+                '<div class="ch-title" style="color:#c2410c">🎨 My Characters</div>'
+                '<div class="ch-sub">Draw a character with your Apple Pencil — it will come alive, fly around and talk to you!'
+                '</div></div>', unsafe_allow_html=True)
+    if err := st.session_state.pop("char_err", None):
+        st.error(err)
+    if note := st.session_state.pop("char_note", None):
+        (st.success if note[0] == "ok" else st.warning)(note[1])
+    _chars = chars_load()
+    with st.container(border=True):
+        st.markdown('<div class="calm-h">✏️ 1. Draw your character</div>'
+                    '<div class="calm-s">Fill the space with a big, colourful drawing. Then press <b>✅ Use this drawing</b>.'
+                    '</div>', unsafe_allow_html=True)
+        adopt_drawing(draw_pad(f"drawpad_{st.session_state.get('pad_gen', 0)}"))
+    with st.container(border=True):
+        st.markdown('<div class="calm-h">💬 2. Bring it to life</div>', unsafe_allow_html=True)
+        _draft = st.session_state.get("char_draft")
+        if _draft:
+            st.markdown(f'<div class="char-prev"><img src="{_draft["img"]}"></div>', unsafe_allow_html=True)
+        else:
+            st.caption("Your drawing will appear here after you press ✅ Use this drawing.")
+        st.text_input("Name", key="ch_name", max_chars=24, placeholder="e.g. Sparkle the Star")
+        st.text_area("Things it says (one per line)", key="ch_says", height=110,
+                     placeholder=f"Hi {STUDENT_NAME}! You're amazing!\nLet's do some maths!\nI love rainbows! 🌈")
+        _c1, _c2 = st.columns(2)
+        _c1.selectbox("How it moves", list(CHAR_MOVES), format_func=CHAR_MOVES.get, key="ch_move")
+        _c2.selectbox("Its voice", list(CHAR_VOICES), format_func=lambda k: CHAR_VOICES[k][0], key="ch_voice", index=1)
+        st.button("✨ Make it come alive!", key="char_save", on_click=save_character, type="primary",
+                  use_container_width=True, disabled=len(_chars) >= CHARS_MAX)
+
+    st.markdown(f"### 🧸 My characters ({len(_chars)}/{CHARS_MAX})")
+    st.checkbox("🔊 My characters talk out loud", key="char_voice_on", value=data.get("char_voice", True),
+                on_change=set_char_voice)
+    if not _chars:
+        st.caption("No characters yet — draw your first one above! 🎨")
+    for _i, _c in enumerate(_chars):
+        with st.container(border=True):
+            _a, _b = st.columns([1, 2])
+            _a.markdown(f'<div class="char-prev small"><img src="{_c["img"]}"></div>', unsafe_allow_html=True)
+            with _b:
+                st.markdown(f'<div class="calm-h">{html_safe(_c["name"])}{"" if _c.get("show", True) else " 🙈"}</div>'
+                            f'<div class="calm-s">{CHAR_MOVES.get(_c.get("move"), "")} · '
+                            f'{CHAR_VOICES.get(_c.get("voice"), CHAR_VOICES["sweet"])[0]} voice</div>'
+                            + "".join(f'<div class="char-say">💬 {html_safe(x)}</div>' for x in _c.get("says", [])),
+                            unsafe_allow_html=True)
+                _x1, _x2, _x3 = st.columns(3)
+                _x1.button("👋 Visit now", key=f"cv_{_c['id']}", on_click=char_visit, args=(_i,), use_container_width=True)
+                _x2.button("🙈 Hide" if _c.get("show", True) else "👀 Show", key=f"ct_{_c['id']}", on_click=char_toggle,
+                           args=(_c["id"],), use_container_width=True)
+                with _x3.popover("🗑️ Delete", use_container_width=True):
+                    st.write(f"Delete **{md_safe(_c['name'])}**?")
+                    st.button("Yes, delete", key=f"cd_{_c['id']}", on_click=char_delete, args=(_c["id"],))
+
 # ================================== CALM CORNER (Andal only) ==================================
 def calm_mood(mid):
     def change(d):
@@ -6347,7 +6921,7 @@ def save_gratitude():
     if update(change):
         st.session_state.gr_note = ("ok", f"🫙 {len(items)} thankful note{'s' if len(items) > 1 else ''} "
                                           "went into your jar! A thankful heart is a happy heart 💖")
-        play_sound("chime")
+        st.session_state.sound_next = "chime"
 
 
 def angel_now():
@@ -6456,6 +7030,18 @@ if tab_calm is not None:
 # ---- hopping friends (purely decorative, never block taps) ----
 if ANIMATED_FRIENDS:
     install_visitors()
+if _snd := st.session_state.pop("sound_next", None):
+    play_sound(_snd)
+# ---- my drawn characters + must-do reminders (kids only) ----
+if not IS_PARENT:
+    _chars_all = chars_load()
+    _chash = hashlib.md5(json.dumps([[c["id"], c["name"], c.get("show", True), c.get("move"), c.get("voice"),
+                                      c.get("says")] for c in _chars_all]).encode()).hexdigest()
+    sync_floaters(_chars_all, build_reminders(today, set(data["days"].get(TODAY_KEY, [])), REQ_TODAY),
+                  data.get("char_voice", True), st.session_state.get("chars_sent") != _chash)
+    st.session_state.chars_sent = _chash
+if (_cv := st.session_state.pop("char_visit", None)) is not None:
+    char_visit_now(_cv)
 # ---- angels with kind words (Andal only) ----
 if ANGELS_ON and not IS_PARENT:
     install_angels([w.format(name=STUDENT_NAME) for w in ANGEL_WORDS])
