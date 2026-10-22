@@ -1184,6 +1184,372 @@ FEELING_HELP = {
               "Walk away and come back when you feel calmer 🚶‍♀️"],
 }
 
+
+# ================================ PLAY: quiz, brain games, surprises ================================
+QUIZ_PER_DAY = 5
+QUIZ_CARROTS = (3, 1, 5, 1)       # 3+ right → 1 carrot; all 5 right → 1 more carrot (once a day)
+
+# (topic, question, correct answer, [wrong answers], fun explanation)
+QUIZ = [
+    # ---- animals ----
+    ("🐾 Animals", "Which animal is the biggest on Earth?", "Blue whale", ["African elephant", "Giraffe", "Great white shark"],
+     "A blue whale can be as long as three buses! 🐋"),
+    ("🐾 Animals", "How many legs does a spider have?", "8", ["6", "10", "4"],
+     "Insects have 6 legs, but spiders have 8 — so spiders are not insects! 🕷️"),
+    ("🐾 Animals", "What is a baby kangaroo called?", "A joey", ["A cub", "A kit", "A calf"],
+     "A joey lives in its mum's pouch for months. 🦘"),
+    ("🐾 Animals", "Which of these birds cannot fly?", "Emu", ["Kookaburra", "Galah", "Magpie"],
+     "Emus can't fly, but they can run really fast — up to about 50 km/h! 🏃"),
+    ("🐾 Animals", "Which mammal can really fly (not just glide)?", "Bat", ["Sugar glider", "Flying squirrel", "Flying fish"],
+     "Sugar gliders and flying squirrels glide, but bats flap their wings and truly fly. (A flying fox is a big bat!) 🦇"),
+    ("🐾 Animals", "What does a caterpillar turn into?", "A butterfly or moth", ["A beetle", "A dragonfly", "A spider"],
+     "It changes inside a chrysalis or cocoon — that's called metamorphosis! 🦋"),
+    ("🐾 Animals", "How many hearts does an octopus have?", "3", ["1", "2", "8"],
+     "Two hearts pump blood to the gills and one pumps it around the body. 🐙"),
+    ("🐾 Animals", "What is a group of fish swimming together called?", "A school", ["A herd", "A flock", "A pack"],
+     "Fish swim in schools — but they don't do homework! 🐟📚"),
+    ("🐾 Animals", "Which Australian mammal lays eggs?", "Platypus", ["Wombat", "Koala", "Possum"],
+     "The platypus and the echidna are the only mammals in the world that lay eggs! 🥚"),
+    ("🐾 Animals", "What do bees make?", "Honey", ["Milk", "Silk", "Jam"],
+     "Bees make honey from the nectar of flowers. 🐝🍯"),
+    ("🐾 Animals", "What is the fastest land animal?", "Cheetah", ["Lion", "Horse", "Kangaroo"],
+     "A cheetah can sprint at about 100 km/h — as fast as a car on the highway! 🐆"),
+    ("🐾 Animals", "How do fish breathe underwater?", "With gills", ["With lungs", "Through their tails", "They hold their breath"],
+     "Gills take oxygen out of the water. 🐠"),
+    ("🐾 Animals", "What is a baby frog called?", "A tadpole", ["A kitten", "A duckling", "A puppy"],
+     "Tadpoles have tails and live in water, then grow legs and become frogs. 🐸"),
+    ("🐾 Animals", "Which Australian animal does cube-shaped poo?", "Wombat", ["Kangaroo", "Koala", "Emu"],
+     "True! Wombats do cube-shaped poo — scientists think it stops it rolling away. 🟫😂"),
+    ("🐾 Animals", "What do koalas mostly eat?", "Gum (eucalyptus) leaves", ["Bananas", "Insects", "Fish"],
+     "Koalas eat eucalyptus leaves and sleep a LOT — up to about 20 hours a day! 🐨"),
+    ("🐾 Animals", "Which animal is called the 'king of the jungle'?", "Lion", ["Tiger", "Elephant", "Gorilla"],
+     "Funny thing — lions actually live in grasslands, not jungles! 🦁"),
+    # ---- space ----
+    ("🚀 Space", "Which planet is closest to the Sun?", "Mercury", ["Venus", "Earth", "Mars"],
+     "Mercury zooms around the Sun in just 88 days. ☀️"),
+    ("🚀 Space", "Which planet is called the Red Planet?", "Mars", ["Jupiter", "Venus", "Saturn"],
+     "Mars looks red because of rusty dust on its ground. 🔴"),
+    ("🚀 Space", "What is the biggest planet in our solar system?", "Jupiter", ["Saturn", "Earth", "Neptune"],
+     "More than 1,000 Earths could fit inside Jupiter! 🪐"),
+    ("🚀 Space", "Which planet has the brightest, most famous rings?", "Saturn", ["Mars", "Mercury", "Venus"],
+     "Saturn's rings are made of ice and rock. 💍"),
+    ("🚀 Space", "What is the Sun?", "A star", ["A planet", "A moon", "A comet"],
+     "The Sun is our closest star — the other stars are just much further away. ⭐"),
+    ("🚀 Space", "About how long does Earth take to go once around the Sun?", "365 days", ["1 day", "30 days", "100 years"],
+     "That's one year — so every birthday you've been around the Sun once more! 🎂"),
+    ("🚀 Space", "Who was the first person to walk on the Moon?", "Neil Armstrong", ["Buzz Aldrin", "Yuri Gagarin", "Kalpana Chawla"],
+     "Neil Armstrong stepped onto the Moon in 1969. 🌕"),
+    ("🚀 Space", "How many planets are in our solar system?", "8", ["9", "7", "10"],
+     "Pluto used to be counted, but now it's called a dwarf planet. 🪐"),
+    ("🚀 Space", "Why does the Moon shine at night?", "Sunlight bounces off it", ["It's on fire", "It has lights", "It's made of glowing rocks"],
+     "The Moon has no light of its own — it reflects sunlight like a mirror. 🌙"),
+    ("🚀 Space", "What do we call a group of stars that makes a picture in the sky?", "A constellation", ["A galaxy", "A comet", "An orbit"],
+     "The Southern Cross is a famous constellation — it's even on Australia's flag! ✨"),
+    ("🚀 Space", "Which is the hottest planet?", "Venus", ["Mercury", "Mars", "Jupiter"],
+     "Mercury is closer to the Sun, but Venus's thick clouds trap the heat like a blanket. 🔥"),
+    ("🚀 Space", "What is the name of the galaxy we live in?", "The Milky Way", ["Andromeda", "The Sombrero", "The Starburst"],
+     "Our galaxy has hundreds of billions of stars. 🌌"),
+    # ---- Australia & the world ----
+    ("🌏 World", "What is the capital city of Australia?", "Canberra", ["Sydney", "Melbourne", "Brisbane"],
+     "Lots of people guess Sydney — but it's Canberra! 🏛️"),
+    ("🌏 World", "What is the capital city of Queensland?", "Brisbane", ["Cairns", "Gold Coast", "Townsville"],
+     "Brisbane is the home of the Brisbane River and the Story Bridge. 🌉"),
+    ("🌏 World", "What is the name of the giant coral reef off Queensland?", "The Great Barrier Reef", ["Ningaloo Reef", "Rainbow Reef", "Coral Castle"],
+     "It's the biggest coral reef system in the world — you can see it from space! 🐠"),
+    ("🌏 World", "Which is the biggest ocean?", "Pacific Ocean", ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean"],
+     "The Pacific is bigger than all the land on Earth put together! 🌊"),
+    ("🌏 World", "How many continents are there?", "7", ["5", "6", "9"],
+     "Africa, Antarctica, Asia, Australia (Oceania), Europe, North America and South America. 🗺️"),
+    ("🌏 World", "What is the tallest mountain in the world?", "Mount Everest", ["Mount Kosciuszko", "Mount Fuji", "Kilimanjaro"],
+     "Everest is about 8,849 metres tall. Australia's tallest, Kosciuszko, is about 2,228 metres. 🏔️"),
+    ("🌏 World", "What is the capital of India?", "New Delhi", ["Mumbai", "Chennai", "Kolkata"],
+     "New Delhi is India's capital city. 🇮🇳"),
+    ("🌏 World", "Which country is shaped like a boot?", "Italy", ["France", "Spain", "Japan"],
+     "Look at a map — Italy looks like a boot kicking a ball (Sicily)! 👢"),
+    ("🌏 World", "Which famous Sydney building looks like sails?", "Sydney Opera House", ["Big Ben", "Eiffel Tower", "Taj Mahal"],
+     "The Opera House roof is covered with over a million tiles. 🎭"),
+    ("🌏 World", "In which country is the Taj Mahal?", "India", ["Egypt", "China", "Italy"],
+     "The Taj Mahal is in Agra and is made of white marble. 🕌"),
+    ("🌏 World", "What colours are on the Aboriginal flag?", "Black, red and yellow", ["Blue, white and red", "Green and gold", "Red, white and green"],
+     "Black for the people, red for the earth and yellow for the Sun. 🖤❤️💛"),
+    ("🌏 World", "Which animal is on Australia's coat of arms with the kangaroo?", "Emu", ["Koala", "Platypus", "Kookaburra"],
+     "Kangaroos and emus can't easily walk backwards — they only go forward! ➡️"),
+    ("🌏 World", "What language do most people speak in Brazil?", "Portuguese", ["Spanish", "Brazilian", "French"],
+     "Brazil is the biggest Portuguese-speaking country in the world. 🇧🇷"),
+    ("🌏 World", "What is Australia's national flower?", "Golden wattle", ["Rose", "Waratah", "Lotus"],
+     "The golden wattle is fluffy and yellow. (The waratah is New South Wales' flower.) 🌼"),
+    # ---- science ----
+    ("🔬 Science", "What do plants need from the sky to make their food?", "Sunlight", ["Moonlight", "Rainbows", "Darkness"],
+     "Plants use sunlight, water and air to make food — that's called photosynthesis! 🌱"),
+    ("🔬 Science", "Which gas do we need to breathe in to stay alive?", "Oxygen", ["Carbon dioxide", "Helium", "Steam"],
+     "Trees and plants give out oxygen — thank you, trees! 🌳"),
+    ("🔬 Science", "At what temperature does water freeze into ice?", "0 °C", ["10 °C", "50 °C", "100 °C"],
+     "Below 0 °C, water turns solid. 🧊"),
+    ("🔬 Science", "At what temperature does water boil?", "100 °C", ["0 °C", "50 °C", "200 °C"],
+     "At 100 °C water turns into steam — that's why kettles whistle! ♨️"),
+    ("🔬 Science", "What pulls things down to the ground when you drop them?", "Gravity", ["Magnetism", "Wind", "Electricity"],
+     "Gravity keeps our feet on the ground and the Moon going around Earth. 🍎"),
+    ("🔬 Science", "Which of these will a magnet pick up?", "An iron nail", ["A wooden spoon", "A plastic cup", "A glass marble"],
+     "Magnets attract iron and steel. 🧲"),
+    ("🔬 Science", "What are the three states of matter?", "Solid, liquid and gas", ["Hot, warm and cold", "Big, medium and small", "Rock, paper and scissors"],
+     "Ice is a solid, water is a liquid and steam is a gas! 💧"),
+    ("🔬 Science", "What colour do you get when you mix blue and yellow?", "Green", ["Purple", "Orange", "Pink"],
+     "Blue + yellow = green. Try it with paints! 🎨"),
+    ("🔬 Science", "What colour do you get when you mix red and yellow?", "Orange", ["Green", "Purple", "Brown"],
+     "Red + yellow = orange — like a sunset! 🌅"),
+    ("🔬 Science", "How many colours are in a rainbow?", "7", ["5", "10", "3"],
+     "Red, orange, yellow, green, blue, indigo, violet. 🌈"),
+    ("🔬 Science", "What is the hardest natural material on Earth?", "Diamond", ["Gold", "Iron", "Glass"],
+     "Diamonds are so hard they're used to cut other things! 💎"),
+    ("🔬 Science", "What does a thermometer measure?", "Temperature", ["Weight", "Height", "Time"],
+     "It tells you how hot or cold something is. 🌡️"),
+    ("🔬 Science", "What makes the sound of thunder?", "Lightning heating the air super fast", ["Clouds bumping together", "Giants bowling", "Rain hitting the ground"],
+     "Lightning heats the air so fast it goes BOOM! Count the seconds between flash and boom to see how far away it is. ⚡"),
+    ("🔬 Science", "How do bees help flowers?", "They carry pollen so flowers can make seeds", ["They water them", "They paint them", "They keep them warm"],
+     "That's called pollination — bees are super important helpers! 🌸"),
+    # ---- my body ----
+    ("💪 My body", "About how many bones are in a grown-up's body?", "206", ["106", "500", "52"],
+     "Babies have about 300 — some join together as they grow! 🦴"),
+    ("💪 My body", "Which organ pumps blood around your body?", "Heart", ["Lungs", "Brain", "Stomach"],
+     "Your heart beats about 100,000 times every day! ❤️"),
+    ("💪 My body", "Which is the biggest organ of your body?", "Skin", ["Liver", "Heart", "Brain"],
+     "Your skin covers and protects your whole body. 🤗"),
+    ("💪 My body", "Which part of your body helps you breathe?", "Lungs", ["Kidneys", "Ears", "Knees"],
+     "Your lungs are like two balloons that fill with air. 🎈"),
+    ("💪 My body", "How many baby teeth do children usually have?", "20", ["10", "32", "50"],
+     "Grown-ups usually have 32 teeth. 🦷"),
+    ("💪 My body", "How much sleep do kids your age need each night?", "About 9 to 12 hours", ["About 4 hours", "About 6 hours", "About 15 hours"],
+     "Sleep helps your brain remember what you learnt today! 😴"),
+    ("💪 My body", "Which food has lots of vitamin C?", "Oranges", ["Lollies", "Chips", "White bread"],
+     "Vitamin C helps your body stay healthy and heal. 🍊"),
+    ("💪 My body", "What does your brain do?", "Controls your thinking and your whole body", ["Pumps blood", "Digests food", "Makes hair grow"],
+     "Your brain is the boss of your body! 🧠"),
+    # ---- number fun ----
+    ("🔢 Numbers", "What is 7 × 8?", "56", ["54", "48", "64"], "5, 6, 7, 8 → 56 = 7 × 8. A handy trick! ✨"),
+    ("🔢 Numbers", "How many sides does a hexagon have?", "6", ["5", "8", "7"], "Bees build their honeycomb out of hexagons! 🐝"),
+    ("🔢 Numbers", "What is half of 150?", "75", ["70", "50", "80"], "Half of 100 is 50, half of 50 is 25 — 50 + 25 = 75. ✂️"),
+    ("🔢 Numbers", "How many minutes are in 2 hours?", "120", ["100", "60", "200"], "60 minutes + 60 minutes = 120 minutes. ⏰"),
+    ("🔢 Numbers", "What is 9 × 9?", "81", ["72", "99", "90"], "9 × 9 = 81. The digits 8 + 1 add up to 9! 🪄"),
+    ("🔢 Numbers", "Which of these is a prime number?", "13", ["15", "21", "27"], "A prime number can only be divided by 1 and itself. 🔍"),
+    ("🔢 Numbers", "How many days are in a leap year?", "366", ["365", "364", "360"], "Leap years add 29 February — every 4 years! 📅"),
+    ("🔢 Numbers", "What is 1,000 − 1?", "999", ["900", "1,001", "990"], "Just one less than a thousand! 🔢"),
+    ("🔢 Numbers", "How many centimetres are in 1 metre?", "100", ["10", "1,000", "12"], "'Centi' means one hundredth. 📏"),
+    ("🔢 Numbers", "What is a quarter of 100?", "25", ["20", "50", "40"], "Four quarters make a whole: 25 + 25 + 25 + 25 = 100. 🍕"),
+    ("🔢 Numbers", "A triangle and a square together have how many sides?", "7", ["6", "8", "5"], "3 + 4 = 7. 🔺🟦"),
+    ("🔢 Numbers", "If today is Monday, what day will it be in 3 days?", "Thursday", ["Wednesday", "Friday", "Sunday"], "Tuesday, Wednesday, Thursday! 📆"),
+    ("🔢 Numbers", "How many legs do 3 cats have altogether?", "12", ["9", "6", "15"], "4 + 4 + 4 = 12, or 3 × 4 = 12. 🐱🐱🐱"),
+    ("🔢 Numbers", "What comes next: 2, 4, 8, 16, …?", "32", ["18", "24", "20"], "Each number doubles! 16 + 16 = 32. 🚀"),
+    ("🔢 Numbers", "How many seconds are in a minute?", "60", ["100", "30", "24"], "Count 60 seconds — one Mississippi, two Mississippi… ⏱️"),
+    ("🔢 Numbers", "What is 12 ÷ 4?", "3", ["4", "2", "6"], "12 shared between 4 friends is 3 each. 🍪"),
+    # ---- words ----
+    ("📚 Words", "What is the opposite of 'ancient'?", "Modern", ["Old", "Huge", "Quiet"], "Ancient means very, very old. 🏺"),
+    ("📚 Words", "Which word is a noun (a naming word)?", "Elephant", ["Quickly", "Run", "Happy"], "Nouns name people, places, animals and things. 🐘"),
+    ("📚 Words", "Which word is a verb (a doing word)?", "Jump", ["Blue", "Table", "Soft"], "Verbs are actions — jump, run, sing, dance! 🤸"),
+    ("📚 Words", "Which word is an adjective (a describing word)?", "Sparkly", ["Dance", "Pencil", "Slowly"], "Adjectives describe nouns: a sparkly star! ✨"),
+    ("📚 Words", "What is the plural of 'mouse'?", "Mice", ["Mouses", "Meese", "Mousies"], "One mouse, two mice. 🐭🐭"),
+    ("📚 Words", "Which word means 'very happy'?", "Delighted", ["Grumpy", "Sleepy", "Nervous"], "Delighted, joyful, thrilled — lovely happy words! 😄"),
+    ("📚 Words", "Which word is spelled correctly?", "Because", ["Becuase", "Becos", "Beacause"],
+     "Trick: Big Elephants Can Always Understand Small Elephants = BECAUSE! 🐘"),
+    ("📚 Words", "Which punctuation mark goes at the end of a question?", "?", ["!", ".", ","], "Questions end with a question mark. ❓"),
+    ("📚 Words", "Which word means the same as 'big'?", "Enormous", ["Tiny", "Narrow", "Short"], "Words that mean the same are called synonyms. 🦕"),
+    ("📚 Words", "Which word rhymes with 'light'?", "Kite", ["Late", "Lift", "Lot"], "Light, kite, bright, night! 🪁"),
+    ("📚 Words", "Fill the gap: 'The cat ___ on the mat yesterday.'", "sat", ["sits", "sitting", "sit"], "'Yesterday' means past tense — sat! 🐈"),
+    ("📚 Words", "What do we call words that sound like the noise they describe, like 'buzz' and 'splash'?", "Onomatopoeia",
+     ["Simile", "Rhyme", "Noun"], "On-o-mat-o-poe-ia — try saying it! BOOM! CRASH! 💥"),
+    ("📚 Words", "Which is a compound word (two words joined together)?", "Sunflower", ["Happy", "Running", "Purple"], "Sun + flower = sunflower! 🌻"),
+    # ---- fun & culture ----
+    ("🎉 Fun", "How many players does a soccer team have on the field?", "11", ["9", "7", "15"], "Including the goalkeeper! ⚽"),
+    ("🎉 Fun", "In cricket, how many balls are in one over?", "6", ["5", "8", "10"], "Six balls, then a new bowler. 🏏"),
+    ("🎉 Fun", "Which instrument has black and white keys?", "Piano", ["Violin", "Drum", "Flute"], "A full piano has 88 keys! 🎹"),
+    ("🎉 Fun", "Who painted the Mona Lisa?", "Leonardo da Vinci", ["Picasso", "Van Gogh", "Michelangelo"], "Leonardo was also an inventor and scientist! 🖼️"),
+    ("🎉 Fun", "How many strings does a violin have?", "4", ["6", "3", "8"], "A guitar usually has 6. 🎻"),
+    ("🎉 Fun", "Which festival is called the festival of lights?", "Diwali", ["Easter", "Halloween", "Anzac Day"], "Families light diyas (little lamps) for Diwali. 🪔"),
+    ("🎉 Fun", "Which sport uses a shuttlecock?", "Badminton", ["Tennis", "Netball", "Golf"], "Shuttlecocks are often made with real feathers! 🏸"),
+    ("🎉 Fun", "Who wrote 'Charlie and the Chocolate Factory'?", "Roald Dahl", ["Enid Blyton", "Dr Seuss", "J.K. Rowling"], "Roald Dahl also wrote Matilda and The BFG. 🍫"),
+    ("🎉 Fun", "How many colours are on a traffic light?", "3", ["2", "4", "5"], "Red means stop, yellow means slow, green means go! 🚦"),
+]
+QUIZ_TOPICS = sorted({q[0] for q in QUIZ})
+
+RIDDLES = [
+    ("What has hands but can't clap?", "A clock ⏰"), ("What has to be broken before you can use it?", "An egg 🥚"),
+    ("What has a neck but no head?", "A bottle 🍾"), ("What gets wetter the more it dries?", "A towel 🛁"),
+    ("What has lots of keys but can't open a single door?", "A piano 🎹"),
+    ("I'm tall when I'm young and short when I'm old. What am I?", "A candle 🕯️"),
+    ("What can you catch but not throw?", "A cold 🤧"), ("What goes up but never comes down?", "Your age 🎂"),
+    ("What has one eye but can't see?", "A needle 🪡"), ("What has legs but can't walk?", "A table 🪑"),
+    ("What runs but never walks?", "Water — like a river! 🏞️"), ("What is full of holes but still holds water?", "A sponge 🧽"),
+    ("What can travel around the world while staying in a corner?", "A stamp 📮"),
+    ("What has a thumb and four fingers but isn't alive?", "A glove 🧤"), ("What comes down but never goes up?", "Rain 🌧️"),
+    ("What belongs to you, but other people use it more than you?", "Your name 📛"),
+    ("What has a head and a tail but no body?", "A coin 🪙"),
+    ("The more you take, the more you leave behind. What are they?", "Footsteps 👣"),
+    ("What has words but never speaks?", "A book 📖"), ("Which month has 28 days?", "All of them! 📅"),
+    ("What can fill a room but takes up no space?", "Light 💡"), ("What has teeth but can't bite?", "A comb 💇‍♀️"),
+    ("Where does today come before yesterday?", "In the dictionary 📚"),
+    ("What kind of band never plays music?", "A rubber band 🪢"), ("Which building has the most stories?", "A library 📚"),
+    ("What has four wheels and flies?", "A garbage truck — it has flies! 🚛🪰"),
+    ("What has branches but no fruit, trunk or leaves?", "A bank 🏦"),
+    ("What can you hold in your right hand but never in your left hand?", "Your left elbow! 💪"),
+    ("Which word is always spelled wrong in the dictionary?", "\"Wrong\" 😄"),
+    ("What goes through towns and over hills but never moves?", "A road 🛣️"),
+    ("What starts with T, ends with T and has T in it?", "A teapot 🫖"), ("Why was 6 afraid of 7?", "Because 7 ate (8) 9! 😱"),
+    ("What has an eye in the middle of it but never sees? (Hint: weather!)", "A storm 🌀"),
+    ("What do you call a bear with no teeth?", "A gummy bear! 🐻"),
+]
+
+# (emojis, answer shown, accepted answers, hint)
+EMOJI_PUZZLES = [
+    ("☀️ 🌻", "Sunflower", ["sunflower"], "A tall yellow flower"),
+    ("⭐ 🐟", "Starfish", ["starfish", "seastar"], "It lives in the sea and has 5 arms"),
+    ("🌧️ 🎀", "Rainbow", ["rainbow"], "Rain + bow"),
+    ("🧈 🪰", "Butterfly", ["butterfly"], "Butter + fly"),
+    ("🏠 ⛵", "Houseboat", ["houseboat"], "A home that floats"),
+    ("☀️ 👓", "Sunglasses", ["sunglasses", "sunnies"], "You wear them at the beach"),
+    ("🌙 💡", "Moonlight", ["moonlight"], "It shines at night"),
+    ("❄️ 👨", "Snowman", ["snowman"], "He melts in the sun"),
+    ("🦶 ⚽", "Football", ["football", "soccer"], "Foot + ball"),
+    ("🐶 🏠", "Doghouse", ["doghouse", "kennel"], "Where a puppy sleeps outside"),
+    ("📚 🐛", "Bookworm", ["bookworm"], "Someone who LOVES reading"),
+    ("🌊 🐴", "Seahorse", ["seahorse"], "A fish that looks like a horse"),
+    ("🐌 📬", "Snail mail", ["snailmail"], "A slow way to send letters"),
+    ("🍯 🌙", "Honeymoon", ["honeymoon"], "A holiday after a wedding"),
+    ("🔑 🕳️", "Keyhole", ["keyhole"], "Where a key goes"),
+    ("🦷 🖌️", "Toothbrush", ["toothbrush"], "Use it twice a day!"),
+    ("🍵 🥄", "Teaspoon", ["teaspoon"], "A little spoon"),
+    ("🐟 🥣", "Fishbowl", ["fishbowl", "fishtank"], "A goldfish lives in it"),
+    ("🌳 🏠", "Treehouse", ["treehouse"], "A house up high"),
+    ("🧊 🍦", "Ice cream", ["icecream"], "A cold, sweet treat"),
+    ("🐱 🐟", "Catfish", ["catfish"], "A fish with whiskers"),
+    ("🌧️ 🧥", "Raincoat", ["raincoat"], "Keeps you dry"),
+    ("💧 🍉", "Watermelon", ["watermelon"], "A big juicy summer fruit"),
+    ("🐄 👦", "Cowboy", ["cowboy", "cowgirl"], "He rides a horse and wears a big hat"),
+    ("🐴 👞", "Horseshoe", ["horseshoe"], "Lucky U-shape"),
+    ("🥜 🧈", "Peanut butter", ["peanutbutter"], "Yummy on toast"),
+    ("👑 🦁", "The Lion King", ["thelionking", "lionking"], "A famous movie about Simba"),
+    ("❄️ 👸", "Frozen", ["frozen"], "Let it gooo… 🎶"),
+    ("🐠 🔍", "Finding Nemo", ["findingnemo"], "A dad fish looks for his son"),
+    ("🕷️ 🦸", "Spider-Man", ["spiderman"], "A superhero who climbs walls"),
+    ("🍫 🏭", "Chocolate factory", ["chocolatefactory", "charlieandthechocolatefactory"], "Willy Wonka's work place"),
+    ("⭐ 🌟 ✨ 👀", "Stargazing", ["stargazing"], "Looking up at the night sky"),
+    ("🦘 🏈", "Footy / Kangaroos", ["footy", "kangaroos", "afl", "rugby"], "A sport Australians love (think team names!)"),
+]
+
+WOULD_YOU_RATHER = [
+    ("🐦 Fly like a bird", "🐬 Swim like a dolphin"), ("🐉 Have a pet dragon", "🦄 Have a pet unicorn"),
+    ("🐾 Talk to animals", "🌍 Speak every language"), ("🌳 Live in a treehouse", "🏰 Live in a castle"),
+    ("🍦 Eat only ice cream for a day", "🍕 Eat only pizza for a day"), ("🐜 Be as small as an ant", "🦕 Be as big as a giant"),
+    ("🌕 Go to the Moon", "🌊 Go to the bottom of the ocean"), ("👻 Be invisible", "🦸 Be able to fly"),
+    ("🖌️ A paintbrush that makes drawings real", "📖 A book that takes you into stories"),
+    ("🎤 Sing instead of talk", "💃 Dance instead of walk"), ("🌴 Explore a jungle", "🐧 Explore Antarctica"),
+    ("🤖 A robot that does your chores", "🧑‍🏫 A robot that teaches you anything"),
+    ("🌈 Have rainbow hair", "✨ Have glow-in-the-dark shoes"), ("🐢 Ride a giant tortoise", "🦋 Ride a giant butterfly"),
+    ("🦖 Meet a dinosaur", "👽 Meet a friendly alien"), ("🏖️ A beach holiday", "⛄ A snow holiday"),
+    ("🫧 Breathe underwater", "🌙 See in the dark"), ("🛝 A slide from your bedroom to the kitchen", "🤸 A trampoline floor"),
+    ("🐘 A pocket-sized elephant", "🐹 A giant hamster"), ("✍️ Write a book", "🎬 Make a movie"),
+    ("🪽 Grow wings", "🧜‍♀️ Grow a mermaid tail"), ("⏪ Time-travel to the past", "⏩ Time-travel to the future"),
+    ("📚 A library at home", "🏊 A swimming pool at home"), ("⛵ Live on a boat", "🎈 Live in a hot-air balloon"),
+    ("🎂 Have your birthday every month", "🎄 Have a festival every week"), ("👅 Taste colours", "👃 Smell music"),
+    ("🧙 Be a wizard", "🧚 Be a fairy"), ("🦁 Roar like a lion", "🦜 Copy any sound like a parrot"),
+    ("🍫 A chocolate river", "🍭 A lolly forest"), ("🚂 Travel by magic train", "🧹 Travel by flying broom"),
+]
+
+CREATIVE = [
+    "🦄 Invent a brand-new animal by mixing two animals. Draw it and give it a name!",
+    "🚩 Design a flag for your family. What colours and pictures will you use, and why?",
+    "🗼 Build the tallest tower you can from things in your room (ask first!). Measure it!",
+    "💃 Make up a new dance move, give it a name, and teach it to someone at home.",
+    "🍝 Write a 4-line poem about your favourite food.",
+    "🤝 Invent a secret handshake with someone in your family.",
+    "🏡 Draw your dream house — with at least one SILLY room!",
+    "✈️ Make a paper aeroplane. Change the wings and see if it flies further.",
+    "🍨 Invent a new ice-cream flavour and draw a poster to sell it.",
+    "🎙️ Be a news reporter and report on what happened at dinner tonight.",
+    "🗯️ Make a 4-box comic about a superhero bunny.",
+    "🤖 Design a robot that helps people. What can it do? Draw its buttons!",
+    "🪥 Make up a song about brushing your teeth.",
+    "🗺️ Draw a treasure map of a secret island. Put an X where the treasure is!",
+    "⭕ Find 5 things in your house that are circles. Then 5 that are rectangles!",
+    "🐒 Act out an animal without making a sound. Can someone guess it?",
+    "🎲 Invent a board game and write 3 rules for it.",
+    "💌 Write a thank-you note to someone who helps you.",
+    "🎟️ Make a 'kindness coupon' to give someone at home (like 'one free hug').",
+    "🪐 Invent a new planet: what's its name, what colour is it, and who lives there?",
+    "🧦 Make a puppet from a sock or paper bag and give it a funny voice.",
+    "🦸‍♀️ Draw yourself as a superhero. What's your superpower and your costume?",
+    "🔎 Write the first line of a mystery story. Make it exciting!",
+    "👅 Make up a tongue twister using your own name.",
+    "🧺 Plan a pretend picnic menu with 5 foods — one must be silly!",
+    "🏕️ Build a cosy fort with pillows and blankets (ask a grown-up first!).",
+    "👗 Create a costume using only things from your wardrobe.",
+    "🍂 Make a nature picture using leaves, flowers and sticks you find outside.",
+    "📖 Invent a new word and write what it means.",
+    "🤗 Make a 'How to be a good friend' guide with 5 tips.",
+    "🪟 Draw the view from your window — but add something magical.",
+    "🐜 Write a story about the day you shrank to the size of an ant.",
+    "📮 Design a postage stamp about something you love about Australia.",
+    "❓ Make a 5-question quiz and quiz your grown-ups!",
+    "🥁 Make up a rhythm using only claps, clicks and stamps.",
+    "🌱 Plant a seed in a cup and draw it every day to see it grow.",
+    "🎨 Draw something using only circles and triangles.",
+    "🧁 Help make a snack and write the recipe like a chef.",
+]
+
+TONGUE_TWISTERS = [
+    "She sells seashells by the seashore. 🐚", "Red lorry, yellow lorry, red lorry, yellow lorry. 🚚",
+    "Peter Piper picked a peck of pickled peppers. 🌶️",
+    "How much wood would a woodchuck chuck if a woodchuck could chuck wood? 🪵",
+    "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair. 🐻", "Six slippery snails slid slowly seaward. 🐌",
+    "I scream, you scream, we all scream for ice cream! 🍦", "Toy boat, toy boat, toy boat — say it 5 times fast! ⛵",
+    "Unique New York, unique New York, unique New York. 🗽", "Fred fed Ted bread, and Ted fed Fred bread. 🍞",
+    "A big black bug bit a big black bear. 🐞", "Silly Sally swiftly shooed seven silly sheep. 🐑",
+    "Kangaroos keep kicking crunchy carrots. 🦘🥕", "Busy bunnies bounce on bouncy blue balloons. 🐰🎈",
+    "Three free throws, three free throws. 🏀", "Freshly fried flying fish. 🐟",
+]
+
+SURPRISE_COMPLIMENTS = [
+    "You are one of a kind — there is nobody else in the world exactly like you! 🌟",
+    "Your laugh makes people around you happy! 😄", "You are getting smarter every single day! 🧠",
+    "You make your family so proud! 💖", "You are a fantastic friend! 🤝", "Your ideas are amazing — keep sharing them! 💡",
+]
+
+# new free colour themes
+THEMES[5:5] = [
+    {"id": "mermaid", "name": "🧜‍♀️ Mermaid Lagoon", "need": 0, "free": True,
+     "icons": [("🧜‍♀️", "mermaid"), ("🐚", "shell"), ("🐠", "fish"), ("🫧", "bubbles")]},
+    {"id": "dino", "name": "🦖 Dino Jungle", "need": 0, "free": True,
+     "icons": [("🦖", "trex"), ("🌴", "palm"), ("🦕", "dino"), ("🌋", "volcano")]},
+    {"id": "lollipop", "name": "🍭 Lollipop Land", "need": 0, "free": True,
+     "icons": [("🍭", "lolly"), ("🧁", "cupcake"), ("🍩", "donut"), ("🍬", "candy")]},
+    {"id": "sunset", "name": "🌅 Sunset Beach", "need": 0, "free": True,
+     "icons": [("🌅", "sunset"), ("🏄‍♀️", "surf"), ("🦀", "crab"), ("🌴", "palm")]},
+]
+
+BADGES += [
+    ("quiz_whiz", "🧠", "Quiz Whiz", "Finish the daily quiz on 10 days", "quiz_days", 10, "#e6f0ff", "#5b8cff"),
+    ("brainiac", "🎓", "Brainiac", "Get 50 quiz answers right", "quiz_right", 50, "#f3e6ff", "#a35bff"),
+    ("perfect_five", "🏅", "Perfect Five", "Get 5 out of 5 in a daily quiz", "quiz_perfect", 1, "#fff4d6", "#ffb300"),
+]
+
+for _k, _v in {
+    "mermaid": "Why did the mermaid wear seashells? Because she grew out of her B-shells! 🐚",
+    "shell": "What did the sea say to the sand? Nothing — it just waved! 🌊",
+    "fish": "What do you call a fish with no eyes? A fsh! 🐟",
+    "bubbles": "Bubbles are just air wearing a shiny raincoat! 🫧",
+    "trex": "Why can't a T-rex clap? Because it's ex-tinct… and its arms are too short! 🦖",
+    "palm": "Why are palm trees great friends? They always give you a high five! 🌴",
+    "dino": "What do you call a sleeping dinosaur? A dino-snore! 🦕",
+    "volcano": "What did the volcano say to its sweetheart? I lava you! 🌋",
+    "lolly": "Why did the lollipop go to school? To become a smartie! 🍭",
+    "cupcake": "What did the cupcake say to the frosting? I'd be muffin without you! 🧁",
+    "donut": "Why did the donut go to the dentist? It needed a filling! 🍩",
+    "candy": "What's a lolly's favourite dance? The candy shuffle! 🍬",
+    "sunset": "The sun is going to bed — it's had a very long day of shining! 🌅",
+    "surf": "Why are surfers so cool? Because they're always making waves! 🏄‍♀️",
+    "crab": "Why don't crabs share? Because they're shellfish! 🦀",
+}.items():
+    ICON_JOKES.setdefault(_k, [])
+    ICON_JOKES[_k] = list(ICON_JOKES[_k]) + [_v]
+
 # ============================ ENGLISH → TAMIL WORDS ============================
 # Spoken Tamil written in English letters. Format: "english": ("tamil", "optional note")
 # Grown-ups can add more words from the Grown-ups tab without editing this file.
@@ -2073,6 +2439,7 @@ html, body, .stApp, .stApp p, .stApp li, .stApp label, .stApp span, .stApp div, 
 .hero { border-width: 0 !important; background: rgba(255,255,255,.92) !important;
   box-shadow: 0 2px 0 rgba(255,255,255,.9) inset, 0 14px 40px rgba(120,60,160,.16) !important; }
 .hero .title { font-size: 2.9rem; letter-spacing: .01em; }
+@media (min-width: 561px) { .hero { padding-left: 64px !important; padding-right: 64px !important; } }
 .balance { font-size: 1.45rem; padding: 10px 24px; box-shadow: 0 8px 22px rgba(155,107,255,.42); }
 [data-testid="stVerticalBlockBorderWrapper"] { background: rgba(255,255,255,.93) !important;
   box-shadow: 0 10px 30px rgba(120,60,160,.10); border-width: 2px !important; }
@@ -2089,23 +2456,23 @@ h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
 [data-testid="stExpander"] summary p { font-weight: 600; font-size: 1.05rem; }
 
 /* ---- big category buttons ---- */
-.st-key-navbar { position: sticky; top: 0; z-index: 50; padding: 8px 6px; margin: 4px 0 6px; border-radius: 24px;
+[class*="st-key-navbar"] { position: sticky; top: 0; z-index: 50; padding: 8px 6px; margin: 4px 0 6px; border-radius: 24px;
   background: rgba(255,255,255,.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 8px 26px rgba(120,60,160,.14); }
-.st-key-navbar [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 6px !important; }
-.st-key-navbar [data-testid="stColumn"] { min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
-.st-key-navbar button { min-height: 62px !important; border-radius: 20px !important; padding: 4px 6px !important;
+[class*="st-key-navbar"] [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 6px !important; }
+[class*="st-key-navbar"] [data-testid="stColumn"] { min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
+[class*="st-key-navbar"] button { min-height: 62px !important; border-radius: 20px !important; padding: 4px 6px !important;
   background: #f7f1ff !important; border: 2px solid transparent !important; color: #4a2a63 !important; }
-.st-key-navbar button p { font-size: 1.08rem !important; font-weight: 700 !important; line-height: 1.15; white-space: normal; }
-.st-key-navbar button[kind="primary"] { background: linear-gradient(135deg,#ff5fa2,#9b6bff) !important; color: #fff !important;
+[class*="st-key-navbar"] button p { font-size: 1.08rem !important; font-weight: 700 !important; line-height: 1.15; white-space: normal; }
+[class*="st-key-navbar"] button[kind="primary"] { background: linear-gradient(135deg,#ff5fa2,#9b6bff) !important; color: #fff !important;
   box-shadow: 0 8px 18px rgba(155,107,255,.40); }
-.st-key-navbar button[kind="primary"] p { color: #fff !important; }
+[class*="st-key-navbar"] button[kind="primary"] p { color: #fff !important; }
 .st-key-navhidden { display: none !important; }
 .st-key-call_angel button { background: linear-gradient(90deg,#ffe9a8,#ffd1e8) !important; border: 2px solid #ffd36b !important;
   color: #5a3d00 !important; }
 .st-key-call_angel button p { font-size: 1.12rem !important; font-weight: 700 !important; }
-@media (max-width: 560px) { .st-key-navbar button p { font-size: .86rem !important; }
-  .st-key-navbar button { min-height: 58px !important; padding: 2px !important; } .hero .title { font-size: 2.2rem; } }
+@media (max-width: 560px) { [class*="st-key-navbar"] button p { font-size: .86rem !important; }
+  [class*="st-key-navbar"] button { min-height: 58px !important; padding: 2px !important; } .hero .title { font-size: 2.2rem; } }
 
 /* ---- sub-tabs as pills that wrap (no sideways scrolling) ---- */
 [role="tablist"] { flex-wrap: wrap !important; gap: 8px !important; padding: 4px 0 8px; border: 0 !important;
@@ -2121,6 +2488,67 @@ h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
 /* bordered boxes (each st.container(border=True) gets a "card" key automatically) */
 [class*="st-key-card"] { background: rgba(255,255,255,.94) !important; border-radius: 24px !important;
   border: 2px solid #f1dcf0 !important; box-shadow: 0 10px 30px rgba(120,60,160,.10); padding: 16px 18px !important; }
+
+
+/* ---- colourful category buttons + small lock button for kids ---- */
+[class*="st-key-navbar"] [data-testid="stColumn"]:nth-child(1) button:not([kind="primary"]) { background: #ffe8f3 !important; }
+[class*="st-key-navbar"] [data-testid="stColumn"]:nth-child(2) button:not([kind="primary"]) { background: #e5f2ff !important; }
+[class*="st-key-navbar"] [data-testid="stColumn"]:nth-child(3) button:not([kind="primary"]) { background: #e3f9e9 !important; }
+[class*="st-key-navbar"] [data-testid="stColumn"]:nth-child(4) button:not([kind="primary"]) { background: #fff5d6 !important; }
+[class*="st-key-navbar"] [data-testid="stColumn"]:nth-child(5) button:not([kind="primary"]) { background: #efe8ff !important; }
+.st-key-navbar_kid [data-testid="stColumn"]:last-child { flex: 0 0 54px !important; }
+.st-key-navbar_kid [data-testid="stColumn"]:last-child button:not([kind="primary"]) { background: #f1eef4 !important; }
+@media (max-width: 560px) { .st-key-navbar_kid [data-testid="stColumn"]:last-child { flex: 0 0 40px !important; } }
+.hero .badge.quizw { background: #e3f0ff; color: #2456b3; animation: wiggle 1.4s ease-in-out infinite; }
+
+/* ---- quick bar ---- */
+.st-key-quickbar { margin: -4px 0 4px; }
+.st-key-quickbar [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 8px !important; }
+.st-key-quickbar [data-testid="stColumn"]:first-child { flex: 1 1 auto !important; min-width: 0 !important; width: auto !important; }
+.st-key-quickbar [data-testid="stColumn"]:last-child { flex: 0 0 64px !important; min-width: 0 !important; width: 64px !important; }
+.mrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mlabel { font-weight: 700; color: #5a2d66; margin-right: 4px; font-size: 1rem; }
+.mchip { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; background: #fff; border: 2px dashed #d9c4e6; filter: grayscale(.7); opacity: .7; }
+.mchip.wait { filter: none; opacity: 1; border: 2px solid #ffd36b; background: #fff8dc; }
+.mchip.ok { filter: none; opacity: 1; border: 2px solid #5fd08a; background: #e6fbef; box-shadow: 0 3px 8px rgba(47,191,90,.25); }
+.st-key-quickbar [data-testid="stPopover"] button { min-height: 42px !important; border-radius: 999px !important; font-size: 1.2rem !important; }
+
+/* ---- quiz ---- */
+.qhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.qdots { display: flex; gap: 6px; } .qdot { font-size: 1.25rem; }
+.qcard { border-radius: 26px; padding: 20px 20px 18px; margin: 4px 0 12px; color: #fff;
+  background: linear-gradient(135deg,#7f5bff 0%,#ff5fa2 100%); box-shadow: 0 12px 30px rgba(127,91,255,.3); }
+.qcard .qtopic { display: inline-block; background: rgba(255,255,255,.25); border-radius: 999px; padding: 3px 12px;
+  font-weight: 600; font-size: .9rem; }
+.qcard .qq { font-size: 1.55rem; font-weight: 700; line-height: 1.3; margin-top: 10px; }
+[class*="st-key-qopt"] button { min-height: 64px !important; font-size: 1.12rem !important; border: 0 !important;
+  color: #2f1d40 !important; box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+[class*="st-key-qopt0"] button { background: #ffe3f1 !important; } [class*="st-key-qopt1"] button { background: #e1efff !important; }
+[class*="st-key-qopt2"] button { background: #e3f9e9 !important; } [class*="st-key-qopt3"] button { background: #fff3cc !important; }
+.qres { border-radius: 22px; padding: 14px 18px; margin: 6px 0 10px; font-size: 1.08rem; }
+.qres.ok { background: #e6fbef; border: 2px solid #5fd08a; color: #1d5c34; }
+.qres.no { background: #fff1e6; border: 2px solid #ffb37a; color: #7a3d00; }
+.qres .big { font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; }
+.qscore { text-align: center; border-radius: 28px; padding: 22px 16px; margin: 6px 0 12px;
+  background: linear-gradient(160deg,#fffdf3,#fff0f8 60%,#eef4ff); box-shadow: 0 12px 30px rgba(120,60,160,.14); }
+.qscore .stars { font-size: 2.4rem; letter-spacing: 4px; }
+.qscore .sc { font-size: 2.2rem; font-weight: 700; color: #7f3fbf; }
+.qscore .msg2 { font-size: 1.12rem; color: #5a2d66; margin-top: 4px; }
+
+/* ---- brain games ---- */
+.game-h { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 700; color: #3b2350; }
+.game-h .gi { width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,.08); }
+.big-say { font-size: 1.35rem; font-weight: 600; color: #3b2350; line-height: 1.4; margin: 10px 0 8px; }
+.emoji-big { font-size: 3.4rem; text-align: center; letter-spacing: 8px; margin: 6px 0; }
+.ans { background: #e6fbef; border-radius: 16px; padding: 8px 14px; color: #1d5c34; font-weight: 600; font-size: 1.15rem; }
+.wyr-or { text-align: center; font-weight: 800; color: #ff5fa2; font-size: 1.2rem; }
+[class*="st-key-wyr"] button { min-height: 86px !important; font-size: 1.15rem !important; border: 0 !important; }
+[class*="st-key-wyrA"] button { background: linear-gradient(135deg,#ffd6ea,#ffeaf4) !important; }
+[class*="st-key-wyrB"] button { background: linear-gradient(135deg,#d7ecff,#eaf5ff) !important; }
+.idea { border-radius: 22px; padding: 16px 18px; font-size: 1.2rem; font-weight: 600; color: #4a2a63; line-height: 1.45;
+  background: repeating-linear-gradient(-45deg,#fff8e8 0 16px,#fff3d6 16px 32px); border: 2px solid #ffd98a; }
 
 /* ---- calm corner ---- */
 .calm-hero { text-align: center; padding: 20px 14px 16px; border-radius: 26px; margin: 4px 0 12px;
@@ -2275,6 +2703,49 @@ THEME_CSS.update({
         .balance { background: linear-gradient(90deg,#ff8a00,#ff4f6d); }
         .hero, [data-testid="stVerticalBlockBorderWrapper"], .card { border-color: #ffd59a !important; }
         h3 { color: #8a3a00 !important; }""",
+})
+
+BUBBLE_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E"
+              "%3Cg fill='none' stroke='%23ffffff' stroke-width='2' opacity='.7'%3E%3Ccircle cx='20' cy='30' r='9'/%3E"
+              "%3Ccircle cx='80' cy='70' r='14'/%3E%3Ccircle cx='100' cy='20' r='5'/%3E%3Ccircle cx='45' cy='95' r='6'/%3E%3C/g%3E%3C/svg%3E")
+LEAF_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E"
+            "%3Cg fill='%2357b46b' opacity='.16'%3E%3Cpath d='M20 60 C 20 30, 50 20, 60 20 C 60 50, 45 65, 20 60 Z'/%3E"
+            "%3Cpath d='M100 120 C 95 95, 120 80, 132 82 C 130 105, 118 120, 100 120 Z'/%3E%3C/g%3E%3C/svg%3E")
+DOTS_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E"
+            "%3Ccircle cx='15' cy='15' r='7' fill='%23ff7fbf' opacity='.25'/%3E%3Ccircle cx='55' cy='35' r='6' fill='%23ffd23f' opacity='.35'/%3E"
+            "%3Ccircle cx='30' cy='62' r='8' fill='%2368d8c4' opacity='.3'/%3E%3Ccircle cx='70' cy='72' r='4' fill='%239b6bff' opacity='.3'/%3E%3C/svg%3E")
+THEME_CSS.update({
+    "mermaid": f""".stApp {{ background-color: #c9f1f0; background-image: url("{BUBBLE_SVG}"),
+        radial-gradient(circle at 15% 10%, rgba(176,132,255,.45) 0, transparent 38%),
+        radial-gradient(circle at 85% 85%, rgba(255,140,200,.35) 0, transparent 35%),
+        linear-gradient(180deg, #d8fbf6 0%, #9fe3e6 55%, #7ec8e8 100%);
+        background-size: 120px 120px, 100% 100%, 100% 100%, 100% 100%; }}
+        .hero .title {{ background: linear-gradient(90deg,#11a7a0,#7f5bff,#ff5fa2,#11a7a0); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }}
+        .balance {{ background: linear-gradient(90deg,#13b3aa,#8a5cff); }}
+        h3 {{ color: #0f5f6b !important; }}""",
+    "dino": f""".stApp {{ background-color: #eefbe3; background-image: url("{LEAF_SVG}"),
+        radial-gradient(circle at 90% 10%, rgba(255,190,90,.45) 0, transparent 35%),
+        radial-gradient(circle at 10% 90%, rgba(120,200,110,.4) 0, transparent 40%),
+        linear-gradient(180deg, #f6fff0 0%, #dff5cf 100%);
+        background-size: 140px 140px, 100% 100%, 100% 100%, 100% 100%; }}
+        .hero .title {{ background: linear-gradient(90deg,#2f9e44,#f08c00,#2b8a3e); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }}
+        .balance {{ background: linear-gradient(90deg,#2f9e44,#f59f00); }}
+        h3 {{ color: #2b6a2f !important; }}""",
+    "lollipop": f""".stApp {{ background-color: #fff6fb; background-image: url("{DOTS_SVG}"),
+        linear-gradient(135deg, #ffe3f2 0%, #fff9d9 50%, #e2fbf5 100%); background-size: 80px 80px, 100% 100%; }}
+        .hero .title {{ background: linear-gradient(90deg,#ff3d9a,#ffb300,#14c8a8,#9b5cff); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }}
+        .balance {{ background: linear-gradient(90deg,#ff3d9a,#ffb300); }}
+        h3 {{ color: #b0136a !important; }}""",
+    "sunset": """.stApp { background:
+        radial-gradient(circle at 50% 108%, rgba(255,214,102,.9) 0, rgba(255,214,102,0) 30%),
+        linear-gradient(180deg, #ffd8c2 0%, #ffb3c1 35%, #d9b8ff 70%, #b9c8ff 100%); background-attachment: fixed; }
+        .hero .title { background: linear-gradient(90deg,#ff6a3d,#ff3d7f,#8a4dff); -webkit-background-clip: text;
+        background-clip: text; color: transparent; }
+        .balance { background: linear-gradient(90deg,#ff6a3d,#c13dff); }
+        h3 { color: #8a2b4f !important; }""",
 })
 # ------------------------------ Year 4 maths bank ------------------------------
 def _frac(n, d):
@@ -2705,6 +3176,9 @@ def compute_stats(data):
         "stories": len(data.get("stories", [])), "word_wins": len(data.get("word_wins", [])),
         "spins": len(data.get("spins", [])), "moods": len(data.get("moods", [])),
         "chalisa_parts": len(data.get("chalisa", {})),
+        "quiz_days": sum(1 for q in data.get("quiz", {}).values() if q.get("done")),
+        "quiz_right": sum(int(q.get("score", 0)) for q in data.get("quiz", {}).values()),
+        "quiz_perfect": sum(1 for q in data.get("quiz", {}).values() if q.get("done") and q.get("score", 0) >= QUIZ_PER_DAY),
     }
 
 
@@ -4048,7 +4522,8 @@ var H=__HEIGHT__, cv=document.getElementById('c'), ctx=cv.getContext('2d'), wrap
 var strokes=[], cur=null, colour='#222222', size=7, eraser=false, fingerOK=true, sawPen=false, dpr=window.devicePixelRatio||1;
 function post(type,extra){ var m={isStreamlitMessage:true,type:type}; for(var k in extra) m[k]=extra[k]; window.parent.postMessage(m,'*'); }
 function height(){ post('streamlit:setFrameHeight',{height:document.body.scrollHeight+4}); }
-function setup(){ var w=wrap.clientWidth; cv.width=Math.round(w*dpr); cv.height=Math.round(H*dpr); cv.style.height=H+'px';
+var lastW=0;
+function setup(){ var w=wrap.clientWidth; if(!w || w===lastW) return; lastW=w; cv.width=Math.round(w*dpr); cv.height=Math.round(H*dpr); cv.style.height=H+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0); redraw(); height(); }
 function drawStroke(s){
   ctx.save(); ctx.globalCompositeOperation=s.erase?'destination-out':'source-over'; ctx.strokeStyle=s.c; ctx.fillStyle=s.c;
@@ -4106,8 +4581,9 @@ document.getElementById('use').onclick=function(){
   post('streamlit:setComponentValue',{value:{img:o.toDataURL('image/png'),w:o.width,h:o.height,n:Date.now()},dataType:'json'});
   msg.textContent='Got it! Now give your character a name below 👇';
 };
-window.addEventListener('message',function(e){ if(e.data&&e.data.type==='streamlit:render'){ if(!cv.width) setup(); } });
+window.addEventListener('message',function(e){ if(e.data&&e.data.type==='streamlit:render'){ setup(); } });
 window.addEventListener('resize',function(){ setup(); });
+try{ new ResizeObserver(function(){ setup(); }).observe(wrap); }catch(e){}
 post('streamlit:componentReady',{apiVersion:1});
 setTimeout(setup,60);
 </script></body></html>"""
@@ -4607,6 +5083,9 @@ if dollars["paid"] or dollars["owed"]:
     pills += f'<span class="badge money">💵 &#36;{dollars["paid"]} earned</span>'
 if small_ws["ok"] or big_ws["ok"]:
     pills += '<span class="badge spin">🎡 Spin waiting!</span>'
+QUIZ_DONE_TODAY = bool(data.get("quiz", {}).get(TODAY_KEY, {}).get("done"))
+if not QUIZ_DONE_TODAY:
+    pills += '<span class="badge quizw">🧠 Quiz waiting!</span>'
 _th = next((t for t in THEMES if t["id"] == theme_id), {})
 _icons = _th.get("icons") or [("🦄", "unicorn"), ("🐰", "bunny"), ("🌈", "rainbow"), ("✨", "star")]
 _floats = "".join(f'<div class="float f{i + 1}" data-joke="{k}" title="Tap me!">{e}</div>' for i, (e, k) in enumerate(_icons))
@@ -4617,6 +5096,32 @@ st.markdown(
 <div class="balance">⏳ {bal["balance"]} min screen time left</div><br>{pills}</div>""",
     unsafe_allow_html=True,
 )
+
+# ---- quick bar: today's must-dos at a glance + colour picker ----
+def quick_theme(tid):
+    def change(d):
+        d["theme"] = tid
+    update(change)
+
+
+_req_q = required_ids(today)
+_ticked_q = set(data["days"].get(TODAY_KEY, []))
+_must_q = [t for t in tasks_for(today) if t["id"] in _req_q]
+with st.container(key="quickbar"):
+    _qa, _qb = st.columns([5, 1], vertical_alignment="center")
+    if _must_q:
+        _n_ok = sum(1 for t in _must_q if t["id"] in _ticked_q)
+        _chips = "".join(
+            f'<span class="mchip {"ok" if t["id"] in done_today else ("wait" if t["id"] in _ticked_q else "")}" '
+            f'title="{html_safe(t["name"])}">{t["emoji"]}</span>' for t in _must_q)
+        _qa.markdown(f'<div class="mrow"><span class="mlabel">{"🎉 All must-dos done!" if _n_ok == len(_must_q) else f"Must-dos {_n_ok}/{len(_must_q)}"}'
+                     f'</span>{_chips}</div>', unsafe_allow_html=True)
+    with _qb.popover("🎨", use_container_width=True, help="Change my colours"):
+        st.markdown("**🎨 Pick my colours**")
+        _sd = compute_stats(data)["star_days"]
+        for _th in [t for t in THEMES if t.get("free") or _sd >= t["need"]]:
+            st.button(_th["name"] + (" ✔️" if _th["id"] == theme_id else ""), key=f"qtheme_{_th['id']}",
+                      on_click=quick_theme, args=(_th["id"],), disabled=_th["id"] == theme_id, use_container_width=True)
 
 # ---- celebrations queued by callbacks ----
 fx = st.container()
@@ -4642,9 +5147,10 @@ NAV = [
     ("day", "🌈", "My Day", ["🌈 Today"] + (["🧘 Calm corner"] if SHOW_MINDFUL else [])),
     ("learn", "📚", "Learn", ["🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
      + (["🙏 Chalisa"] if SHOW_CHALISA else [])),
-    ("fun", "🎉", "Fun", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "🎨 My characters", "📅 My weeks"]),
+    ("play", "🎮", "Play", ["🧠 Quiz", "🎲 Brain games", "🎨 My characters"]),
+    ("fun", "🏆", "Prizes", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks"]),
     ("friends", "💬", "Chat", ["💬 Chat"] if CHAT_ON else []),
-    ("grown", "🔐", "Grown-ups", ["🔐 Grown-ups"]),
+    ("grown", "🔐", "Grown-ups" if IS_PARENT else "", ["🔐 Grown-ups"]),
 ]
 NAV = [n for n in NAV if n[3]]
 if st.session_state.get("nav") not in [n[0] for n in NAV]:
@@ -4655,11 +5161,12 @@ def go_nav(cid):
     st.session_state.nav = cid
 
 
-with st.container(key="navbar"):
+with st.container(key="navbar" if IS_PARENT else "navbar_kid"):
     _ncols = st.columns(len(NAV))
     for _col, (_cid, _emo, _label, _names) in zip(_ncols, NAV):
-        _dot = " ✨" if _cid == "fun" and (small_ws["ok"] or big_ws["ok"]) else ""
-        _col.button(f"{_emo} {_label}{_dot}", key=f"nav_{_cid}", on_click=go_nav, args=(_cid,),
+        _dot = " ✨" if (_cid == "fun" and (small_ws["ok"] or big_ws["ok"])) or (_cid == "play" and not QUIZ_DONE_TODAY) else ""
+        _col.button(f"{_emo} {_label}{_dot}".strip(), key=f"nav_{_cid}", on_click=go_nav, args=(_cid,),
+                    help="Grown-ups" if _cid == "grown" else None,
                     type="primary" if _cid == st.session_state.nav else "secondary", use_container_width=True)
 _hidden = st.container(key="navhidden")      # pages that aren't open are kept here, out of sight
 _TABS = {}
@@ -4678,6 +5185,7 @@ for _cid, _emo, _label, _names in NAV:
 tab_tamil, tab_chalisa, tab_chat = _TABS.get("🗣️ Tamil words"), _TABS.get("🙏 Chalisa"), _TABS.get("💬 Chat")
 tab_calm = _TABS.get("🧘 Calm corner")
 tab_chars = _TABS["🎨 My characters"]
+tab_quiz, tab_games = _TABS["🧠 Quiz"], _TABS["🎲 Brain games"]
 
 
 # ================================== TODAY ==================================
@@ -6774,6 +7282,317 @@ if tab_chat is not None:
         st.button("🔄 Refresh chat", key="chat_refresh")
 
 
+
+
+
+# ================================== PLAY: QUIZ ==================================
+def quiz_today_qs():
+    rng = random.Random(f"quiz-{TODAY_KEY}")          # same quiz for everyone today
+    topics = QUIZ_TOPICS[:]
+    rng.shuffle(topics)
+    picked = []
+    for t in topics:
+        picked.append(rng.choice([i for i, q in enumerate(QUIZ) if q[0] == t]))
+        if len(picked) == QUIZ_PER_DAY:
+            break
+    rng.shuffle(picked)
+    return picked
+
+
+def quiz_options(qi, salt):
+    q = QUIZ[qi]
+    opts = [q[2]] + list(q[3])
+    random.Random(f"{salt}-{qi}").shuffle(opts)
+    return opts
+
+
+QUIZ_TODAY = quiz_today_qs()
+
+
+def quiz_answer(k, choice):
+    info = {}
+
+    def change(d):
+        rec = d.setdefault("quiz", {}).setdefault(TODAY_KEY, {"qs": QUIZ_TODAY, "answers": [], "score": 0, "done": False})
+        if len(rec["answers"]) != k or rec.get("done"):
+            return False
+        ok = choice == QUIZ[rec["qs"][k]][2]
+        rec["answers"].append(choice)
+        rec["score"] += int(ok)
+        info["ok"] = ok
+        if len(rec["answers"]) >= len(rec["qs"]):
+            rec["done"] = True
+            c = (QUIZ_CARROTS[1] if rec["score"] >= QUIZ_CARROTS[0] else 0) + \
+                (QUIZ_CARROTS[3] if rec["score"] >= QUIZ_CARROTS[2] else 0)
+            if c and not rec.get("carrots"):
+                rec["carrots"] = c
+                d["carrots"] = d.get("carrots", 0) + c
+    if update(change):
+        st.session_state.quiz_fb = k
+        st.session_state.sound_next = "chime" if info.get("ok") else "pop"
+
+
+def quiz_next():
+    st.session_state.pop("quiz_fb", None)
+
+
+def practice_start():
+    topic = st.session_state.get("pq_topic") or "🌟 Everything"
+    pool = [i for i, q in enumerate(QUIZ) if topic == "🌟 Everything" or q[0] == topic]
+    st.session_state.pq = {"qs": random.sample(pool, min(QUIZ_PER_DAY, len(pool))), "answers": [],
+                           "salt": random.randint(1, 10 ** 6), "fb": None}
+
+
+def practice_answer(k, choice):
+    pq = st.session_state.pq
+    if len(pq["answers"]) == k:
+        pq["answers"].append(choice)
+        pq["fb"] = k
+        st.session_state.sound_next = "chime" if choice == QUIZ[pq["qs"][k]][2] else "pop"
+
+
+def practice_next():
+    st.session_state.pq["fb"] = None
+
+
+def quiz_dots(qs, answers, current):
+    dots = []
+    for k, qi in enumerate(qs):
+        if k < len(answers):
+            dots.append("✅" if answers[k] == QUIZ[qi][2] else "❌")
+        else:
+            dots.append("⭐" if k == current else "⚪")
+    return '<div class="qdots">' + "".join(f'<span class="qdot">{x}</span>' for x in dots) + "</div>"
+
+
+def quiz_ui(prefix, qs, answers, salt, fb, on_answer, on_next):
+    """Draws one question (or the feedback for the last answer). Returns True when all are answered."""
+    n = len(answers)
+    show = fb if fb is not None and fb < n else (n if n < len(qs) else None)
+    if show is None:
+        return True
+    qi = qs[show]
+    topic, question, right, _wrong, why = QUIZ[qi]
+    st.markdown(f'<div class="qhead"><b style="color:#5a2d66">Question {show + 1} of {len(qs)}</b>'
+                f'{quiz_dots(qs, answers, show)}</div>'
+                f'<div class="qcard"><span class="qtopic">{html_safe(topic)}</span>'
+                f'<div class="qq">{html_safe(question)}</div></div>', unsafe_allow_html=True)
+    opts = quiz_options(qi, salt)
+    if show < n:      # feedback
+        chosen = answers[show]
+        ok = chosen == right
+        st.markdown(f'<div class="qres {"ok" if ok else "no"}"><div class="big">'
+                    f'{random.Random(f"{salt}-{show}").choice(["🎉 Correct!", "🌟 Brilliant!", "✅ Yes — well done!", "🦄 Amazing!"]) if ok else "💪 Good try!"}'
+                    f'</div>{"" if ok else f"The answer is <b>{html_safe(right)}</b>. "}{html_safe(why)}</div>',
+                    unsafe_allow_html=True)
+        last = show == len(qs) - 1
+        st.button("🎉 See my score!" if last else "Next question ➡️", key=f"{prefix}_next_{show}", on_click=on_next,
+                  type="primary", use_container_width=True)
+    else:
+        oc = st.columns(2)
+        for j, opt in enumerate(opts):
+            with oc[j % 2]:
+                with st.container(key=f"qopt{j}_{prefix}_{show}"):
+                    st.button(opt, key=f"{prefix}_a_{show}_{j}", on_click=on_answer, args=(show, opt),
+                              use_container_width=True)
+    return False
+
+
+def quiz_score_card(score, total, carrots=0, title="Today's quiz"):
+    msgs = {total: "PERFECT! You're a quiz superstar! 🏆", total - 1: "So close to perfect — brilliant! 🌟",
+            total - 2: "Great job — you know lots! 💪"}
+    st.markdown(f'<div class="qscore"><div style="font-weight:700;color:#d6337f">{html_safe(title)}</div>'
+                f'<div class="stars">{"⭐" * score}{"☆" * (total - score)}</div>'
+                f'<div class="sc">{score} / {total}</div>'
+                f'<div class="msg2">{msgs.get(score, "Every quiz makes your brain stronger! 🧠 Try the practice quiz below.")}</div>'
+                + (f'<div class="msg2">🥕 You earned <b>{carrots}</b> carrot{"s" if carrots > 1 else ""}!</div>' if carrots else "")
+                + '</div>', unsafe_allow_html=True)
+
+
+with tab_quiz:
+    st.markdown('<div class="calm-hero" style="background:linear-gradient(135deg,#e9e4ff,#ffe6f3 55%,#e3f7ff)">'
+                '<div class="ch-title" style="color:#5b3fd1">🧠 Daily Quiz</div>'
+                f'<div class="ch-sub">{QUIZ_PER_DAY} new questions every day — the same quiz for everyone, so you can '
+                'compare with your friend! Get 3 right for 🥕, all 5 for 🥕🥕.</div></div>', unsafe_allow_html=True)
+    _rec = data.get("quiz", {}).get(TODAY_KEY) or {"qs": QUIZ_TODAY, "answers": [], "score": 0, "done": False}
+    if IS_PARENT:
+        st.caption("Grown-ups can see the quiz, but only the child's answers count.")
+    _fin = quiz_ui("dq", _rec["qs"], _rec["answers"], f"day-{TODAY_KEY}", st.session_state.get("quiz_fb"),
+                   quiz_answer if not IS_PARENT else (lambda *a: None), quiz_next)
+    if _fin:
+        quiz_score_card(_rec["score"], len(_rec["qs"]), _rec.get("carrots", 0))
+        with st.expander("📝 Look back at today's answers"):
+            for k, qi in enumerate(_rec["qs"]):
+                q = QUIZ[qi]
+                mine = _rec["answers"][k] if k < len(_rec["answers"]) else "—"
+                st.markdown(f"{'✅' if mine == q[2] else '❌'} **{md_safe(q[1])}**  \nYour answer: {md_safe(mine)} · "
+                            f"Answer: **{md_safe(q[2])}**  \n_{md_safe(q[4])}_")
+        st.caption("🌅 A brand-new quiz comes tomorrow!")
+    _days = compute_stats(data)
+    st.markdown(f'<div class="calm-s" style="text-align:center;margin-top:6px">🧠 Quizzes finished: <b>{_days["quiz_days"]}</b>'
+                f' · ✅ Answers right: <b>{_days["quiz_right"]}</b></div>', unsafe_allow_html=True)
+
+    st.markdown("### 🎯 Practice quiz (just for fun)")
+    with st.container(border=True):
+        pq = st.session_state.get("pq")
+        st.pills("Pick a topic", ["🌟 Everything"] + QUIZ_TOPICS, key="pq_topic", default="🌟 Everything")
+        st.button("▶️ Start a practice quiz" if not pq else "🔄 New practice quiz", key="pq_go", on_click=practice_start,
+                  use_container_width=True)
+        if pq:
+            if quiz_ui("pq", pq["qs"], pq["answers"], str(pq["salt"]), pq.get("fb"), practice_answer, practice_next):
+                quiz_score_card(sum(a == QUIZ[qi][2] for a, qi in zip(pq["answers"], pq["qs"])), len(pq["qs"]),
+                                title="Practice quiz")
+
+
+# ================================== PLAY: BRAIN GAMES ==================================
+SCRATCH_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Fredoka,Nunito,system-ui,sans-serif;background:transparent}
+.card{position:relative;height:170px;border-radius:24px;overflow:hidden;box-shadow:0 10px 24px rgba(120,60,160,.18)}
+.under{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+ padding:14px 22px;background:linear-gradient(135deg,#fff7d6,#ffe3f1 60%,#e8e1ff);color:#3b2350}
+.under .k{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d6337f;margin-bottom:6px}
+.under .t{font-size:19px;font-weight:600;line-height:1.35}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer;transition:opacity .6s}
+</style></head><body><div class="card"><div class="under"><div class="k">__KIND__</div><div class="t">__TEXT__</div></div>
+<canvas id="c"></canvas></div>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),d=window.devicePixelRatio||1,done=false,down=false;
+var started=false;function setup(){var r=cv.getBoundingClientRect();if(!r.width||started)return;cv.width=r.width*d;cv.height=r.height*d;
+ ctx.setTransform(d,0,0,d,0,0);ctx.globalCompositeOperation='source-over';
+ var g=ctx.createLinearGradient(0,0,r.width,r.height);g.addColorStop(0,'#c9c9d6');g.addColorStop(.5,'#eeeef5');g.addColorStop(1,'#b8b8c8');
+ ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);ctx.fillStyle='rgba(255,255,255,.5)';
+ for(var i=0;i<60;i++){ctx.beginPath();ctx.arc(Math.random()*r.width,Math.random()*r.height,Math.random()*2+1,0,7);ctx.fill();}
+ ctx.fillStyle='#6b6b80';ctx.font='600 22px Fredoka,Nunito,system-ui,sans-serif';ctx.textAlign='center';
+ ctx.fillText('🪙 Scratch me with your finger!',r.width/2,r.height/2+8);ctx.globalCompositeOperation='destination-out';}
+var lx=null,ly=null;function scratch(e){if(!down||done)return;var r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ ctx.lineWidth=44;ctx.lineCap='round';ctx.beginPath();if(lx===null){ctx.arc(x,y,22,0,7);ctx.fill();}
+ else{ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke();}lx=x;ly=y;check();}
+var n=0;function check(){if(++n%12||!cv.width)return;var p=ctx.getImageData(0,0,cv.width,cv.height).data,c=0;
+ for(var i=3;i<p.length;i+=64)if(p[i]===0)c++;if(c/(p.length/64)>.5){done=true;cv.style.opacity=0;setTimeout(function(){cv.remove()},700);
+ try{window.parent.__andalPlay&&window.parent.__andalPlay('chime')}catch(e){}}}
+cv.addEventListener('pointerdown',function(e){if(!cv.width)setup();started=true;down=true;cv.setPointerCapture(e.pointerId);scratch(e)});
+try{new ResizeObserver(function(){setup()}).observe(cv)}catch(e){}
+cv.addEventListener('pointermove',scratch);cv.addEventListener('pointerup',function(){down=false;lx=null;});
+setTimeout(setup,30);
+</script></body></html>"""
+
+SPEAK_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:transparent;font-family:Fredoka,Nunito,system-ui,sans-serif}
+button{font:600 16px Fredoka,Nunito,system-ui,sans-serif;padding:9px 18px;border-radius:999px;border:2px solid #eadcf7;
+ background:#fff;color:#4a2a63;cursor:pointer}</style></head><body>
+<button id="b">🔊 Listen</button><button id="f" style="margin-left:6px">⚡ Super fast!</button>
+<script>
+var T=__TEXT__;function say(r){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(T);u.rate=r;u.pitch=1.3;
+ var v=speechSynthesis.getVoices().filter(function(x){return /^en/i.test(x.lang)});if(v.length)u.voice=v.find(function(x){return /AU|GB/.test(x.lang)})||v[0];
+ speechSynthesis.speak(u)}catch(e){}}
+document.getElementById('b').onclick=function(){say(.9)};document.getElementById('f').onclick=function(){say(1.6)};
+</script></body></html>"""
+
+
+def _shift(name):
+    st.session_state[name] = st.session_state.get(name, 0) + 1
+
+
+def emoji_check(i):
+    guess = re.sub(r"[^a-z]", "", str(st.session_state.get(f"ep_in_{i}", "")).lower())
+    ok = guess in EMOJI_PUZZLES[i][2]
+    st.session_state[f"ep_res_{i}"] = "ok" if ok else "no"
+    if ok:
+        st.session_state.ep_solved = st.session_state.get("ep_solved", 0) + 1
+        st.session_state.sound_next = "chime"
+
+
+def wyr_pick(i, side):
+    st.session_state.wyr_pick = (i, side)
+
+
+def game_head(icon, colour, title):
+    st.markdown(f'<div class="game-h"><span class="gi" style="background:{colour}">{icon}</span>{title}</div>',
+                unsafe_allow_html=True)
+
+
+with tab_games:
+    _d = today.toordinal() + (7 if AUTH["profile"] == "elyssa" else 0)
+    st.markdown('<div class="calm-hero" style="background:linear-gradient(135deg,#e3f9e9,#fff7d6 50%,#ffe6f3)">'
+                '<div class="ch-title" style="color:#1f8a4c">🎲 Brain Games</div>'
+                '<div class="ch-sub">Riddles, emoji puzzles, silly choices and creative missions!</div></div>',
+                unsafe_allow_html=True)
+
+    # scratch card
+    with st.container(border=True):
+        game_head("🎟️", "#fff3cc", "Today's scratch card")
+        _pool = ([("Did you know?", f) for f in FUN_FACTS] + [("Joke time!", j) for v in ICON_JOKES.values() for j in v[:1]]
+                 + [("A note for you", c.replace("You", f"{STUDENT_NAME}, you", 1)) for c in SURPRISE_COMPLIMENTS])
+        _kind, _txt = _pool[random.Random(f"scratch-{TODAY_KEY}-{AUTH['profile']}").randrange(len(_pool))]
+        _embed(SCRATCH_HTML.replace("__KIND__", html_safe(_kind)).replace("__TEXT__", html_safe(_txt)), 185)
+
+    # riddle
+    with st.container(border=True):
+        game_head("🤔", "#e5f2ff", "Riddle me this")
+        _ri = (_d + st.session_state.get("riddle_shift", 0)) % len(RIDDLES)
+        st.markdown(f'<div class="big-say">{html_safe(RIDDLES[_ri][0])}</div>', unsafe_allow_html=True)
+        _r1, _r2 = st.columns(2)
+        if _r1.toggle("👀 Show the answer", key=f"riddle_show_{_ri}"):
+            st.markdown(f'<div class="ans">{html_safe(RIDDLES[_ri][1])}</div>', unsafe_allow_html=True)
+        _r2.button("🔄 Another riddle", key="riddle_next", on_click=_shift, args=("riddle_shift",), use_container_width=True)
+
+    # emoji puzzle
+    with st.container(border=True):
+        game_head("🧩", "#ffe8f3", "Emoji puzzle — what word is it?")
+        _ei = (_d * 3 + st.session_state.get("ep_shift", 0)) % len(EMOJI_PUZZLES)
+        _ep = EMOJI_PUZZLES[_ei]
+        st.markdown(f'<div class="emoji-big">{_ep[0]}</div>', unsafe_allow_html=True)
+        _res = st.session_state.get(f"ep_res_{_ei}")
+        if _res == "ok":
+            st.markdown(f'<div class="ans">🎉 Yes! It\'s <b>{html_safe(_ep[1])}</b>!</div>', unsafe_allow_html=True)
+        else:
+            with st.form(f"ep_form_{_ei}", border=False):
+                _e1, _e2 = st.columns([3, 1])
+                _e1.text_input("Your guess", key=f"ep_in_{_ei}", label_visibility="collapsed", placeholder="Type your guess…")
+                _e2.form_submit_button("Check ✔️", on_click=emoji_check, args=(_ei,), use_container_width=True)
+            if _res == "no":
+                st.warning("Not quite — try again! 💪")
+            with st.expander("💡 Need a hint?"):
+                st.write(_ep[3])
+                if st.checkbox("Show me the answer", key=f"ep_reveal_{_ei}"):
+                    st.markdown(f'<div class="ans">{html_safe(_ep[1])}</div>', unsafe_allow_html=True)
+        st.button("➡️ Next puzzle", key="ep_next", on_click=_shift, args=("ep_shift",))
+        if st.session_state.get("ep_solved"):
+            st.caption(f"🧩 Puzzles solved this time: {st.session_state.ep_solved}")
+
+    # would you rather
+    with st.container(border=True):
+        game_head("⚖️", "#efe8ff", "Would you rather…?")
+        _wi = (_d * 5 + st.session_state.get("wyr_shift", 0)) % len(WOULD_YOU_RATHER)
+        _a, _b = WOULD_YOU_RATHER[_wi]
+        _w1, _wm, _w2 = st.columns([5, 1, 5], vertical_alignment="center")
+        with _w1:
+            with st.container(key=f"wyrA_{_wi}"):
+                st.button(_a, key=f"wyr_a_{_wi}", on_click=wyr_pick, args=(_wi, 0), use_container_width=True)
+        _wm.markdown('<div class="wyr-or">OR</div>', unsafe_allow_html=True)
+        with _w2:
+            with st.container(key=f"wyrB_{_wi}"):
+                st.button(_b, key=f"wyr_b_{_wi}", on_click=wyr_pick, args=(_wi, 1), use_container_width=True)
+        _pk = st.session_state.get("wyr_pick")
+        if _pk and _pk[0] == _wi:
+            _choice = (_a, _b)[_pk[1]]
+            st.success(f"Great choice: **{_choice}**! 🌟 Tell a grown-up WHY you picked it — and ask what they would choose!")
+        st.button("🔄 Ask me another", key="next_choice", on_click=_shift, args=("wyr_shift",))
+
+    # creative mission
+    with st.container(border=True):
+        game_head("💡", "#fff3cc", "Creative mission")
+        _ci = (_d * 2 + st.session_state.get("idea_shift2", 0)) % len(CREATIVE)
+        st.markdown(f'<div class="idea">{html_safe(CREATIVE[_ci])}</div>', unsafe_allow_html=True)
+        st.button("🎲 Surprise me with another!", key="idea_next", on_click=_shift, args=("idea_shift2",))
+
+    # tongue twister
+    with st.container(border=True):
+        game_head("👅", "#e3f9e9", "Tongue twister — can you say it fast?")
+        _ti = (_d + st.session_state.get("tt_shift", 0)) % len(TONGUE_TWISTERS)
+        st.markdown(f'<div class="big-say">{html_safe(TONGUE_TWISTERS[_ti])}</div>', unsafe_allow_html=True)
+        _embed(SPEAK_HTML.replace("__TEXT__", json.dumps(re.sub(r"[^\w\s,.'!?—-]", "", TONGUE_TWISTERS[_ti]))), 50)
+        st.button("🔄 Another one", key="tt_next", on_click=_shift, args=("tt_shift",))
 
 
 # ================================== MY CHARACTERS ==================================
