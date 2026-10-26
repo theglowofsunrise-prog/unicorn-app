@@ -2550,6 +2550,19 @@ h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
 .idea { border-radius: 22px; padding: 16px 18px; font-size: 1.2rem; font-weight: 600; color: #4a2a63; line-height: 1.45;
   background: repeating-linear-gradient(-45deg,#fff8e8 0 16px,#fff3d6 16px 32px); border: 2px solid #ffd98a; }
 
+/* ---- grown-up approval panel + child notices ---- */
+.st-key-parentbar { background: linear-gradient(135deg,#fffbea,#eefbf3); border: 2px solid #ffd36b; border-radius: 24px;
+  padding: 14px 16px 6px; margin: 2px 0 10px; box-shadow: 0 10px 26px rgba(180,140,0,.12); }
+.pb-h { font-size: 1.3rem; font-weight: 700; color: #5a3d00; } .pb-s { color: #7a6386; margin-bottom: 4px; }
+.pb-day { font-weight: 700; color: #2f6f68; margin: 8px 0 2px; } .pb-ok { font-size: 1.15rem; font-weight: 700; color: #1d7a45; }
+.st-key-pa_go button { min-height: 54px !important; font-size: 1.15rem !important; }
+.notice { background: linear-gradient(135deg,#fff7d6,#ffe3f1 60%,#e8e1ff); border: 3px solid #ffcf5a; border-radius: 24px;
+  padding: 16px 18px; margin: 6px 0 10px; color: #3b2350; box-shadow: 0 0 26px rgba(255,207,90,.45); font-size: 1.08rem; }
+.notice .nh { font-size: 1.45rem; font-weight: 700; margin-bottom: 4px; }
+.notice .ntasks { margin: 6px 0; } .notice .ntask { display: inline-block; background: #fff; border-radius: 999px;
+  padding: 3px 12px; margin: 3px 4px 3px 0; border: 2px solid #c8f0d6; font-weight: 600; font-size: .98rem; }
+.notice .nmins { font-weight: 600; color: #7f3fbf; } .notice .nwish { margin-top: 6px; font-size: 1.2rem; font-weight: 600; color: #d6337f; }
+
 /* ---- calm corner ---- */
 .calm-hero { text-align: center; padding: 20px 14px 16px; border-radius: 26px; margin: 4px 0 12px;
   background: linear-gradient(135deg,#e9fbf3 0%,#eef4ff 50%,#fdf0ff 100%); box-shadow: 0 10px 30px rgba(90,160,150,.15); }
@@ -4237,6 +4250,9 @@ def breath_html(style):
 #   [logins]
 #   andal = "her password"          andal_parent = "grown-up password"
 #   elyssa = "her password"         elyssa_parent = "grown-up password"
+#   kal = "another grown-up password"            (optional extra grown-up name — then add:)
+#   [parents]
+#   kal = "andal"                               (kal signs in as Andal's grown-up)
 # With no [logins] section the app works like before (Andal only, no login, no chat).
 import hashlib
 import hmac
@@ -4336,7 +4352,16 @@ def _token(user, pw):
     return hmac.new(pw.encode(), f"earn-stars:{user}".encode(), hashlib.sha256).hexdigest()[:24]
 
 
+def parent_names():
+    """Optional extra grown-up user names, e.g. in Secrets:  [parents]  kal = "andal"  (kal is Andal's grown-up)."""
+    t = secret("parents")
+    return {str(k).lower(): str(v).lower() for k, v in dict(t).items()} if t else {}
+
+
 def who(user):
+    pmap = parent_names()
+    if user in pmap:
+        return {"user": user, "profile": pmap[user], "role": "parent"}
     profile = user.replace("_parent", "")
     return {"user": user, "profile": profile, "role": "parent" if user.endswith("_parent") else "kid"}
 
@@ -4345,7 +4370,7 @@ def do_login():
     u = str(st.session_state.get("li_user", "")).strip().lower()
     pw = str(st.session_state.get("li_pw", ""))
     table = login_table()
-    if u in table and hmac.compare_digest(pw, table[u]) and u.replace("_parent", "") in KIDS:
+    if u in table and hmac.compare_digest(pw, table[u]) and who(u)["profile"] in KIDS:
         st.session_state.auth = who(u)
         st.session_state.li_pw = ""
         if st.session_state.get("li_keep"):
@@ -4383,7 +4408,7 @@ else:
                 st.form_submit_button("Sign in ✨", on_click=do_login, type="primary", use_container_width=True)
             if err := st.session_state.pop("li_err", None):
                 st.error(err)
-            st.caption("Grown-ups: sign in with your child's name followed by _parent (for example andal_parent).")
+            st.caption("Grown-ups: sign in with your own grown-up name (for example andal_parent).")
         st.stop()
 apply_profile(AUTH["profile"])
 IS_PARENT = AUTH["role"] == "parent"
@@ -4468,21 +4493,70 @@ def chat_delete(mid):
     chat_change(change)
 
 
+CHAT_ARCHIVE_DAYS = 2      # messages older than this move to "Older chats"
+
+
+def _chat_is_old(m, now):
+    try:
+        return m.get("archived") or (now - datetime.fromisoformat(m["time"])).total_seconds() > CHAT_ARCHIVE_DAYS * 86400
+    except Exception:
+        return True
+
+
+def chat_archive_all():
+    def change(msgs):
+        if not msgs:
+            return False
+        for m in msgs:
+            m["archived"] = True
+    chat_change(change)
+
+
+def chat_delete_archived():
+    now = datetime.now(ZoneInfo(TIMEZONE))
+
+    def change(msgs):
+        keep = [m for m in msgs if not _chat_is_old(m, now)]
+        if len(keep) == len(msgs):
+            return False
+        msgs[:] = keep
+    chat_change(change)
+
+
+def chat_delete_all():
+    def change(msgs):
+        if not msgs:
+            return False
+        msgs[:] = []
+    chat_change(change)
+
+
+def _bubbles(msgs):
+    rows = []
+    for m in msgs:
+        mine = m["from"] == AUTH["profile"]
+        when = datetime.fromisoformat(m["time"]).strftime("%a %d %b %I:%M %p")
+        rows.append(f'<div class="cb {"me" if mine else "them"}"><div class="cn">{html_safe(m["name"])} · {when}</div>'
+                    f'{html_safe(m["text"])}</div>')
+    return '<div class="chatbox">' + "".join(rows) + "</div>"
+
+
 def chat_view():
     try:
         msgs, _ = chat_load()
     except Exception:
         st.warning("The chat couldn't be loaded just now. 🔄")
         return
-    if not msgs:
-        st.caption(f"No messages yet — say hi to {CHAT_FRIEND}! 👋")
-    html_rows = []
-    for m in msgs[-50:]:
-        mine = m["from"] == AUTH["profile"]
-        when = datetime.fromisoformat(m["time"]).strftime("%a %I:%M %p")
-        html_rows.append(f'<div class="cb {"me" if mine else "them"}"><div class="cn">{html_safe(m["name"])} · {when}</div>'
-                         f'{html_safe(m["text"])}</div>')
-    st.markdown('<div class="chatbox">' + "".join(html_rows) + "</div>", unsafe_allow_html=True)
+    now = datetime.now(ZoneInfo(TIMEZONE))
+    recent = [m for m in msgs if not _chat_is_old(m, now)]
+    older = [m for m in msgs if _chat_is_old(m, now)]
+    if recent:
+        st.markdown(_bubbles(recent[-50:]), unsafe_allow_html=True)
+    else:
+        st.caption(f"No new messages — say hi to {CHAT_FRIEND}! 👋" if not IS_PARENT else "No new messages.")
+    if older:
+        with st.expander(f"📦 Older chats ({len(older)}) — archived"):
+            st.markdown(_bubbles(older[-100:]), unsafe_allow_html=True)
 
 
 # ================================ MY CHARACTERS (draw → comes alive) ================================
@@ -4894,6 +4968,13 @@ today = today_local()
 TODAY_KEY = today.isoformat()
 data = st.session_state.data
 
+def add_notice(d, kind, text, **extra):
+    d.setdefault("notify", []).append(dict({"id": uuid.uuid4().hex[:8], "kind": kind, "text": text,
+                                            "time": datetime.now(ZoneInfo(TIMEZONE)).isoformat(timespec="seconds"),
+                                            "seen": False}, **extra))
+    d["notify"] = d["notify"][-60:]
+
+
 # ---- new badges? record + celebrate ----
 stats = compute_stats(data)
 earned_ids = {b[0] for b in BADGES if stats.get(b[4], 0) >= b[5]}
@@ -4903,8 +4984,15 @@ if new_badges and not st.session_state.get("badge_save_failed"):
         be = d.setdefault("badges_earned", {})
         for bid in new_badges:
             be.setdefault(bid, TODAY_KEY)
+        if IS_PARENT:      # the child celebrates on her own screen
+            add_notice(d, "badge", "", badges=sorted(new_badges))
     if update(_record):
-        st.session_state.new_badge_party = sorted(new_badges)
+        if IS_PARENT:
+            st.session_state.parent_note = ("🏅 New badge earned: " + ", ".join(
+                next(f"{b[1]} {b[2]}" for b in BADGES if b[0] == bid) for bid in sorted(new_badges))
+                + f" — {STUDENT_NAME} will get the celebration on her screen.")
+        else:
+            st.session_state.new_badge_party = sorted(new_badges)
     else:
         st.session_state.badge_save_failed = True
     data = st.session_state.data
@@ -4936,6 +5024,41 @@ with alerts:
         st.success(flash)
         st.balloons()
         play_sound("fanfare")
+    _unseen = [nt for nt in data.get("notify", []) if not nt.get("seen")] if not IS_PARENT else []
+    if _unseen:
+        _bdg, _party = [], False
+        for nt in _unseen[-6:]:
+            if nt["kind"] == "badge":
+                _bdg += [b for bid in nt.get("badges", []) for b in BADGES if b[0] == bid]
+            elif nt["kind"] == "approved":
+                _party = True
+                _names = "".join(f'<span class="ntask">{TASK_BY_ID[t]["emoji"]} {html_safe(TASK_BY_ID[t]["name"])}</span>'
+                                 for t in nt.get("tasks", []) if t in TASK_BY_ID)
+                _cnt = len(nt.get("tasks", []))
+                st.markdown(
+                    '<div class="notice"><div class="nh">🎉 Great news, ' + html_safe(STUDENT_NAME) + '!</div>'
+                    + (f'<div>Your grown-up approved <b>{_cnt} task{"s" if _cnt != 1 else ""}</b>:</div>'
+                       f'<div class="ntasks">{_names}</div>' if _cnt else "")
+                    + ((f'<div class="nmins">⭐ You have earned <b>{nt.get("minutes", 0)} minutes</b> today!</div>'
+                        if nt.get("minutes") else
+                        '<div class="nmins">🔓 Finish the rest of your must-dos to unlock today\'s screen time!</div>')
+                       if _cnt and nt.get("day") == TODAY_KEY else "")
+                    + (f'<div class="nwish">💌 {html_safe(nt["wish"])}</div>' if nt.get("wish") else "")
+                    + "</div>", unsafe_allow_html=True)
+        if _bdg:
+            badge_popup(_bdg)
+        elif _party:
+            play_sound("fanfare")
+        if _party:
+            st.balloons()
+        _ids = {nt["id"] for nt in _unseen}
+
+        def _seen(d):
+            for nt in d.get("notify", []):
+                if nt["id"] in _ids:
+                    nt["seen"] = True
+        update(_seen)
+        data = st.session_state.data
 
 
 def dismiss_message(mid):
@@ -5123,6 +5246,8 @@ with st.container(key="quickbar"):
             st.button(_th["name"] + (" ✔️" if _th["id"] == theme_id else ""), key=f"qtheme_{_th['id']}",
                       on_click=quick_theme, args=(_th["id"],), disabled=_th["id"] == theme_id, use_container_width=True)
 
+_parentbar = st.container(key="parentbar") if IS_PARENT else None   # filled in further down
+
 # ---- celebrations queued by callbacks ----
 fx = st.container()
 celebration = st.session_state.pop("celebrate", None)
@@ -5240,26 +5365,34 @@ def task_box(t, tip=None):
                         f'{html_safe(f.get("text", ""))}</div>', unsafe_allow_html=True)
 
 
-def approve_tasks(day_key, tids, pin_key=None):
+def _approve_in(d, day_key, tids, n):
+    ticked = set(d["days"].get(day_key, []))
+    ok = d.setdefault("approved", {}).setdefault(day_key, [])
+    new = [t for t in tids if t in ticked and t not in ok]
+    dk = date.fromisoformat(day_key)
+    if "chalisa" in new and weekend_rules(dk) and dk.weekday() == 6:
+        wc = weekend_chalisa(d, dk)
+        if wc and not wc["complete"]:
+            new.remove("chalisa")
+            n["held"] = True
+    ok.extend(new)
+    n["n"] = n.get("n", 0) + len(new)
+    n.setdefault("tasks", []).extend(new)
+    d.setdefault("earned", {})[day_key] = task_minutes(counted_set(d, day_key))
+    return new
+
+
+def approve_tasks(day_key, tids, pin_key=None, wish=""):
     if pin_key and not pin_ok(pin_key):
         st.session_state.approve_msg = ("bad", "That PIN isn't right.")
         return
     n = {}
 
     def change(d):
-        ticked = set(d["days"].get(day_key, []))
-        ok = d.setdefault("approved", {}).setdefault(day_key, [])
-        new = [t for t in tids if t in ticked and t not in ok]
-        dk = date.fromisoformat(day_key)
-        if "chalisa" in new and weekend_rules(dk) and dk.weekday() == 6:
-            wc = weekend_chalisa(d, dk)
-            if wc and not wc["complete"]:
-                new.remove("chalisa")
-                n["held"] = True
-        ok.extend(new)
-        n["n"] = len(new)
-        if day_key != TODAY_KEY:
-            d.setdefault("earned", {})[day_key] = task_minutes(counted_set(d, day_key))
+        _approve_in(d, day_key, tids, n)
+        if IS_PARENT and n.get("n"):
+            add_notice(d, "approved", "", tasks=n["tasks"], day=day_key, wish=wish,
+                       minutes=d.get("earned", {}).get(day_key, 0))
 
     if pin_key:
         st.session_state[pin_key] = ""
@@ -5270,6 +5403,74 @@ def approve_tasks(day_key, tids, pin_key=None):
             st.session_state.approve_note = (f"🙏 The Chalisa task can be approved on Sunday once this weekend's "
                                              f"{WEEKEND_CHALISA_PARTS} parts have been recited to a grown-up "
                                              "(🙏 Chalisa tab).")
+
+
+def approve_selected():
+    """Grown-up panel: approve every ticked box (all days) in one go, with an optional wish."""
+    picks = {}
+    for k, v in st.session_state.items():
+        if isinstance(k, str) and k.startswith("pa__") and v:
+            _, day_key, tid = k.split("__", 2)
+            picks.setdefault(day_key, []).append(tid)
+    wish = st.session_state.get("pa_wish", "")
+    wish = "" if wish.startswith("(") else wish
+    n = {}
+
+    def change(d):
+        for day_key, tids in picks.items():
+            _approve_in(d, day_key, tids, n)
+        if n.get("n") or wish:
+            add_notice(d, "approved", "", tasks=n.get("tasks", []), day=TODAY_KEY, wish=wish,
+                       minutes=d.get("earned", {}).get(TODAY_KEY, 0))
+        if wish:
+            d.setdefault("messages", []).append({"id": uuid.uuid4().hex[:8], "date": TODAY_KEY, "text": wish,
+                                                 "seen": False})
+    if not picks and not wish:
+        st.session_state.parent_note = "Tick at least one task first. ☑️"
+        return
+    if update(change):
+        for k in [k for k in st.session_state if isinstance(k, str) and k.startswith("pa__")]:
+            del st.session_state[k]
+        st.session_state.parent_note = (f"✅ {n.get('n', 0)} task{'s' if n.get('n', 0) != 1 else ''} approved"
+                                        + (" and your wish was sent" if wish else "")
+                                        + f" — {STUDENT_NAME} will see it on her screen. 💖")
+        if n.get("held"):
+            st.session_state.approve_note = (f"🙏 The Chalisa task waits until this weekend's {WEEKEND_CHALISA_PARTS} "
+                                             "parts have been recited (🙏 Chalisa tab).")
+
+
+# ---- grown-up approval panel (shown at the top of every page) ----
+PARENT_WISHES = ["(no wish — just approve)", "🌟 So proud of you, {n}!", "💖 Well done today, {n}!",
+                 "🦁 You're a champion, {n}!", "🌈 Keep it up, superstar!", "🤗 Big hug — great work today!",
+                 "🧠 Brilliant learning today, {n}!", "🙏 Thank you for being so disciplined, {n}!"]
+if IS_PARENT:
+    with _parentbar:
+        _pend = [(today - timedelta(days=b), sorted(pending_on(data, today - timedelta(days=b)))) for b in range(8)]
+        _pend = [(dd, p) for dd, p in _pend if p]
+        _np = sum(len(p) for _, p in _pend)
+        if _pn := st.session_state.pop("parent_note", None):
+            st.success(_pn)
+        if _an := st.session_state.pop("approve_note", None):
+            st.warning(_an)
+        if not _pend:
+            st.markdown(f'<div class="pb-ok">✅ All caught up — nothing waiting for approval.</div>',
+                        unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="pb-h">⏳ {_np} task{"s" if _np != 1 else ""} waiting for your approval</div>'
+                        '<div class="pb-s">Untick anything that isn\'t really done, then press Approve.</div>',
+                        unsafe_allow_html=True)
+            for dd, p in _pend:
+                st.markdown(f'<div class="pb-day">{"Today" if dd == today else dd.strftime("%A %d %b")}</div>',
+                            unsafe_allow_html=True)
+                _pc = st.columns(2)
+                for i, tid in enumerate(p):
+                    t = TASK_BY_ID.get(tid, {"emoji": "•", "name": tid})
+                    _pc[i % 2].checkbox(f"{t['emoji']} {t['name']}", value=True, key=f"pa__{dd.isoformat()}__{tid}")
+        _w1, _w2 = st.columns([3, 2], vertical_alignment="bottom")
+        _w1.selectbox("Add a wish for " + STUDENT_NAME + " (optional)", [w.format(n=STUDENT_NAME) for w in PARENT_WISHES],
+                      key="pa_wish")
+        _w2.button(f"✅ Approve{' (' + str(_np) + ')' if _np else ''}" if _pend else "💌 Send wish", key="pa_go",
+                   on_click=approve_selected, type="primary", use_container_width=True)
 
 
 def approve_today_from_box():
@@ -7051,6 +7252,23 @@ with tab_parent:
         if not IS_PARENT:
             st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
 
+        st.markdown("#### ✅ Approve ticked tasks" + (" (also at the top of every page)" if IS_PARENT else ""))
+        any_pending = False
+        for back in range(0, 8):
+            dd = today - timedelta(days=back)
+            pend = sorted(pending_on(data, dd))
+            if not pend:
+                continue
+            any_pending = True
+            st.markdown(f"**{dd.strftime('%A %d %b')}**")
+            st.multiselect("Really done:", pend, default=pend, key=f"gp_pick_{dd}",
+                           format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
+            st.button(f"Approve {dd.strftime('%d %b')}", key=f"gp_btn_{dd}",
+                      on_click=lambda k=dd.isoformat(), kk=f"gp_pick_{dd}": approve_tasks(k, list(st.session_state.get(kk, [])))) 
+        if not any_pending:
+            st.caption("Nothing waiting. 🎉")
+
+
         kms = data.get("kid_messages", [])
         st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
         ecfg = email_cfg()
@@ -7087,22 +7305,6 @@ with tab_parent:
                     c1.markdown(f"• {f['date']} · {FB_TASK_NAME.get(f['task'], f['task'])} {FB_STARS.get(f.get('stars', 0), '')}: "
                                 f"{md_safe(f.get('text', ''))} {'✅ seen' if f.get('seen') else '🕒 not seen yet'}")
                     c2.button("🗑️", key=f"fbdel_{f['id']}", on_click=delete_feedback, args=(f["id"],))
-
-        st.markdown("#### ✅ Approve ticked tasks")
-        any_pending = False
-        for back in range(0, 8):
-            dd = today - timedelta(days=back)
-            pend = sorted(pending_on(data, dd))
-            if not pend:
-                continue
-            any_pending = True
-            st.markdown(f"**{dd.strftime('%A %d %b')}**")
-            st.multiselect("Really done:", pend, default=pend, key=f"gp_pick_{dd}",
-                           format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
-            st.button(f"Approve {dd.strftime('%d %b')}", key=f"gp_btn_{dd}",
-                      on_click=lambda k=dd.isoformat(), kk=f"gp_pick_{dd}": approve_tasks(k, list(st.session_state.get(kk, [])))) 
-        if not any_pending:
-            st.caption("Nothing waiting. 🎉")
 
         st.markdown("#### 💌 Send a message")
         st.text_area("Message", key="parent_msg", placeholder=f"So proud of your maths today, {STUDENT_NAME}! 💖", height=80)
@@ -7243,6 +7445,14 @@ with tab_parent:
                 _cm = []
             if not _cm:
                 st.caption("No chat messages yet.")
+            else:
+                _g1, _g2, _g3 = st.columns(3)
+                _g1.button("📦 Archive all", key="gchat_arch", on_click=chat_archive_all, use_container_width=True)
+                _g2.button("🗑️ Delete archived", key="gchat_del_old", on_click=chat_delete_archived,
+                           use_container_width=True, help=f"Deletes messages older than {CHAT_ARCHIVE_DAYS} days or archived")
+                with _g3.popover("⚠️ Delete all", use_container_width=True):
+                    st.write("This removes every message for both girls.")
+                    st.button("Yes, delete the whole chat", key="gchat_del_all", on_click=chat_delete_all)
             for m in reversed(_cm[-40:]):
                 c1, c2 = st.columns([6, 1])
                 c1.markdown(f"**{md_safe(m['name'])}** · {m['time'][5:16].replace('T', ' ')} — {md_safe(m['text'])}")
@@ -7279,7 +7489,14 @@ if tab_chat is not None:
                 cc2.form_submit_button("Send 📨", on_click=chat_send, use_container_width=True)
         if err := st.session_state.pop("chat_err", None):
             st.error(err)
-        st.button("🔄 Refresh chat", key="chat_refresh")
+        _cb = st.columns(3 if IS_PARENT else 2)
+        _cb[0].button("🔄 Refresh chat", key="chat_refresh", use_container_width=True)
+        _cb[1].button("📦 Archive all now", key="chat_arch", on_click=chat_archive_all, use_container_width=True,
+                      help=f"Moves every message to 'Older chats'. Messages older than {CHAT_ARCHIVE_DAYS} days move there by themselves.")
+        if IS_PARENT:
+            with _cb[2].popover("🗑️ Delete…", use_container_width=True):
+                st.button("Delete the archived (older) messages", key="chat_del_old", on_click=chat_delete_archived)
+                st.button("⚠️ Delete the WHOLE chat", key="chat_del_all", on_click=chat_delete_all)
 
 
 
@@ -7845,6 +8062,36 @@ if tab_calm is not None:
         with st.expander("🧰 My calm-down toolbox"):
             st.markdown("When feelings get really big, try one of these:\n\n"
                         + "\n".join(f"- **{t[0]}** — {t[1]}" for t in CALM_TIPS[:8]))
+
+# ---- live updates: approvals, badges and messages from another device show up within ~30 seconds ----
+LIVE_SECONDS = 30
+
+
+def _live_check():
+    cfg = storage_cfg()
+    if not cfg:
+        return
+    try:
+        url, headers = _gh(cfg)
+        r = requests.get(url, headers=headers, timeout=10)
+        if r.status_code != 200:
+            return
+        body = r.json()
+    except Exception:
+        return
+    if body.get("sha") and body["sha"] != st.session_state.get("sha"):
+        try:
+            fresh = json.loads(base64.b64decode(body["content"]).decode())
+        except Exception:
+            return
+        st.session_state.data = migrate({**default_data(), **fresh}, today_local())
+        st.session_state.sha = body["sha"]
+        st.rerun()
+
+
+if hasattr(st, "fragment"):
+    st.fragment(run_every=LIVE_SECONDS)(_live_check)()
+
 
 # ---- hopping friends (purely decorative, never block taps) ----
 if ANIMATED_FRIENDS:
