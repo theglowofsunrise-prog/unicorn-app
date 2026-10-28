@@ -45,6 +45,7 @@ PIN_SECRET = "PARENT_PIN"      # which Secrets entry holds this child's grown-up
 EMAIL_SECRET = "email"         # which Secrets section holds this child's email alerts
 SHOW_TAMIL = True              # Tamil words tab
 SHOW_CHALISA = True            # Hanuman Chalisa tab
+SHOW_SINGAPORE = False         # 🇸🇬 Singapore & Chinese tab (switched on for Elyssa)
 
 # id: short code (don't change once she has progress)   minutes: screen time it earns
 # required: True = must be done before ANY screen time unlocks that day
@@ -110,6 +111,8 @@ def task_on(t, d) -> bool:
     days = t.get("days")
     if days == "weekend":
         return weekend_rules(d)
+    if days == "weekends":         # every Saturday & Sunday (no special weekend rules needed)
+        return d.weekday() >= 5
     if days == "school":
         return d.weekday() < 5
     return True
@@ -419,7 +422,7 @@ def html_safe(text) -> str:
     return htmllib.escape(str(text)).replace("$", "&#36;")
 
 
-st.set_page_config(page_title=f"{STUDENT_NAME} Earns Stars", page_icon="🦄", layout="centered")
+st.set_page_config(page_title="Unicorn Stars Club", page_icon="🦄", layout="centered")
 
 # ============================ HANUMAN CHALISA ============================
 # The Hanuman Chalisa (by Goswami Tulsidas, 16th century) has 2 opening dohas, 40 chaupais and
@@ -1065,6 +1068,16 @@ EXTRA_MATHS_TOPICS = [
     ("sub4", "➖ Subtracting 4-digit numbers"),
     ("decimals", "🔟 Decimal adding & subtracting"),
     ("div3", "➗ Dividing up to 3-digit numbers"),
+    # ---- more Year 4 topics ----
+    ("placevalue", "🔢 Place value (what is the digit worth?)"),
+    ("rounding", "🎯 Rounding to 10, 100 or 1,000"),
+    ("patterns", "🔁 Number patterns (what comes next?)"),
+    ("missing", "❓ Missing numbers (× and ÷ facts)"),
+    ("time", "⏰ Time (minutes, hours, how long?)"),
+    ("measure", "📏 Measuring (cm, m, km, g, kg, mL, L)"),
+    ("area", "🟩 Perimeter & area"),
+    ("money2", "💰 Money word problems"),
+    ("wordprob", "📖 Word problems"),
 ]
 EXTRA_MATHS_CARROTS = 1        # carrots per correct bonus answer
 
@@ -1369,6 +1382,123 @@ QUIZ = [
     ("🎉 Fun", "How many colours are on a traffic light?", "3", ["2", "4", "5"], "Red means stop, yellow means slow, green means go! 🚦"),
 ]
 QUIZ_TOPICS = sorted({q[0] for q in QUIZ})
+
+# ============================ SINGAPORE & CHINESE (Elyssa) ============================
+SG_GAME_GOAL = 5               # right answers in the word-match game (in one day) …
+SG_GAME_CARROTS = 2            # … earn this many carrots, once a day
+# Extra quiz questions — Elyssa's quiz gets these on top of the normal ones
+SG_QUIZ = [
+    ("🇸🇬 Singapore", "Singapore's famous statue, the Merlion, is half lion and half…", "Fish",
+     ["Bird", "Horse", "Dragon"], "The lion part stands for 'Singapura' (Lion City) and the fish for its fishing-village past. 🦁🐟"),
+    ("🇸🇬 Singapore", "What does the old name 'Singapura' mean?", "Lion City", ["Fish Town", "Sunny Island", "Green Garden"],
+     "Singa means lion and pura means city. 🦁"),
+    ("🇸🇬 Singapore", "Which colours are on Singapore's flag?", "Red and white", ["Blue and yellow", "Green and white", "Red and blue"],
+     "It also has a crescent moon and five stars. 🌙⭐"),
+    ("🇸🇬 Singapore", "How many official languages does Singapore have?", "4", ["1", "2", "6"],
+     "English, Malay, Mandarin Chinese and Tamil — Andal speaks Tamil and you speak Chinese! 🗣️"),
+    ("🇸🇬 Singapore", "What is Singapore's national flower?", "An orchid (Vanda Miss Joaquim)", ["A rose", "A sunflower", "A lotus"],
+     "It's a purple orchid named after Agnes Joaquim, who grew it. 🌸"),
+    ("🇸🇬 Singapore", "In Gardens by the Bay, what are the giant metal 'trees' called?", "Supertrees",
+     ["Megatrees", "Robotrees", "Skytowers"], "They are covered in real plants and light up with a music show at night. 🌳✨"),
+    ("🇸🇬 Singapore", "What is a hawker centre?", "A big food court with lots of small food stalls",
+     ["A bird zoo", "A shopping mall for toys", "A swimming centre"], "Singapore's hawker culture is so special it is on a UNESCO list! 🍜"),
+    ("🇸🇬 Singapore", "What is kaya, the spread on kaya toast?", "A sweet coconut and egg jam",
+     ["Peanut butter", "Chocolate spread", "Strawberry jam"], "Kaya toast with soft-boiled eggs is a famous Singapore breakfast. 🍞"),
+    ("🇸🇬 Singapore", "The airport in Singapore has the world's tallest indoor…", "Waterfall",
+     ["Slide", "Ferris wheel", "Volcano"], "The Rain Vortex at Jewel Changi Airport falls about 40 metres! 💦"),
+    ("🇸🇬 Singapore", "When is Singapore's National Day?", "9 August", ["1 January", "25 December", "26 January"],
+     "There's a big parade with fireworks every year. 🎆"),
+    ("🇸🇬 Singapore", "Singapore is very close to the equator. What is the weather like?", "Warm all year round",
+     ["Snowy in winter", "Cold all year", "Freezing at night"], "It's hot and rainy, with no snow at all! ☀️🌧️"),
+    ("🇸🇬 Singapore", "What money is used in Singapore?", "Singapore dollars", ["Australian dollars", "Pounds", "Rupees"],
+     "A Singapore dollar is split into 100 cents, just like ours. 💵"),
+    ("🇸🇬 Singapore", "Singapore has the world's first zoo for animals that are awake at…", "Night",
+     ["Lunchtime", "Breakfast", "Christmas"], "It's called the Night Safari and opened in 1994. 🦉"),
+    ("🀄 Chinese", "What does 你好 (nǐ hǎo) mean?", "Hello", ["Goodbye", "Thank you", "Good night"], "你好 is the first thing most people learn! 👋"),
+    ("🀄 Chinese", "How do you say 'thank you' in Chinese?", "谢谢 (xiè xie)", ["再见 (zài jiàn)", "你好 (nǐ hǎo)", "对不起 (duì bu qǐ)"],
+     "And when someone thanks you, say 不客气 (bú kè qi) — you're welcome! 🙏"),
+    ("🀄 Chinese", "What number is 三 (sān)?", "3", ["1", "5", "10"], "一 (yī) is 1, 二 (èr) is 2, 三 (sān) is 3. 🔢"),
+    ("🀄 Chinese", "What animal is 熊猫 (xióngmāo)?", "Panda", ["Cat", "Bear", "Tiger"],
+     "It means 'bear-cat'! 熊 is bear and 猫 is cat. 🐼"),
+    ("🀄 Chinese", "What does 大 (dà) mean?", "Big", ["Small", "Hot", "Fast"], "小 (xiǎo) means small. 🐘🐭"),
+    ("🀄 Chinese", "How many main tones does Mandarin Chinese have?", "4", ["2", "6", "10"],
+     "mā, má, mǎ, mà — the same sound with different tones can mean different words! 🎵"),
+    ("🀄 Chinese", "What is 小提琴 (xiǎo tí qín)?", "Violin", ["Piano", "Drum", "Guitar"], "Your instrument! 🎻"),
+    ("🀄 Chinese", "Which animal is the Chinese zodiac animal for 2026?", "Horse", ["Dragon", "Rabbit", "Tiger"],
+     "2026 is the Year of the Horse. 2027 will be the Year of the Goat. 🐴"),
+    ("🀄 Chinese", "What do people eat at the Mid-Autumn (Moon) Festival?", "Mooncakes", ["Pancakes", "Hot cross buns", "Pizza"],
+     "Families also carry pretty lanterns and look at the full moon. 🥮🏮"),
+    ("🀄 Chinese", "What does 加油 (jiā yóu) mean when you cheer someone on?", "You can do it!", ["Be quiet!", "Good night!", "Hurry up!"],
+     "It literally means 'add oil' — like putting fuel in a car! 💪"),
+    ("🀄 Chinese", "What are 饺子 (jiǎo zi)?", "Dumplings", ["Noodles", "Rice", "Ice cream"],
+     "Many families make dumplings together at Chinese New Year. 🥟"),
+]
+# Chinese words: (Chinese characters, pinyin, English)
+CHINESE_WORDS = {
+    "👋 Hello & manners": [("你好", "nǐ hǎo", "hello"), ("早上好", "zǎo shang hǎo", "good morning"),
+                         ("谢谢", "xiè xie", "thank you"), ("不客气", "bú kè qi", "you're welcome"),
+                         ("请", "qǐng", "please"), ("对不起", "duì bu qǐ", "sorry"), ("再见", "zài jiàn", "goodbye"),
+                         ("晚安", "wǎn ān", "good night")],
+    "🔢 Numbers": [("一", "yī", "1"), ("二", "èr", "2"), ("三", "sān", "3"), ("四", "sì", "4"), ("五", "wǔ", "5"),
+                  ("六", "liù", "6"), ("七", "qī", "7"), ("八", "bā", "8"), ("九", "jiǔ", "9"), ("十", "shí", "10")],
+    "👨‍👩‍👧 Family": [("妈妈", "mā ma", "mum"), ("爸爸", "bà ba", "dad"), ("哥哥", "gē ge", "older brother"),
+                    ("姐姐", "jiě jie", "older sister"), ("弟弟", "dì di", "younger brother"),
+                    ("妹妹", "mèi mei", "younger sister"), ("奶奶", "nǎi nai", "grandma (dad's mum)"),
+                    ("爷爷", "yé ye", "grandpa (dad's dad)"), ("朋友", "péng you", "friend")],
+    "🌈 Colours": [("红色", "hóng sè", "red"), ("蓝色", "lán sè", "blue"), ("黄色", "huáng sè", "yellow"),
+                  ("绿色", "lǜ sè", "green"), ("粉红色", "fěn hóng sè", "pink"), ("紫色", "zǐ sè", "purple"),
+                  ("白色", "bái sè", "white"), ("黑色", "hēi sè", "black")],
+    "🐼 Animals": [("猫", "māo", "cat"), ("狗", "gǒu", "dog"), ("兔子", "tù zi", "rabbit"), ("熊猫", "xióng māo", "panda"),
+                  ("狮子", "shī zi", "lion"), ("鱼", "yú", "fish"), ("鸟", "niǎo", "bird"), ("马", "mǎ", "horse"),
+                  ("龙", "lóng", "dragon"), ("水豚", "shuǐ tún", "capybara")],
+    "🥟 Food": [("米饭", "mǐ fàn", "rice"), ("面条", "miàn tiáo", "noodles"), ("饺子", "jiǎo zi", "dumplings"),
+               ("蔬菜", "shū cài", "vegetables"), ("水果", "shuǐ guǒ", "fruit"), ("苹果", "píng guǒ", "apple"),
+               ("牛奶", "niú nǎi", "milk"), ("水", "shuǐ", "water"), ("好吃", "hǎo chī", "yummy")],
+    "🏫 School & home": [("学校", "xué xiào", "school"), ("老师", "lǎo shī", "teacher"), ("书", "shū", "book"),
+                        ("作业", "zuò yè", "homework"), ("小提琴", "xiǎo tí qín", "violin"), ("看书", "kàn shū", "read a book"),
+                        ("睡觉", "shuì jiào", "sleep"), ("打扫", "dǎ sǎo", "clean up")],
+    "💖 Feelings & cheers": [("我很开心", "wǒ hěn kāi xīn", "I'm very happy"), ("我累了", "wǒ lèi le", "I'm tired"),
+                            ("我饿了", "wǒ è le", "I'm hungry"), ("我爱你", "wǒ ài nǐ", "I love you"),
+                            ("加油", "jiā yóu", "you can do it!"), ("太棒了", "tài bàng le", "awesome!")],
+}
+SG_TRIP = [   # one "stop" a day on a pretend trip around Singapore: (emoji, place, what's there, activity at home)
+    ("🦁", "Merlion Park", "Say hi to the Merlion! It sprays water from its mouth into Marina Bay.",
+     "Draw your own 'mer-animal': half one animal, half another!"),
+    ("🌳", "Gardens by the Bay", "Walk among the Supertrees, then visit a cool glass dome with a giant indoor mountain of plants.",
+     "Make a Supertree from a toilet roll, paper and leaves from the garden."),
+    ("💦", "Jewel at Changi Airport", "Look up at the Rain Vortex — the tallest indoor waterfall in the world!",
+     "Pour water slowly from a cup into a bowl. Can you make a 'waterfall' without splashing?"),
+    ("🍜", "A hawker centre", "Lots of little food stalls in one place: chicken rice, laksa, satay, chilli crab and more.",
+     "Set up a pretend food stall at home with prices — a grown-up buys from you. Practise giving change!"),
+    ("🦉", "The Night Safari", "A zoo you visit in the dark to see animals that wake up at night.",
+     "Turn off the lights, use a torch and play 'spot the toy animal' in your room."),
+    ("🏮", "Chinatown", "Red lanterns, temples and shops. At Chinese New Year the streets glow with lights.",
+     "Fold a paper lantern and write your favourite Chinese word on it."),
+    ("🪔", "Little India", "Colourful shops, flower garlands and yummy curries. Tamil is spoken here — ask Andal how to say hello!",
+     "Learn 'Vanakkam' (Tamil hello) from Andal in the chat, and teach her 你好!"),
+    ("🏝️", "Sentosa Island", "Beaches, a cable car over the sea and lots of fun outdoor places.",
+     "Draw a treasure map of an island. Where is the treasure hidden?"),
+    ("🌺", "The Botanic Gardens", "Home of the National Orchid Garden, with thousands of orchids.",
+     "Find 3 flowers or leaves outside and say their colours in Chinese."),
+    ("🍞", "A kopitiam (coffee shop)", "Locals eat kaya toast with soft-boiled eggs for breakfast.",
+     "With a grown-up, make toast with butter and jam 'kopitiam style' — cut into fingers!"),
+]
+SG_FACTS = [
+    "Singapore is a country, a city and an island — all at the same time! 🏝️",
+    "Singapore is made up of one main island and about 60 tiny islands. 🗺️",
+    "It's only about 1 degree north of the equator, so it is warm every single day. ☀️",
+    "Singapore has four official languages: English, Malay, Mandarin Chinese and Tamil. 🗣️",
+    "Chewing gum is not sold in shops in Singapore, to help keep the streets clean! 🚯",
+    "The Merlion has a mini 'Merlion cub' statue right next to it. 🦁",
+    "Singapore's national anthem is sung in Malay. 🎶",
+    "Some Singapore buildings have gardens and even running tracks on the roof! 🏃‍♀️",
+    "The Singapore Flyer is a giant observation wheel taller than a 40-storey building. 🎡",
+    "Lots of people in Singapore mix languages in one sentence — and that's okay! 😄",
+    "Singapore's hawker food is so special that it is on a UNESCO list of world treasures. 🍜",
+    "Otters live in Singapore's rivers, and you can sometimes see otter families in the city! 🦦",
+]
+SG_HELLOS = [("🇬🇧 English", "Hello!"), ("🇲🇾 Malay", "Apa khabar? (How are you?)"),
+             ("🀄 Mandarin Chinese", "你好 (nǐ hǎo)"), ("🪔 Tamil", "Vanakkam!")]
 
 RIDDLES = [
     ("What has hands but can't clap?", "A clock ⏰"), ("What has to be broken before you can use it?", "An egg 🥚"),
@@ -2775,7 +2905,11 @@ def make_problem(day: date, index: int):
     kind = rng.choice([
         "frac_add", "frac_sub", "frac_of", "equiv", "dec_add", "dec_sub", "dec_hund",
         "times", "mult_2x1", "divide", "money", "add_3d", "sub_3d",
-    ])
+    ] + [f"y4_{k}" for k in YEAR4_DAILY])
+    if kind.startswith("y4_"):
+        p = YEAR4_MORE[kind[3:]](rng)
+        return dict(topic=YEAR4_DAILY[kind[3:]], question=p["question"], answer=p["answer"], hint=p["hint"],
+                    clues=[p["clue"], p["clue2"]])
     if kind == "frac_add":
         d = rng.choice([4, 5, 6, 8, 10, 12])
         a = rng.randint(1, d - 2)
@@ -2885,6 +3019,181 @@ def parse_answer(text: str):
         return None
 
 
+# ----------------------- more Year 4 topics (used by bonus maths and the daily mix) -----------------------
+def _y4_placevalue(rng):
+    pos = rng.randrange(4)
+    while True:          # the asked-about digit must appear only once (and not be 0)
+        n = rng.randint(1000, 9999)
+        digits = str(n)
+        d = int(digits[pos])
+        if d and digits.count(digits[pos]) == 1:
+            break
+    worth = d * 10 ** (3 - pos)
+    place = ["thousands", "hundreds", "tens", "ones"][pos]
+    return dict(question=f"In {n:,}, what is the {d} worth?", answer=Fraction(worth), hint="Type a number, like 700",
+                clue=f"The {d} is in the {place} place.",
+                clue2=f"{d} in the {place} place = {d} × {10 ** (3 - pos):,}.")
+
+
+def _y4_rounding(rng):
+    to = rng.choice([10, 100, 1000])
+    n = rng.randint(1000, 9999)
+    if n % to == 0:
+        n += rng.randint(1, to - 1)
+    ans = (n + to // 2) // to * to
+    return dict(question=f"Round {n:,} to the nearest {to:,}.", answer=Fraction(ans), hint="Type a whole number",
+                clue=f"Which two multiples of {to:,} is {n:,} between?",
+                clue2=f"Look at the digit to the right of the {['tens', 'hundreds', 'thousands'][[10, 100, 1000].index(to)]} "
+                      "place: 5 or more rounds UP, 4 or less rounds DOWN.")
+
+
+def _y4_patterns(rng):
+    kind = rng.choice(["add", "add", "sub", "double"])
+    if kind == "double":
+        start = rng.randint(2, 9)
+        seq = [start * 2 ** i for i in range(5)]
+        return dict(question=f"What comes next?  {', '.join(map(str, seq[:4]))}, ?", answer=Fraction(seq[4]),
+                    hint="Type a whole number", clue="Each number is double the one before.",
+                    clue2=f"{seq[3]} × 2 = ?")
+    step = rng.choice([3, 4, 6, 7, 8, 9, 11, 25, 50, 100])
+    if kind == "add":
+        start = rng.randint(1, 60)
+        seq = [start + step * i for i in range(5)]
+    else:
+        start = rng.randint(step * 5, step * 5 + 200)
+        seq = [start - step * i for i in range(5)]
+    return dict(question=f"What comes next?  {', '.join(f'{x:,}' for x in seq[:4])}, ?", answer=Fraction(seq[4]),
+                hint="Type a whole number", clue="How much does it change from one number to the next?",
+                clue2=f"It goes {'up' if kind == 'add' else 'down'} by {step} each time.")
+
+
+def _y4_missing(rng):
+    a, b = rng.randint(2, 10), rng.randint(2, 12)
+    style = rng.randrange(3)
+    if style == 0:
+        return dict(question=f"? × {a} = {a * b}", answer=Fraction(b), hint="Type the missing number",
+                    clue=f"Which number times {a} makes {a * b}?", clue2=f"Try dividing: {a * b} ÷ {a}.")
+    if style == 1:
+        return dict(question=f"{a * b} ÷ ? = {b}", answer=Fraction(a), hint="Type the missing number",
+                    clue=f"Division turned around: {b} × ? = {a * b}.", clue2=f"Count up in {b}s until you reach {a * b}.")
+    return dict(question=f"{a} × ? = {a * b}", answer=Fraction(b), hint="Type the missing number",
+                clue=f"Skip-count in {a}s until you reach {a * b}.", clue2=f"{a * b} ÷ {a} = ?")
+
+
+def _y4_time(rng):
+    kind = rng.randrange(4)
+    if kind == 0:
+        h, m = rng.randint(1, 4), rng.choice([5, 10, 15, 20, 30, 45])
+        return dict(question=f"How many minutes are in {h} hour{'s' if h > 1 else ''} and {m} minutes?",
+                    answer=Fraction(h * 60 + m), hint="Type the number of minutes",
+                    clue="1 hour = 60 minutes.", clue2=f"{h} × 60, then add {m}.")
+    if kind == 1:
+        sh, sm = rng.randint(8, 10), rng.choice([0, 15, 30, 45])
+        dur = rng.choice([25, 35, 40, 45, 50, 55, 70, 85, 95])
+        eh, em = sh + (sm + dur) // 60, (sm + dur) % 60
+        act = rng.choice(["violin practice", "swimming", "a school concert", "a library visit", "art class"])
+        return dict(question=f"{STUDENT_NAME}'s {act} starts at {sh}:{sm:02d} am and ends at {eh}:{em:02d} "
+                             f"{'am' if eh < 12 else 'pm'}. How many minutes long is it?",
+                    answer=Fraction(dur), hint="Type the number of minutes",
+                    clue="Count on from the start time to the next whole hour first.",
+                    clue2="Then count on from that hour to the end time, and add the two parts.")
+    if kind == 2:
+        d = rng.choice([2, 3, 4, 5, 6, 7])
+        return dict(question=f"How many hours are in {d} days?", answer=Fraction(d * 24), hint="Type a whole number",
+                    clue="1 day = 24 hours.", clue2=f"{d} × 24 = ?")
+    h = rng.randint(13, 22)
+    m = rng.choice([0, 15, 30, 45])
+    return dict(question=f"The 24-hour clock says {h}:{m:02d}. What hour is that on a 12-hour clock (pm)?",
+                answer=Fraction(h - 12), hint="Type the hour, like 4",
+                clue="After 12 noon, take 12 away from the hour.", clue2=f"{h} − 12 = ?")
+
+
+def _y4_measure(rng):
+    kind = rng.choice(["m_cm", "cm_mm", "km_m", "L_mL", "kg_g", "cm_m"])
+    if kind == "m_cm":
+        n = rng.choice([2, 3, 4, 5, 6]) + rng.choice([0, 0.5])
+        return dict(question=f"{n:g} m = ? cm", answer=Fraction(str(n)) * 100, hint="Type the number of cm",
+                    clue="1 metre = 100 centimetres.", clue2=f"{n:g} × 100 = ?")
+    if kind == "cm_mm":
+        n = rng.randint(2, 30)
+        return dict(question=f"{n} cm = ? mm", answer=Fraction(n * 10), hint="Type the number of mm",
+                    clue="1 centimetre = 10 millimetres.", clue2=f"{n} × 10 = ?")
+    if kind == "km_m":
+        n = rng.choice([1, 2, 3, 4, 5]) + rng.choice([0, 0.5])
+        return dict(question=f"{n:g} km = ? m", answer=Fraction(str(n)) * 1000, hint="Type the number of metres",
+                    clue="1 kilometre = 1,000 metres.", clue2=f"{n:g} × 1,000 = ?")
+    if kind == "L_mL":
+        n = rng.choice([1, 2, 3, 4]) + rng.choice([0, 0.5])
+        return dict(question=f"A bottle holds {n:g} L of water. How many mL is that?", answer=Fraction(str(n)) * 1000,
+                    hint="Type the number of mL", clue="1 litre = 1,000 millilitres.", clue2=f"{n:g} × 1,000 = ?")
+    if kind == "kg_g":
+        n = rng.choice([1, 2, 3, 5]) + rng.choice([0, 0.5])
+        return dict(question=f"A bag of rice weighs {n:g} kg. How many grams is that?", answer=Fraction(str(n)) * 1000,
+                    hint="Type the number of grams", clue="1 kilogram = 1,000 grams.", clue2=f"{n:g} × 1,000 = ?")
+    n = rng.choice([200, 300, 400, 500, 600, 700, 800, 900])
+    return dict(question=f"{n} cm = ? m", answer=Fraction(n, 100), hint="Type the number of metres",
+                clue="100 centimetres make 1 metre.", clue2=f"{n} ÷ 100 = ?")
+
+
+def _y4_area(rng):
+    w, h = rng.randint(2, 12), rng.randint(2, 9)
+    if rng.random() < .5:
+        return dict(question=f"A rectangle is {w} cm long and {h} cm wide. What is its perimeter (in cm)?",
+                    answer=Fraction(2 * (w + h)), hint="Type the number of cm",
+                    clue="Perimeter = the distance all the way around the outside.",
+                    clue2=f"Add all four sides: {w} + {h} + {w} + {h}.")
+    return dict(question=f"A rectangle is {w} squares long and {h} squares wide. How many squares cover it (its area)?",
+                answer=Fraction(w * h), hint="Type the number of squares",
+                clue="Area = how many squares fit inside.", clue2=f"{h} rows of {w} squares: {h} × {w}.")
+
+
+def _y4_money2(rng):
+    price = rng.choice([150, 250, 275, 320, 350, 425, 450, 120, 180])
+    n = rng.randint(2, 4)
+    item = rng.choice(["kaya toasts", "fruit cups", "notebooks", "violin strings", "dumpling boxes", "bubble teas"])
+    have = 20 if price * n < 2000 else 50
+    if rng.random() < .5:
+        return dict(question=f"{n} {item} cost ${price / 100:.2f} each. How much do they cost altogether?",
+                    answer=Fraction(price * n, 100), hint="Type dollars and cents, like 7.50",
+                    clue=f"Add ${price / 100:.2f} {n} times, or multiply by {n}.",
+                    clue2=f"Work in cents: {price} × {n} cents, then change back to dollars.")
+    return dict(question=f"{STUDENT_NAME} buys {n} {item} at ${price / 100:.2f} each and pays with a ${have} note. "
+                         "How much change does she get?",
+                answer=Fraction(have * 100 - price * n, 100), hint="Type dollars and cents, like 7.50",
+                clue=f"First find the total: {n} × ${price / 100:.2f}.", clue2=f"Then change = ${have} − the total.")
+
+
+def _y4_word(rng):
+    kind = rng.randrange(4)
+    if kind == 0:
+        g, k = rng.randint(3, 9), rng.randint(4, 9)
+        return dict(question=f"{g * k} stickers are shared equally between {g} friends. How many does each friend get?",
+                    answer=Fraction(k), hint="Type a whole number", clue="Sharing equally means dividing.",
+                    clue2=f"{g * k} ÷ {g} = ?")
+    if kind == 1:
+        rows, per = rng.randint(4, 9), rng.randint(6, 12)
+        return dict(question=f"The school hall has {rows} rows with {per} chairs in each row. How many chairs?",
+                    answer=Fraction(rows * per), hint="Type a whole number", clue="Equal rows means multiply.",
+                    clue2=f"{rows} × {per} = ?")
+    if kind == 2:
+        a, b = rng.randint(120, 480), rng.randint(60, 300)
+        return dict(question=f"A library had {a + b} books. {b} were borrowed. How many are left on the shelves?",
+                    answer=Fraction(a), hint="Type a whole number", clue="'How many are left' means take away.",
+                    clue2=f"{a + b} − {b} = ?")
+    mins, days = rng.choice([10, 15, 20]), 7
+    return dict(question=f"{STUDENT_NAME} practises violin for {mins} minutes every day for a week. "
+                         "How many minutes is that altogether?",
+                answer=Fraction(mins * days), hint="Type the number of minutes", clue="A week has 7 days.",
+                clue2=f"{mins} × 7 = ?")
+
+
+YEAR4_MORE = {"placevalue": _y4_placevalue, "rounding": _y4_rounding, "patterns": _y4_patterns,
+              "missing": _y4_missing, "time": _y4_time, "measure": _y4_measure, "area": _y4_area,
+              "money2": _y4_money2, "wordprob": _y4_word}
+YEAR4_DAILY = {"time": "Time ⏰", "measure": "Measuring 📏", "area": "Perimeter & area 🟩",
+               "rounding": "Rounding 🎯", "placevalue": "Place value 🔢", "wordprob": "Word problem 📖"}
+
+
 # ----------------------- bonus maths (optional, earns carrots) -----------------------
 def make_extra_problem(topic: str, day: date, index: int):
     """dict(question, answer (Fraction or '<'/'>'/'='), hint, clue). Same topic+day+index = same problem."""
@@ -2950,6 +3259,8 @@ def make_extra_problem(topic: str, day: date, index: int):
             q, ans = f"{a / scale:.{places}f} − {b / scale:.{places}f} = ?", Fraction(a - b, scale)
         return dict(question=q, answer=ans, hint=f"Type a decimal, like {'3.4' if places == 1 else '3.45'}",
                     clue="Line up the decimal points, then add or subtract column by column, just like whole numbers.")
+    if topic in YEAR4_MORE:
+        return YEAR4_MORE[topic](rng)
     # div3: up to 3-digit ÷ 1-digit, always exact
     dv = rng.randint(2, 9); q = rng.randint(12, 999 // dv)
     return dict(question=f"{dv * q} ÷ {dv} = ?", answer=Fraction(q), hint="Type a whole number",
@@ -3181,6 +3492,7 @@ def compute_stats(data):
         "active_days": sum(1 for v in days.values() if v),
         "star_days": sum(is_star_day(v) for v in days.values()),
         "speak_days": count("speak"), "read_days": count("read"), "sing_days": count("sing"), "music_days": count("music"),
+        "veggie_days": count("veggies"), "clean_days": count("weekclean"), "sg_wins": len(data.get("sg_wins", [])),
         "sit2_days": count("sit2"), "exercise_days": count("exercise"), "homework_days": count("homework"),
         "max_speak_streak": max_streak(data, "speak"), "max_bed_streak": max_streak(data, "bed"),
         "maths_solved": len(logs),
@@ -3418,7 +3730,15 @@ def update(change) -> bool:
 
 
 def pin_ok(key) -> bool:
+    if globals().get("IS_PARENT"):      # signed in with a grown-up login: no PIN needed
+        return True
     return str(st.session_state.get(key, "")).strip() == parent_pin()
+
+
+def pin_box(where, label, key):
+    """A grown-up PIN box — hidden when a grown-up is already signed in with their own login."""
+    if not globals().get("IS_PARENT"):
+        where.text_input(label, type="password", key=key)
 
 
 # ------------------------------- bunny drawing -------------------------------
@@ -3802,7 +4122,10 @@ VISITOR_ENGINE = r"""
   }
   function visit(){
     if (document.hidden || !F.length) { schedule(); return; }
-    var i; do { i = Math.floor(Math.random() * F.length); } while (F.length > 1 && i === last); last = i;
+    var i = -1, fav = F.filter(function(x){ return x.often; });
+    if (fav.length) { var c = pick(fav); if (F.indexOf(c) !== last && Math.random() < c.often) i = F.indexOf(c); }
+    if (i < 0) { do { i = Math.floor(Math.random() * F.length); } while (F.length > 1 && i === last); }
+    last = i;
     var f = F[i], W = window.innerWidth, H = window.innerHeight;
     var edges = ['L', 'R', 'T', 'B'], a = pick(edges), b;
     do { b = pick(edges); } while (b === a);
@@ -3812,7 +4135,8 @@ VISITOR_ENGINE = r"""
     var flip = document.createElement('span'); flip.style.cssText = 'display:inline-block;'
       + (p2[0] > p0[0] ? 'transform:scaleX(-1)' : '');
     var em = document.createElement('span');
-    em.textContent = f.emoji; em.title = 'Tap me!';
+    if (f.svg) { em.innerHTML = f.svg; em.style.lineHeight = '0'; } else { em.textContent = f.emoji; }
+    em.title = 'Tap me!';
     em.setAttribute('data-joke', f.id); em.setAttribute('data-sound', f.sound || 'pop');
     em.style.cssText = 'display:inline-block;font-size:46px;padding:6px;cursor:pointer;pointer-events:auto;'
       + 'user-select:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))';
@@ -3861,7 +4185,7 @@ VISITOR_MOVES = {
 
 def install_visitors():
     friends = [{"id": f["id"], "emoji": f["emoji"], "move": f["move"], "sound": f.get("sound", "pop"),
-                "says": f["says"]} for f in FRIENDS]
+                "says": f["says"], "svg": f.get("svg", ""), "often": f.get("often", 0)} for f in FRIENDS]
     code = (VISITOR_ENGINE.replace("__FRIENDS__", json.dumps(friends))
             .replace("__MIN__", str(VISIT_EVERY_SECONDS[0])).replace("__MAX__", str(VISIT_EVERY_SECONDS[1]))
             .replace("__MOVES__", json.dumps(VISITOR_MOVES)))
@@ -3986,6 +4310,39 @@ def say_buttons(items, height=56):
         buttons.append(f'<button onclick="say({n},1)">🔊 {html_safe(label)}</button>')
     buttons.append(f'<button class="slow" onclick="say({len(items) - 1 if len(items) == 1 else 0},0.7)">🐢 Slowly</button>')
     _embed(SAY_HTML.replace("__BUTTONS__", "".join(buttons)).replace("__ITEMS__", json.dumps(data_items)), height)
+
+
+# Chinese word cards: tap to hear the word (uses the iPad / browser's own Chinese voice)
+ZH_CARDS_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Fredoka,system-ui,sans-serif;background:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;padding:4px}
+.c{border:0;border-radius:18px;padding:10px 8px 9px;cursor:pointer;text-align:center;color:#3b2350;
+ background:linear-gradient(160deg,#fff4f4,#fff9e6);box-shadow:0 4px 12px rgba(229,56,59,.13);font-family:inherit}
+.c:active{transform:scale(.96)} .h{font-size:30px;font-weight:700;color:#c81d25;line-height:1.2}
+.p{font-size:15px;font-weight:600;color:#7f3fbf} .e{font-size:14px;color:#6b5a74}
+.slow{display:block;margin:8px auto 0;border:0;border-radius:999px;padding:7px 14px;background:#f3e8ff;color:#5a2d66;
+ font:600 14px Fredoka,system-ui,sans-serif;cursor:pointer}
+</style></head><body><div class="grid">__CARDS__</div>
+<button class="slow" onclick="window.__slow=!window.__slow;this.textContent=window.__slow?'🐢 Slow voice: ON':'🐢 Slow voice: OFF'">🐢 Slow voice: OFF</button>
+<script>
+var W = __WORDS__;
+function voice(){ var vs = speechSynthesis.getVoices();
+  return vs.find(function(x){return x.lang && /^zh[-_](CN|Hans)/i.test(x.lang);}) ||
+         vs.find(function(x){return x.lang && x.lang.toLowerCase().indexOf('zh') === 0;}); }
+function say(i){ try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(W[i]); var v = voice();
+  if (v) u.voice = v; u.lang = v ? v.lang : 'zh-CN'; u.rate = window.__slow ? .55 : .85; speechSynthesis.speak(u); } catch(e) {} }
+if (window.speechSynthesis) speechSynthesis.getVoices();
+</script></body></html>"""
+
+
+def zh_cards(words, height=None):
+    """words: list of (characters, pinyin, english). Shows tappable cards that say the word in Chinese."""
+    cards = "".join(f'<button class="c" onclick="say({i})"><div class="h">{html_safe(h)}</div>'
+                    f'<div class="p">🔊 {html_safe(p)}</div><div class="e">{html_safe(e)}</div></button>'
+                    for i, (h, p, e) in enumerate(words))
+    rows = (len(words) + 2) // 3      # roughly 3 cards per row on an iPad
+    _embed(ZH_CARDS_HTML.replace("__CARDS__", cards).replace("__WORDS__", json.dumps([w[0] for w in words])),
+           height or 56 + rows * 112)
 
 
 # ------------------- Tamil script -> English letters (for online look-ups) -------------------
@@ -4274,43 +4631,130 @@ st.container = _card_container
 
 KIDS = {"andal": "Andal", "elyssa": "Elyssa"}
 
+# Elyssa's tasks. "minutes" = the screen-time points each task earns (up to DAILY_GOAL_MINUTES a day).
+# Keep the ids the same once she has progress (e.g. "music" is her violin task).
 ELYSSA_TASKS = [
     {"id": "homework", "emoji": "📒", "name": "Finish today's homework", "minutes": 10, "required": True,
      "section": "must"},
-    {"id": "exercise", "emoji": "⚽", "name": "Physical activity or sport for 30 minutes", "minutes": 10,
-     "required": True, "section": "must"},
-    {"id": "bed", "emoji": "🌙", "name": "Was in bed by 9:00 pm last night", "minutes": 0, "required": True,
+    {"id": "speak", "emoji": "🗣️", "name": "Speak Chinese for 10 minutes", "minutes": 5, "required": True,
      "section": "must"},
-    {"id": "speak", "emoji": "🗣️", "name": "Speak Chinese for 10 minutes", "minutes": 5, "section": "learn"},
+    {"id": "exercise", "emoji": "⚽", "name": "Physical activity or sport for 30 minutes", "minutes": 5,
+     "required": True, "section": "must"},
+    {"id": "bed", "emoji": "🌙", "name": "Slept on time: in bed by 9:00 pm last night", "minutes": 5,
+     "required": True, "section": "must"},
     {"id": "write1", "emoji": "✏️", "name": "English writing – piece 1 (on paper)", "minutes": 5, "section": "learn"},
     {"id": "write2", "emoji": "📝", "name": "English writing – piece 2 (on paper)", "minutes": 5, "section": "learn"},
     {"id": "maths", "emoji": "🔢", "name": f"Solve {MATHS_TO_SOLVE} maths problems", "minutes": 5,
      "section": "learn", "auto": True},
     {"id": "read", "emoji": "📚", "name": "Read a book for 20 minutes", "minutes": 5, "section": "learn"},
-    {"id": "veggies", "emoji": "🥦", "name": "Ate fruit and veggies today", "minutes": 3, "section": "body"},
-    {"id": "chore", "emoji": "🧹", "name": "Help at home or tidy my room for 15 minutes", "minutes": 5,
-     "section": "habits"},
-    {"id": "music", "emoji": "🎹", "name": "Practise music or my instrument for 15 minutes", "minutes": 5,
-     "section": "habits"},
+    {"id": "music", "emoji": "🎻", "name": "Practise violin for 15 minutes", "minutes": 5, "section": "learn"},
+    {"id": "veggies", "emoji": "🥦", "name": "Ate my vegetables today", "minutes": 5, "section": "body"},
+    {"id": "chore", "emoji": "🧺", "name": "Help at home for 15 minutes", "minutes": 3, "section": "habits",
+     "days": "school"},
+    {"id": "weekclean", "emoji": "🧹", "name": "Weekend clean-up: tidy my room, desk and clothes for 20 minutes",
+     "minutes": 10, "section": "habits", "days": "weekends"},
 ]
-ELYSSA_SECTIONS = [("must", "🦄 Must do today"), ("learn", "🐰 Learning tasks"), ("body", "🌈 Healthy me"),
-                   ("habits", "🎵 Home & music")]
+ELYSSA_SECTIONS = [("must", "🦄 Must do today"), ("learn", "🎻 Learning & violin"), ("body", "🥦 Healthy me"),
+                   ("habits", "🧹 Helping at home")]
 ELYSSA_REWARDS = [
     {"id": "book", "emoji": "📚", "name": "A new book of your choice", "streak_task": "read", "streak_len": 7,
      "window": 7, "needs": {"homework": 5},
      "how": "Read 7 days in a row, and do your homework on at least 5 of those days."},
-    {"id": "movie", "emoji": "🎬", "name": "Movie at the cinema", "streak_task": "exercise", "streak_len": 21,
-     "window": 30, "needs": {"read": 15},
+    {"id": "dumplings", "emoji": "🥟", "name": "Dumpling-making day with the family", "streak_task": "speak",
+     "streak_len": 14, "window": 14, "needs": {},
+     "how": "Speak Chinese 14 days in a row (no breaks!)."},
+    {"id": "picnic", "emoji": "🧺", "name": "Picnic in the park with a friend", "streak_task": "exercise",
+     "streak_len": 21, "window": 30, "needs": {"read": 15},
      "how": "Be active 21 days in a row (no breaks!), and read on at least 15 days that month."},
+    {"id": "fruitplate", "emoji": "🍓", "name": "Make a giant rainbow fruit platter (you choose the fruit)",
+     "streak_task": "veggies", "streak_len": 14, "window": 14, "needs": {},
+     "how": "Eat your vegetables 14 days in a row."},
     {"id": "icecream", "emoji": "🍦", "name": "Choose your own ice cream", "streak_task": "bed", "streak_len": 30,
      "window": 30, "needs": {}, "how": "In bed by 9:00 pm every night for 30 nights in a row."},
-    {"id": "playcentre", "emoji": "🎠", "name": "Play centre of your choice (up to $50)", "streak_task": "bed",
+    {"id": "artkit", "emoji": "🎨", "name": "A new art kit or Lego set (up to $50)", "streak_task": "bed",
      "streak_len": 90, "window": 90, "needs": {},
      "how": "In bed by 9:00 pm every night for 3 months (90 nights) in a row."},
-    {"id": "music_star", "emoji": "🎶", "name": "Music star: +60 screen-time minutes", "streak_task": "music",
+    {"id": "music_star", "emoji": "🎻", "name": "Violin star: +60 screen-time minutes", "streak_task": "music",
      "streak_len": 30, "window": 30, "needs": {}, "bonus_minutes": 60,
-     "how": "Practise music 15 minutes every day for 30 days in a row. The minutes go into your balance."},
+     "how": "Practise violin 15 minutes every day for 30 days in a row. The minutes go into your balance."},
 ]
+# Wheel prizes Elyssa does NOT get (no movies, play centres, Timezone or other paid outings)
+ELYSSA_NO_PRIZES = {"movie_night", "timezone", "bowling"}
+ELYSSA_EXTRA_BIG_PRIZES = [
+    {"id": "picnic_spin", "emoji": "🧺", "name": "Picnic at the park with my favourite snacks"},
+    {"id": "playdate", "emoji": "👭", "name": "Have a friend over for a play date"},
+    {"id": "craft", "emoji": "🎨", "name": "Big craft afternoon with a grown-up (I choose the project)"},
+    {"id": "dumpling_spin", "emoji": "🥟", "name": "Make dumplings together"},
+    {"id": "campnight", "emoji": "⛺", "name": "Living-room camp night with blankets and torches"},
+]
+ELYSSA_BIG_TEASERS = ["picnic_spin", "dumpling_spin"]
+ELYSSA_TIPS = {
+    "speak": "🗣️ Speak Chinese with Mum or Dad for 10 minutes. 💡 <b>Idea:</b> {idea} · Need a word? Try the "
+             "<b>🇸🇬 Singapore &amp; Chinese</b> tab!",
+    "music": "🎻 Practise violin for 15 minutes: warm up with open strings, then your scales, then your piece. "
+             "30 days in a row = 60 bonus minutes!",
+    "veggies": "🥦 Did you eat your vegetables at lunch and dinner? Try a new colour today! 🌈",
+    "bed": "🌙 Tick this in the morning if you were in bed by 9:00 pm last night. "
+           "30 nights in a row = 🍦 ice cream. 90 nights = 🎨 a new art kit or Lego set!",
+    "chore": "🧺 Ideas: set the table, fold washing, water the plants, help cook dinner.",
+    "weekclean": "🧹 Set a 20-minute timer. Make your bed, put clothes away, clear your desk, sort books and "
+                 "pencils, and pick everything up off the floor. Then show a grown-up! ✨",
+}
+ELYSSA_SPEAKING_IDEAS = [
+    "Tell Mum or Dad about your day at school — in Chinese! 🏫",
+    "Count from 1 to 20 in Chinese, then count your toys 🧸",
+    "Name 10 foods in the kitchen in Chinese 🍚",
+    "Describe your favourite animal: its colour, size and what it eats 🐼",
+    "Ask a grown-up 5 questions in Chinese, like 你喜欢什么? (What do you like?)",
+    "Plan a pretend trip to Singapore: where would you go and what would you eat? 🇸🇬",
+    "Tell a story about Kaya the Capybara 🦫",
+    "Talk about your violin piece: is it fast or slow, happy or sad? 🎻",
+    "Name all the colours you can see right now 🌈",
+    "Teach a grown-up a game, explaining the rules in Chinese 🎲",
+    "Say what you are thankful for today 🙏",
+    "Describe the weather today and what you're wearing ☀️",
+]
+# Kaya the Capybara visits Elyssa's screen now and then (she shows up more often than the other friends)
+CAPYBARA = {"id": "capybara", "name": "Kaya the Capybara", "emoji": "🦫", "move": "waddle", "sound": "grunt",
+            "often": 0.35, "says": [
+    "Kaya here! Capybaras are the biggest rodents in the world! 🦫",
+    "I'm Kaya — named after kaya toast, a yummy breakfast in Singapore! 🍞",
+    "Capybaras love water. We can hold our breath for about 5 minutes! 💦",
+    "Nǐ hǎo! 你好! That means hello in Chinese! 👋",
+    "Xiè xie! 谢谢! That means thank you! 🙏",
+    "Have you practised your violin today? 🎻",
+    "Eat your veggies — I munch grass and water plants all day! 🥦",
+    "Bedtime by 9! Capybaras love a good nap too 😴",
+    "In Singapore, the Merlion statue is half lion, half fish! 🦁🐟",
+    "Singapore has a garden with giant metal 'Supertrees' that light up at night! 🌳✨",
+    "Can you count to 5 in Chinese? yī, èr, sān, sì, wǔ! ✋",
+    "Other animals love sitting on capybaras — we're super chill! 🐦",
+    "Jiā yóu! 加油! That means 'You can do it!' 💪",
+    "Did you speak Chinese for 10 minutes today? 🗣️",
+    "Weekend? Time for a 20-minute clean-up! Then we chill 🧹",
+    "Singapore is only about 1 degree north of the equator — it's warm all year! ☀️",
+    "Wǒ ài nǐ, Mum and Dad! 我爱你 means I love you! 💖",
+    "Tidy room, happy capybara! 🦫✨",
+],
+    # a little drawn capybara (with an orange on her head, of course) — faces left like the emoji friends
+    "svg": ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 62" width="74" height="57">'
+            '<ellipse cx="42" cy="57" rx="30" ry="3.5" fill="rgba(0,0,0,.12)"/>'
+            '<rect x="24" y="44" width="7" height="12" rx="3" fill="#7d4f2b"/>'
+            '<rect x="35" y="46" width="7" height="10" rx="3" fill="#8a5a32"/>'
+            '<rect x="56" y="45" width="7" height="11" rx="3" fill="#7d4f2b"/>'
+            '<rect x="66" y="44" width="7" height="12" rx="3" fill="#8a5a32"/>'
+            '<ellipse cx="46" cy="36" rx="29" ry="16" fill="#a97142"/>'
+            '<ellipse cx="50" cy="31" rx="20" ry="8" fill="#b9834f" opacity=".7"/>'
+            '<rect x="4" y="15" width="28" height="23" rx="11" fill="#b07a4a"/>'
+            '<rect x="2" y="22" width="13" height="15" rx="6.5" fill="#8a5a32"/>'
+            '<ellipse cx="6.5" cy="26" rx="1.6" ry="1.1" fill="#3b2412"/>'
+            '<ellipse cx="25.5" cy="15" rx="4.5" ry="3.4" fill="#7d4f2b"/>'
+            '<circle cx="18" cy="23" r="2.4" fill="#2b1a0e"/><circle cx="17.2" cy="22.2" r=".8" fill="#fff"/>'
+            '<ellipse cx="17" cy="31" rx="3.4" ry="2" fill="#ff8fb3" opacity=".55"/>'
+            '<path d="M7 33 q3 2.5 6 0" stroke="#3b2412" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+            '<circle cx="19" cy="9.5" r="6.5" fill="#ff9f1c"/><circle cx="17" cy="7.5" r="1.6" fill="#ffc46b"/>'
+            '<path d="M19.5 3.2 q4 -3 7 -1 q-3.5 2.5 -7 1z" fill="#4caf50"/></svg>'),
+}
 
 
 def apply_profile(profile):
@@ -4318,6 +4762,7 @@ def apply_profile(profile):
     global STUDENT_NAME, LANGUAGE, TASKS, TASK_BY_ID, SECTIONS, REWARDS, BEDTIME, PARENT_WORDS, PROGRESS_PATH
     global PIN_SECRET, EMAIL_SECRET, SHOW_TAMIL, SHOW_CHALISA, WEEKEND_RULES_FROM, STAR_DAY_FIXES, BADGES
     global BIG_PRIZES, PRIZE_BY_ID, FRIENDS, SHOW_MINDFUL, ANGELS_ON
+    global SHOW_SINGAPORE, BIG_TEASERS, SPEAKING_IDEAS, QUIZ, QUIZ_TOPICS
     if profile != "elyssa":
         return
     STUDENT_NAME, LANGUAGE, BEDTIME, PARENT_WORDS = "Elyssa", "Chinese", "9:00 pm", "Mum or Dad"
@@ -4326,13 +4771,23 @@ def apply_profile(profile):
     PROGRESS_PATH, PIN_SECRET, EMAIL_SECRET = "progress_elyssa.json", "ELYSSA_PARENT_PIN", "email_elyssa"
     SHOW_TAMIL = SHOW_CHALISA = False
     SHOW_MINDFUL = ANGELS_ON = False          # Calm corner and angels are just for Andal
+    SHOW_SINGAPORE = True                     # 🇸🇬 Singapore & Chinese tab
     WEEKEND_RULES_FROM = "9999-12-31"          # Andal's weekend rules don't apply
     STAR_DAY_FIXES = []
+    SPEAKING_IDEAS = ELYSSA_SPEAKING_IDEAS
     BADGES = [b for b in BADGES if b[4] not in ("chalisa_parts", "sit2_days", "sing_days")] + [
-        ("music_maker", "🎹", "Music Maker", "Practise music on 10 days", "music_days", 10, "#e8f0ff", "#5b7cff")]
+        ("violin_star", "🎻", "Violin Star", "Practise violin on 10 days", "music_days", 10, "#e8f0ff", "#5b7cff"),
+        ("veggie_hero", "🥦", "Veggie Hero", "Eat your vegetables on 10 days", "veggie_days", 10, "#e3fbe6", "#3fbf5a"),
+        ("clean_queen", "🧹", "Clean Queen", "Do the weekend clean-up 4 times", "clean_days", 4, "#fff3e0", "#ff9f43"),
+        ("little_dragon", "🐉", "Little Dragon", "Win 5 Singapore & Chinese games", "sg_wins", 5, "#ffe3e3", "#e5383b")]
     BIG_PRIZES = [dict(p, rules=f"Only if at least {RESTAURANT_GAP_DAYS // 7} weeks have passed since our last "
-                       "family dinner at a restaurant.") if p["id"] == "restaurant" else p for p in BIG_PRIZES]
-    PRIZE_BY_ID = {p["id"]: p for p in BIG_PRIZES + SMALL_PRIZES}
+                       "family dinner at a restaurant.") if p["id"] == "restaurant" else p
+                  for p in BIG_PRIZES if p["id"] not in ELYSSA_NO_PRIZES] + ELYSSA_EXTRA_BIG_PRIZES
+    BIG_TEASERS = ELYSSA_BIG_TEASERS
+    # old prizes stay look-up-able so any earlier spins still show properly
+    PRIZE_BY_ID = {**PRIZE_BY_ID, **{p["id"]: p for p in BIG_PRIZES + SMALL_PRIZES}}
+    QUIZ = QUIZ + SG_QUIZ                     # added at the end so saved quiz answers keep matching
+    QUIZ_TOPICS = sorted({q[0] for q in QUIZ})
     # the friendly visitor 'Elyssa' becomes 'Andal' when Elyssa is using the app
     swapped = []
     for f in FRIENDS:
@@ -4340,7 +4795,7 @@ def apply_profile(profile):
             f = dict(f, name="Andal", emoji="👧🏽",
                      says=[x.replace("Elyssa:", "Andal:").replace("Hi Andal", "Hi Elyssa") for x in f["says"]])
         swapped.append(f)
-    FRIENDS = swapped
+    FRIENDS = swapped + [CAPYBARA]
 
 
 def login_table():
@@ -4398,7 +4853,7 @@ else:
             AUTH = st.session_state.auth = who(qu)
     if not AUTH:
         st.markdown(BASE_CSS + "<style>" + THEME_CSS["rainbow"] + "</style>", unsafe_allow_html=True)
-        st.markdown('<div class="hero"><div class="title">⭐ Earn Stars ⭐</div>'
+        st.markdown('<div class="hero"><div class="title">🦄 Unicorn Stars Club ⭐</div>'
                     '<div class="sub">Sign in to see your stars, tasks and rewards</div></div>', unsafe_allow_html=True)
         with st.container(border=True):
             with st.form("login", border=False):
@@ -5116,7 +5571,7 @@ def feedback_form(prefix, day_key, need_pin, task_ids=None):
         st.radio("Stars (optional)", [0, 1, 2, 3], key=f"{prefix}_stars", horizontal=True,
                  format_func=lambda n: FB_STARS[n] or "none")
         if need_pin:
-            st.text_input("Grown-up PIN", type="password", key=f"{prefix}_pin")
+            pin_box(st, "Grown-up PIN", f"{prefix}_pin")
         st.form_submit_button("💾 Save feedback", on_click=save_task_feedback, args=(prefix, day_key, need_pin))
     fmsg = st.session_state.pop(f"{prefix}_msg", None)
     if fmsg:
@@ -5181,7 +5636,7 @@ def send_kid_message():
         now = datetime.now(ZoneInfo(TIMEZONE)).strftime("%A %d %b, %I:%M %p")
         emailed = send_email(f"💌 New message from {STUDENT_NAME}",
                              f"{STUDENT_NAME} sent you a message ({now}):\n\n{text}\n\n"
-                             "Reply in the 🔐 Grown-ups tab of the app: https://andal-earns-stars.streamlit.app (sign in as "
+                             "Reply in the 🔐 Grown-ups tab of the app: https://unicorn-stars-club.streamlit.app (sign in as "
                              f"{AUTH['profile']}_parent)")
         st.session_state.kid_msg_note = ("ok", "💌 Sent! Your grown-up will see it" +
                                          (" in their email too. 📧" if emailed else " in the 🔐 Grown-ups tab."))
@@ -5215,7 +5670,7 @@ _floats = "".join(f'<div class="float f{i + 1}" data-joke="{k}" title="Tap me!">
 st.markdown(
     f"""<div class="hero">{_floats}
 <div class="title">Hi {html_safe(STUDENT_NAME)}!</div>
-<div class="sub">{today.strftime("%A, %d %B %Y")}</div>
+<div class="sub">🦄 Unicorn Stars Club · {today.strftime("%A, %d %B %Y")}</div>
 <div class="balance">⏳ {bal["balance"]} min screen time left</div><br>{pills}</div>""",
     unsafe_allow_html=True,
 )
@@ -5271,7 +5726,7 @@ if party:
 NAV = [
     ("day", "🌈", "My Day", ["🌈 Today"] + (["🧘 Calm corner"] if SHOW_MINDFUL else [])),
     ("learn", "📚", "Learn", ["🧮 Maths", "✍️ Stories"] + (["🗣️ Tamil words"] if SHOW_TAMIL else [])
-     + (["🙏 Chalisa"] if SHOW_CHALISA else [])),
+     + (["🙏 Chalisa"] if SHOW_CHALISA else []) + (["🇸🇬 Singapore & Chinese"] if SHOW_SINGAPORE else [])),
     ("play", "🎮", "Play", ["🧠 Quiz", "🎲 Brain games", "🎨 My characters"]),
     ("fun", "🏆", "Prizes", ["🎡 Spin", "🏆 Rewards", "🐰 Bunny & badges", "📅 My weeks"]),
     ("friends", "💬", "Chat", ["💬 Chat"] if CHAT_ON else []),
@@ -5309,6 +5764,7 @@ for _cid, _emo, _label, _names in NAV:
     _TABS["🐰 Bunny & badges"], _TABS["📅 My weeks"], _TABS["🔐 Grown-ups"])
 tab_tamil, tab_chalisa, tab_chat = _TABS.get("🗣️ Tamil words"), _TABS.get("🙏 Chalisa"), _TABS.get("💬 Chat")
 tab_calm = _TABS.get("🧘 Calm corner")
+tab_sg = _TABS.get("🇸🇬 Singapore & Chinese")
 tab_chars = _TABS["🎨 My characters"]
 tab_quiz, tab_games = _TABS["🧠 Quiz"], _TABS["🎲 Brain games"]
 
@@ -5560,7 +6016,7 @@ with tab_today:
         st.success(f"🦄 WOW {STUDENT_NAME}! You earned all {DAILY_GOAL_MINUTES} minutes today — it's a ⭐ star day!")
     else:
         st.info(f"🐰 Hop hop! {DAILY_GOAL_MINUTES - task_mins} more minutes to earn. You can do it!")
-    if pending_today:
+    if pending_today and not IS_PARENT:     # signed-in grown-ups approve in the panel at the top
         with st.container(border=True):
             st.markdown(f"**⏳ Waiting for a grown-up to check ({len(pending_today)})** — your stars, minutes and "
                         "surprises unlock once a grown-up says they're done! 🎁")
@@ -5569,7 +6025,7 @@ with tab_today:
                                key="approve_pick",
                                format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
                 a1, a2 = st.columns([2, 1])
-                a1.text_input("Grown-up PIN", type="password", key="approve_pin")
+                pin_box(a1, "Grown-up PIN", "approve_pin")
                 a2.write("")
                 a2.form_submit_button("Approve ✅", on_click=approve_today_from_box)
             amsg = st.session_state.pop("approve_msg", None)
@@ -5600,7 +6056,7 @@ with tab_today:
         with c2:
             if bal["balance"] > 0:
                 st.markdown("**🧑‍🍼 Grown-up: record minutes used**")
-                st.text_input("Grown-up PIN", type="password", key="use_pin")
+                pin_box(st, "Grown-up PIN", "use_pin")
                 quick = min(DAILY_GOAL_MINUTES, bal["balance"])
                 st.markdown(f"**Option 1** · used the full {quick} minutes")
                 st.toggle(f"Slide ➡️ {quick} minutes used", key="use_toggle", on_change=use_quick)
@@ -5698,6 +6154,8 @@ with tab_today:
         "bed": f"🌙 Tick this in the morning if you were in bed by {BEDTIME} last night. "
                "30 nights in a row = 🍦 ice cream. 90 nights = 🎠 play centre!",
     }
+    if AUTH["profile"] == "elyssa":
+        tips.update({k: v.replace("{idea}", SPEAKING_IDEAS[idea_n % len(SPEAKING_IDEAS)]) for k, v in ELYSSA_TIPS.items()})
     wc_today = weekend_chalisa(data, today) if WEEKEND else None
     if wc_today:
         if wc_today["mode"] == "learn":
@@ -6567,7 +7025,7 @@ if tab_chalisa is not None:
                     if reward:
                         with st.form("outing_form", border=False):
                             oc1, oc2 = st.columns([2, 1])
-                            oc1.text_input("Grown-up PIN after the outing", type="password", key="outing_pin")
+                            pin_box(oc1, "Grown-up PIN after the outing", "outing_pin")
                             oc2.write("")
                             oc2.form_submit_button("We went! ✅", on_click=give_outing)
 
@@ -6604,8 +7062,7 @@ if tab_chalisa is not None:
                             reps_box(i)
                             with st.form(f"rv_form_{i}", border=False):
                                 v1, v2 = st.columns([2, 1])
-                                v1.text_input("Grown-up PIN: recited without looking or help", type="password",
-                                              key=f"rv_pin_{i}")
+                                pin_box(v1, "Grown-up PIN: recited without looking or help", f"rv_pin_{i}")
                                 v2.write("")
                                 v2.form_submit_button("Recited ✅", on_click=revise_part, args=(i,))
                     continue
@@ -6618,10 +7075,141 @@ if tab_chalisa is not None:
                 st.checkbox(f"I recited all {len(part['lines'])} lines to a grown-up — without looking and without any help",
                             key=f"ch_ready_{i}", disabled=not ready_ok)
                 if CHALISA_NEEDS_PIN:
-                    st.text_input("Grown-up PIN", type="password", key=f"ch_pin_{i}")
+                    pin_box(st, "Grown-up PIN", f"ch_pin_{i}")
                 st.button(f"🙏 I've learned Part {i + 1}! (+{BEADS_PER_PART} 📿)", key=f"ch_submit_{i}", type="primary",
                           on_click=learn_part, args=(i,),
                           disabled=not (ready_ok and st.session_state.get(f"ch_ready_{i}")))
+
+
+# ============================ SINGAPORE & CHINESE (Elyssa) ============================
+SG_ALL_WORDS = [w for ws in CHINESE_WORDS.values() for w in ws]
+
+
+def sg_question(n):
+    """Word-match question n for today: show Chinese → pick English, or show English → pick Chinese."""
+    rng = random.Random(f"sg-{TODAY_KEY}-{n}")
+    right = rng.choice(SG_ALL_WORDS)
+    others = rng.sample([w for w in SG_ALL_WORDS if w[2] != right[2] and w[0] != right[0]], 2)
+    zh_to_en = rng.random() < .6
+    opts = [right] + others
+    rng.shuffle(opts)
+    return {"word": right, "zh_to_en": zh_to_en, "opts": opts}
+
+
+def sg_answer(n, pick):
+    q = sg_question(n)
+    ok = pick == q["word"][0]
+    out = {}
+
+    def change(d):
+        rec = d.setdefault("sg_game", {}).setdefault(TODAY_KEY, {"right": 0, "tries": 0, "paid": False})
+        rec["tries"] += 1
+        if ok:
+            rec["right"] += 1
+            if rec["right"] >= SG_GAME_GOAL and not rec["paid"]:
+                rec["paid"] = True
+                d["carrots"] = d.get("carrots", 0) + SG_GAME_CARROTS
+                d.setdefault("sg_wins", []).append(TODAY_KEY)
+                out["paid"] = True
+
+    if update(change):
+        h, p, e = q["word"]
+        st.session_state.sg_msg = (("ok", f"✅ 对了! (duì le — correct!) {h} ({p}) = {e}") if ok else
+                                   ("bad", f"Not quite! {h} ({p}) means **{e}**. 加油 — keep going! 💪"))
+        if out.get("paid"):
+            st.session_state.sg_msg = ("ok", f"🎉 {SG_GAME_GOAL} right today! +{SG_GAME_CARROTS} 🥕 carrots! "
+                                             f"{h} ({p}) = {e}")
+            st.session_state.celebrate = {"fact": None, "task": "sg"}
+        st.session_state.sg_n = n + 1
+
+
+def sg_next_idea():
+    st.session_state.sg_idea = st.session_state.get("sg_idea", 0) + 1
+
+
+SG_CSS = """<style>
+.sg-hero { text-align: center; padding: 18px 14px 14px; border-radius: 26px; margin: 4px 0 12px;
+  background: linear-gradient(135deg,#ffe3e3 0%,#fff6f6 45%,#fff3d6 100%); box-shadow: 0 10px 28px rgba(229,56,59,.14); }
+.sg-t { font-size: 1.9rem; font-weight: 700; color: #c81d25; } .sg-s { color: #7a4a55; font-size: 1.05rem; }
+.sg-card { border-radius: 22px; padding: 14px 18px; margin: 6px 0 10px; color: #3b2350; background: #fff;
+  border: 2px solid #ffc9c9; box-shadow: 0 8px 22px rgba(229,56,59,.10); }
+.sg-h { font-weight: 700; color: #c81d25; font-size: .95rem; text-transform: uppercase; letter-spacing: .04em; }
+.sg-big { font-size: 1.5rem; font-weight: 700; margin: 4px 0; }
+.sg-do { margin-top: 8px; background: #fff8e1; border-radius: 14px; padding: 6px 12px; color: #5a4300; }
+.sg-q { font-size: 1.45rem; font-weight: 600; color: #3b2350; margin: 4px 0 10px; line-height: 1.4; }
+.sg-zh { font-size: 2.2rem; font-weight: 700; color: #c81d25; } .sg-py { color: #7f3fbf; font-weight: 600; }
+.sg-hellos { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 10px; }
+.sg-hello { flex: 1 1 150px; border-radius: 18px; padding: 10px 12px; background: #fff; border: 2px solid #ffd6d6;
+  color: #6b5a74; text-align: center; } .sg-hello b { display: block; color: #3b2350; font-size: 1.15rem; margin-top: 2px; }
+[class*="st-key-sgopt"] button { min-height: 58px !important; font-size: 1.15rem !important; background: #fff4f4 !important;
+  border: 2px solid #ffc9c9 !important; }
+</style>"""
+
+
+if tab_sg is not None:
+    with tab_sg:
+        st.markdown(SG_CSS, unsafe_allow_html=True)
+        st.markdown('<div class="sg-hero"><div class="sg-t">🇸🇬 Singapore &amp; Chinese</div>'
+                    '<div class="sg-s">Fun facts, Chinese words you can hear, a word game and a pretend trip! 🦁🥟🏮</div></div>',
+                    unsafe_allow_html=True)
+        _sgd = today.toordinal()
+        # ---- today's stop on the pretend trip ----
+        _stop = SG_TRIP[_sgd % len(SG_TRIP)]
+        st.markdown(f'<div class="sg-card"><div class="sg-h">✈️ Today\'s stop on our Singapore trip</div>'
+                    f'<div class="sg-big">{_stop[0]} {html_safe(_stop[1])}</div><div>{html_safe(_stop[2])}</div>'
+                    f'<div class="sg-do">🏠 <b>Try at home:</b> {html_safe(_stop[3])}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="fact">🦫 <b>Kaya\'s Singapore fact:</b> {html_safe(SG_FACTS[_sgd % len(SG_FACTS)])}</div>',
+                    unsafe_allow_html=True)
+
+        # ---- Chinese word of the day ----
+        _wotd = SG_ALL_WORDS[(_sgd * 7) % len(SG_ALL_WORDS)]
+        st.markdown("#### 🀄 Chinese word of the day")
+        st.caption("Tap the card to hear it. Can you use it when you speak Chinese today?")
+        zh_cards([_wotd], height=170)
+
+        # ---- word-match game ----
+        st.markdown("#### 🎯 Word match game")
+        _rec = data.get("sg_game", {}).get(TODAY_KEY, {"right": 0, "tries": 0, "paid": False})
+        st.markdown(f'<div class="minutes"><span>✅ {_rec["right"]} right today</span>'
+                    f'<span>{"🥕 Carrots won today!" if _rec["paid"] else f"🎯 {SG_GAME_GOAL} right = {SG_GAME_CARROTS} 🥕"}</span></div>'
+                    f'<div class="rbar"><div class="rfill" style="width:{max(3, min(100, int(100 * _rec["right"] / SG_GAME_GOAL)))}%">'
+                    '</div></div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            _n = st.session_state.get("sg_n", _rec["tries"])
+            _q = sg_question(_n)
+            _h, _p, _e = _q["word"]
+            if _q["zh_to_en"]:
+                st.markdown(f'<div class="sg-q">What does <span class="sg-zh">{html_safe(_h)}</span> '
+                            f'<span class="sg-py">({html_safe(_p)})</span> mean?</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div class="sg-q">How do you say <b>“{html_safe(_e)}”</b> in Chinese?</div>',
+                            unsafe_allow_html=True)
+            _oc = st.columns(3)
+            for _i, (_col, _o) in enumerate(zip(_oc, _q["opts"])):
+                _col.button(_o[2] if _q["zh_to_en"] else f"{_o[0]}  {_o[1]}", key=f"sgopt{_i}_{_n}",
+                            on_click=sg_answer, args=(_n, _o[0]), use_container_width=True, disabled=IS_PARENT)
+            if _m := st.session_state.pop("sg_msg", None):
+                (st.success if _m[0] == "ok" else st.warning)(_m[1])
+            if IS_PARENT:
+                st.caption(f"{STUDENT_NAME} plays this on her own screen.")
+
+        # ---- word cards by topic ----
+        st.markdown("#### 🔊 Chinese words to listen to")
+        _cat = st.pills("Pick a topic", list(CHINESE_WORDS), key="sg_cat", default=list(CHINESE_WORDS)[0])
+        zh_cards(CHINESE_WORDS.get(_cat or list(CHINESE_WORDS)[0]))
+        st.caption("🔈 No sound? Turn the iPad's silent switch off and turn the volume up.")
+
+        # ---- hello in Singapore's 4 languages ----
+        st.markdown("#### 🗣️ Say hello in Singapore's 4 languages")
+        st.markdown('<div class="sg-hellos">' + "".join(f'<div class="sg-hello"><div>{html_safe(lang)}</div>'
+                    f'<b>{html_safe(word)}</b></div>' for lang, word in SG_HELLOS) + '</div>', unsafe_allow_html=True)
+
+        # ---- fun idea ----
+        st.markdown("#### 🎨 Singapore fun idea")
+        _idea = SG_TRIP[(_sgd + 3 + st.session_state.get("sg_idea", 0)) % len(SG_TRIP)]
+        st.markdown(f'<div class="idea">{_idea[0]} {html_safe(_idea[3])}</div>', unsafe_allow_html=True)
+        st.button("🔄 Another idea", key="sg_idea_btn", on_click=sg_next_idea)
+        st.caption("🧠 The Quiz has Singapore and Chinese questions too!")
 
 
 # ============================ SPIN & REWARDS ============================
@@ -6747,7 +7335,7 @@ def claim_box(reward_id, button="Give reward 🎁"):
     pin_key = f"pin_{reward_id}"
     with st.form(f"claim_{reward_id}", border=False):
         c1, c2 = st.columns([2, 1])
-        c1.text_input("Grown-up PIN to hand over the reward", type="password", key=pin_key)
+        pin_box(c1, "Grown-up PIN to hand over the reward", pin_key)
         c2.write("")
         c2.form_submit_button(button, on_click=give_reward, args=(reward_id, pin_key))
     if st.session_state.pop(pin_key + "_bad", False):
@@ -6803,7 +7391,7 @@ with tab_spin:
                 st.selectbox("Grown-up: which prize was enjoyed?", options=[s["id"] for s in waiting], key="prize_pick",
                              format_func=lambda sid: next(f"{s['emoji']} {s['name']}" for s in waiting if s["id"] == sid))
                 pc1, pc2 = st.columns([2, 1])
-                pc1.text_input("Grown-up PIN", type="password", key="prize_pin")
+                pin_box(pc1, "Grown-up PIN", "prize_pin")
                 pc2.write("")
                 pc2.form_submit_button("Mark as done ✅", on_click=mark_prize)
 
@@ -6820,7 +7408,7 @@ with tab_spin:
                         f'{max(3, min(100, int(100 * carrots / CARROTS_FOR_SWAP)))}%"></div></div>', unsafe_allow_html=True)
             if carrots >= CARROTS_FOR_SWAP:
                 with st.form("carrot_form", border=False):
-                    st.text_input("Grown-up PIN to approve the swap", type="password", key="carrot_pin")
+                    pin_box(st, "Grown-up PIN to approve the swap", "carrot_pin")
                     st.form_submit_button(f"Swap {CARROTS_FOR_SWAP} 🥕 for {CARROT_SWAP_MINUTES} min", on_click=swap_carrots)
     with cc2:
         with st.container(border=True):
@@ -6833,7 +7421,7 @@ with tab_spin:
             if fund >= TOY_FUND_TARGET:
                 st.success("🎉 Ready to go toy shopping!")
                 with st.form("toy_form", border=False):
-                    st.text_input("Grown-up PIN after the trip", type="password", key="toy_pin")
+                    pin_box(st, "Grown-up PIN after the trip", "toy_pin")
                     st.form_submit_button("We went toy shopping 🛍️", on_click=toy_trip)
             else:
                 st.caption("Win 🧸 on the big wheel to add $10.".replace("$", "\\$"))
@@ -7239,224 +7827,230 @@ with tab_parent:
                 else:
                     st.error("That PIN isn't right.")
     else:
-        if storage_cfg():
-            st.success(f"✅ Progress is saved to GitHub ({storage_cfg()['repo']}).")
-        else:
+        if not storage_cfg():
             st.warning("⚠️ Permanent saving isn't set up yet, so progress can be lost when the app "
                        "restarts or goes to sleep. Add the [storage] secrets to fix this.")
         if parent_pin() == "1234":
-            st.info("Tip: the PIN is still the default 1234. Set PARENT_PIN in the app's Secrets.")
+            st.info(f"Tip: the PIN is still the default 1234. Set {PIN_SECRET} in the app's Secrets.")
         note = st.session_state.pop("parent_note", None)
         if note:
             st.success(note)
         if not IS_PARENT:
             st.caption(f"🔒 This page locks itself after {PARENT_AUTOLOCK_MINUTES} minutes.")
 
-        st.markdown("#### ✅ Approve ticked tasks" + (" (also at the top of every page)" if IS_PARENT else ""))
-        any_pending = False
-        for back in range(0, 8):
-            dd = today - timedelta(days=back)
-            pend = sorted(pending_on(data, dd))
-            if not pend:
-                continue
-            any_pending = True
-            st.markdown(f"**{dd.strftime('%A %d %b')}**")
-            st.multiselect("Really done:", pend, default=pend, key=f"gp_pick_{dd}",
-                           format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
-            st.button(f"Approve {dd.strftime('%d %b')}", key=f"gp_btn_{dd}",
-                      on_click=lambda k=dd.isoformat(), kk=f"gp_pick_{dd}": approve_tasks(k, list(st.session_state.get(kk, [])))) 
-        if not any_pending:
-            st.caption("Nothing waiting. 🎉")
+        if not IS_PARENT:      # signed-in grown-ups approve in the panel at the top of every page
+            st.markdown("#### ✅ Approve ticked tasks" + (" (also at the top of every page)" if IS_PARENT else ""))
+            any_pending = False
+            for back in range(0, 8):
+                dd = today - timedelta(days=back)
+                pend = sorted(pending_on(data, dd))
+                if not pend:
+                    continue
+                any_pending = True
+                st.markdown(f"**{dd.strftime('%A %d %b')}**")
+                st.multiselect("Really done:", pend, default=pend, key=f"gp_pick_{dd}",
+                               format_func=lambda x: f"{TASK_BY_ID[x]['emoji']} {TASK_BY_ID[x]['name']}")
+                st.button(f"Approve {dd.strftime('%d %b')}", key=f"gp_btn_{dd}",
+                          on_click=lambda k=dd.isoformat(), kk=f"gp_pick_{dd}": approve_tasks(k, list(st.session_state.get(kk, [])))) 
+            if not any_pending:
+                st.caption("Nothing waiting. 🎉")
 
 
-        kms = data.get("kid_messages", [])
-        st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
-        ecfg = email_cfg()
-        if ecfg:
-            ec1, ec2 = st.columns([3, 1])
-            ec1.caption(f"📧 Email alerts are ON — new messages are emailed to {', '.join(ecfg['to'])}.")
-            ec2.button("Send test 📧", on_click=send_test_email, key="email_test")
-        else:
-            st.caption("📧 Email alerts are off. Add an [email] section to the app's Secrets to get messages by email.")
-        if not kms:
-            st.caption(f"No messages yet. {STUDENT_NAME} can send one from the bottom of her Today page.")
-        for km in reversed(kms[-10:]):
-            with st.container(border=True):
-                st.markdown(f"{'🆕 ' if not km.get('read') else ''}**{km['date']} {km.get('time', '')}** — {md_safe(km['text'])}")
-                if km.get("reply"):
-                    st.caption(f"↪️ You replied: {km['reply']}")
-                else:
-                    r1, r2 = st.columns([3, 1])
-                    r1.text_input("Reply", key=f"kreply_{km['id']}", label_visibility="collapsed",
-                                  placeholder="Write a reply…")
-                    r2.button("Reply ↪️", key=f"kreply_btn_{km['id']}", on_click=kid_msg_reply, args=(km["id"],))
-                    if not km.get("read"):
-                        st.button("Mark as read 👀", key=f"kread_{km['id']}", on_click=kid_msg_read, args=(km["id"],))
-
-        st.markdown("#### 💬 Give feedback on a task")
-        fb_days = [today - timedelta(days=i) for i in range(8)]
-        st.selectbox("Day", fb_days, key="gfb_day", format_func=lambda x: x.strftime("%A %d %b"))
-        feedback_form("gfb", st.session_state.get("gfb_day", today).isoformat(), False)
-        fbs = data.get("task_feedback", [])
-        if fbs:
-            with st.expander(f"Feedback given ({len(fbs)})"):
-                for f in reversed(fbs[-20:]):
-                    c1, c2 = st.columns([5, 1])
-                    c1.markdown(f"• {f['date']} · {FB_TASK_NAME.get(f['task'], f['task'])} {FB_STARS.get(f.get('stars', 0), '')}: "
-                                f"{md_safe(f.get('text', ''))} {'✅ seen' if f.get('seen') else '🕒 not seen yet'}")
-                    c2.button("🗑️", key=f"fbdel_{f['id']}", on_click=delete_feedback, args=(f["id"],))
-
-        st.markdown("#### 💌 Send a message")
-        st.text_area("Message", key="parent_msg", placeholder=f"So proud of your maths today, {STUDENT_NAME}! 💖", height=80)
-        st.button("Send 💌", on_click=send_message)
-        msgs = data.get("messages", [])
-        if msgs:
-            with st.expander(f"Messages sent ({len(msgs)})"):
-                for mm in reversed(msgs[-15:]):
-                    st.markdown(f"• {mm['date']}: {md_safe(mm['text'])} {'✅ seen' if mm.get('seen') else '🕒 not seen yet'}")
-
-        st.markdown("#### 📖 Stories")
-        all_stories = list(reversed(data.get("stories", [])))
-        if not all_stories:
-            st.caption("No stories yet.")
-        for s in all_stories[:15]:
-            with st.expander(md_safe(f"{s['title']} · {s['date']} · {s['words']} words · "
-                                     f"word of the day used {s.get('wotd_count', 0)}×")):
-                st.markdown(f'<div class="story">{html_safe(s["text"]).replace(chr(10), "<br>")}</div>',
-                            unsafe_allow_html=True)
-                st.text_area("Your note or suggestion", value=s.get("feedback", ""), key=f"fb_{s['id']}", height=70)
-                st.button("Save note", key=f"fbsave_{s['id']}", on_click=save_feedback, args=(s["id"],))
-
-        st.markdown("#### ✨ Word of the day")
-        cur = word_of_the_day(data, today)
-        st.caption(f"Today's word: **{md_safe(cur['word'])}**. Type your own to replace it for today "
-                   "(leave the word empty and save to go back to the automatic one).")
-        wc1, wc2 = st.columns(2)
-        wc1.text_input("Word", key="wotd_word")
-        wc2.text_input("Meaning", key="wotd_meaning")
-        st.button("Set word of the day", on_click=set_wotd)
-        sents = [x for x in data.get("wotd_sentences", {}).get(TODAY_KEY, []) if x]
-        if sents:
-            st.markdown(f"**{STUDENT_NAME}'s sentences today:**")
-            for x in sents:
-                st.markdown(f"• {md_safe(x)}")
-
-        chd = data.get("chalisa", {})
-        if SHOW_CHALISA:
-            st.markdown("#### 🙏 Hanuman Chalisa")
-            bsx = bead_status(data)
-            st.write(f"Parts learned: **{len(chd)}/{len(CHALISA_PARTS)}** · beads: **{bsx['beads']}** · "
-                     f"screen-time rewards given: {data.get('bead_rewards_given', 0)} × {BEAD_MINUTES} min")
-            if data.get("chalisa_reward"):
-                r_ = data["chalisa_reward"]
-                st.write(f"Outing choice: {md_safe(r_['choice'])} ({r_['status']})")
-            if chd:
-                last_i = max(int(k) for k in chd)
-                st.button(f"↩️ Undo Part {last_i + 1} (needs more practice)", on_click=undo_part, args=(last_i,))
-
-        st.markdown("#### 😊 Mood check-ins")
-        moods = data.get("moods", [])
-        if moods:
-            st.write("  ".join(f"{next((m[1] for m in MOODS if m[0] == x['mood']), '?')} "
-                               f"{date.fromisoformat(x['date']).strftime('%d %b')} {x['time']}"
-                               for x in reversed(moods[-20:])))
-        else:
-            st.caption("No check-ins yet.")
-        if SHOW_MINDFUL:
-            st.markdown("#### 🫙 Gratitude jar")
-            _gl = data.get("gratitude", [])
-            if _gl:
-                for g in reversed(_gl[-15:]):
-                    st.write(f"🙏 {date.fromisoformat(g['date']).strftime('%a %d %b')}: {md_safe(g['text'])}")
+        _gt = st.tabs(["📨 Messages", "📖 Stories & words", "😊 Moods & more", "⏳ Screen time & fixes", "🎁 Prizes & settings"] + (["💬 Girls' chat"] if CHAT_ON else []), key="gt_tabs")
+        with _gt[0]:
+            kms = data.get("kid_messages", [])
+            st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
+            ecfg = email_cfg()
+            if ecfg:
+                ec1, ec2 = st.columns([3, 1])
+                ec1.caption(f"📧 Email alerts are ON — new messages are emailed to {', '.join(ecfg['to'])}.")
+                ec2.button("Send test 📧", on_click=send_test_email, key="email_test")
             else:
-                st.caption("No thankful notes yet — they're written in the 🧘 Calm corner.")
+                st.caption("📧 Email alerts are off. Add an [email] section to the app's Secrets to get messages by email.")
+            if not kms:
+                st.caption(f"No messages yet. {STUDENT_NAME} can send one from the bottom of her Today page.")
+            for km in reversed(kms[-10:]):
+                with st.container(border=True):
+                    st.markdown(f"{'🆕 ' if not km.get('read') else ''}**{km['date']} {km.get('time', '')}** — {md_safe(km['text'])}")
+                    if km.get("reply"):
+                        st.caption(f"↪️ You replied: {km['reply']}")
+                    else:
+                        r1, r2 = st.columns([3, 1])
+                        r1.text_input("Reply", key=f"kreply_{km['id']}", label_visibility="collapsed",
+                                      placeholder="Write a reply…")
+                        r2.button("Reply ↪️", key=f"kreply_btn_{km['id']}", on_click=kid_msg_reply, args=(km["id"],))
+                        if not km.get("read"):
+                            st.button("Mark as read 👀", key=f"kread_{km['id']}", on_click=kid_msg_read, args=(km["id"],))
 
-        st.markdown("#### ⏳ Screen-time balance")
-        st.write(f"Balance **{bal['balance']} min** = earned from tasks {bal['earned']} + extras {bal['credits']} "
-                 f"− used {bal['used']}.")
-        used = data.get("used", [])
-        if used:
-            with st.expander("Recent minutes used"):
-                for u in reversed(used[-15:]):
-                    st.write(f"• {u['date']} {u.get('time', '')}: {u['minutes']} min")
-        ac1, ac2 = st.columns(2)
-        ac1.number_input("Add (+) or remove (−) minutes", step=5, value=0, key="adj_mins")
-        ac2.text_input("Reason", key="adj_reason", placeholder="e.g. extra chores")
-        st.button("Adjust balance", on_click=adjust_balance)
+            st.markdown("#### 💬 Give feedback on a task")
+            fb_days = [today - timedelta(days=i) for i in range(8)]
+            st.selectbox("Day", fb_days, key="gfb_day", format_func=lambda x: x.strftime("%A %d %b"))
+            feedback_form("gfb", st.session_state.get("gfb_day", today).isoformat(), False)
+            fbs = data.get("task_feedback", [])
+            if fbs:
+                with st.expander(f"Feedback given ({len(fbs)})"):
+                    for f in reversed(fbs[-20:]):
+                        c1, c2 = st.columns([5, 1])
+                        c1.markdown(f"• {f['date']} · {FB_TASK_NAME.get(f['task'], f['task'])} {FB_STARS.get(f.get('stars', 0), '')}: "
+                                    f"{md_safe(f.get('text', ''))} {'✅ seen' if f.get('seen') else '🕒 not seen yet'}")
+                        c2.button("🗑️", key=f"fbdel_{f['id']}", on_click=delete_feedback, args=(f["id"],))
 
-        st.markdown("#### 🍽️ Restaurant dinners")
-        last = data.get("last_restaurant")
-        st.caption(f"Last family restaurant dinner: {last or 'not recorded'}. The 🍽️ wheel prize needs "
-                   f"{RESTAURANT_GAP_DAYS // 7} weeks between dinners.")
-        st.button("We had a family restaurant dinner today", on_click=ate_out)
+            st.markdown("#### 💌 Send a message")
+            st.text_area("Message", key="parent_msg", placeholder=f"So proud of your maths today, {STUDENT_NAME}! 💖", height=80)
+            st.button("Send 💌", on_click=send_message)
+            msgs = data.get("messages", [])
+            if msgs:
+                with st.expander(f"Messages sent ({len(msgs)})"):
+                    for mm in reversed(msgs[-15:]):
+                        st.markdown(f"• {mm['date']}: {md_safe(mm['text'])} {'✅ seen' if mm.get('seen') else '🕒 not seen yet'}")
 
-        st.markdown("#### ✏️ Fix a day")
-        st.caption("Forgot to tick something on a past day? Correct it here — streaks update automatically.")
-        st.date_input("Day", value=today, max_value=today, key="edit_date", format="DD/MM/YYYY")
-        d_iso = st.session_state.edit_date.isoformat()
-        st.multiselect("Tasks done that day", options=[t["id"] for t in TASKS],
-                       default=sorted(ticked_on(data, st.session_state.edit_date) & set(TASK_BY_ID)),
-                       format_func=lambda tid: f"{TASK_BY_ID[tid]['emoji']} {TASK_BY_ID[tid]['name']}",
-                       key=f"edit_tasks_{d_iso}")
-        st.checkbox("⭐ Count this day as a star day (even if not every task is ticked)",
-                    value="star" in done_on(data, st.session_state.edit_date), key=f"edit_star_{d_iso}")
-        st.button("Save this day", on_click=save_edit)
+        with _gt[1]:
+            st.markdown("#### 📖 Stories")
+            all_stories = list(reversed(data.get("stories", [])))
+            if not all_stories:
+                st.caption("No stories yet.")
+            for s in all_stories[:15]:
+                with st.expander(md_safe(f"{s['title']} · {s['date']} · {s['words']} words · "
+                                         f"word of the day used {s.get('wotd_count', 0)}×")):
+                    st.markdown(f'<div class="story">{html_safe(s["text"]).replace(chr(10), "<br>")}</div>',
+                                unsafe_allow_html=True)
+                    st.text_area("Your note or suggestion", value=s.get("feedback", ""), key=f"fb_{s['id']}", height=70)
+                    st.button("Save note", key=f"fbsave_{s['id']}", on_click=save_feedback, args=(s["id"],))
 
-        if SHOW_TAMIL:
-            st.markdown("#### 🗣️ Add a Tamil word")
-            st.caption("Add words she looks up that aren't in the list yet (or change how your family says one).")
-            tc1, tc2, tc3 = st.columns(3)
-            tc1.text_input("English", key="tw_en")
-            tc2.text_input("Tamil (in English letters)", key="tw_ta")
-            tc3.text_input("Note (optional)", key="tw_note")
-            st.button("Add word", on_click=add_tamil_word)
-            with st.expander("➕ Add many words at once"):
-                st.caption("One word per line: english = tamil   (optionally add  | note). Example:\n"
-                           "rainbow = vaanavil\nkite = pattam | also 'paattam'")
-                st.text_area("Words", key="tw_bulk", height=140, placeholder="rainbow = vaanavil\nkite = pattam")
-                st.button("Add all", on_click=add_tamil_bulk)
-            if data.get("tamil_custom"):
-                st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
+            st.markdown("#### ✨ Word of the day")
+            cur = word_of_the_day(data, today)
+            st.caption(f"Today's word: **{md_safe(cur['word'])}**. Type your own to replace it for today "
+                       "(leave the word empty and save to go back to the automatic one).")
+            wc1, wc2 = st.columns(2)
+            wc1.text_input("Word", key="wotd_word")
+            wc2.text_input("Meaning", key="wotd_meaning")
+            st.button("Set word of the day", on_click=set_wotd)
+            sents = [x for x in data.get("wotd_sentences", {}).get(TODAY_KEY, []) if x]
+            if sents:
+                st.markdown(f"**{STUDENT_NAME}'s sentences today:**")
+                for x in sents:
+                    st.markdown(f"• {md_safe(x)}")
 
-        st.markdown("#### 🎁 Rewards & prizes history")
-        hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
-            (f"{r['emoji']} {r['name']}" for r in REWARDS if r["id"] == h["reward"]),
-            "🧸 Toy shop trip" if h["reward"] == "toyshop" else
-            ("🙏 Chalisa outing" if h["reward"] == "chalisa_outing" else h["reward"]))) for h in data["history"]]
-        hist += [(s.get("done_date", s["date"]), f"{s['emoji']} {s['name']} ({s['wheel']} wheel)")
-                 for s in data.get("spins", []) if s["status"] != "waiting"]
-        if hist:
-            for dt, name in sorted(hist, reverse=True)[:25]:
-                st.markdown(f"• {date.fromisoformat(dt).strftime('%d %b %Y')} — {md_safe(name)}")
-        else:
-            st.caption("None yet.")
+        with _gt[2]:
+            chd = data.get("chalisa", {})
+            if SHOW_CHALISA:
+                st.markdown("#### 🙏 Hanuman Chalisa")
+                bsx = bead_status(data)
+                st.write(f"Parts learned: **{len(chd)}/{len(CHALISA_PARTS)}** · beads: **{bsx['beads']}** · "
+                         f"screen-time rewards given: {data.get('bead_rewards_given', 0)} × {BEAD_MINUTES} min")
+                if data.get("chalisa_reward"):
+                    r_ = data["chalisa_reward"]
+                    st.write(f"Outing choice: {md_safe(r_['choice'])} ({r_['status']})")
+                if chd:
+                    last_i = max(int(k) for k in chd)
+                    st.button(f"↩️ Undo Part {last_i + 1} (needs more practice)", on_click=undo_part, args=(last_i,))
 
-        with st.expander("⚠️ Reset everything"):
-            confirm = st.checkbox(f"Yes, delete all of {STUDENT_NAME}'s progress")
-            st.button("Reset all progress", on_click=reset_all, disabled=not confirm)
+            st.markdown("#### 😊 Mood check-ins")
+            moods = data.get("moods", [])
+            if moods:
+                st.write("  ".join(f"{next((m[1] for m in MOODS if m[0] == x['mood']), '?')} "
+                                   f"{date.fromisoformat(x['date']).strftime('%d %b')} {x['time']}"
+                                   for x in reversed(moods[-20:])))
+            else:
+                st.caption("No check-ins yet.")
+            if SHOW_MINDFUL:
+                st.markdown("#### 🫙 Gratitude jar")
+                _gl = data.get("gratitude", [])
+                if _gl:
+                    for g in reversed(_gl[-15:]):
+                        st.write(f"🙏 {date.fromisoformat(g['date']).strftime('%a %d %b')}: {md_safe(g['text'])}")
+                else:
+                    st.caption("No thankful notes yet — they're written in the 🧘 Calm corner.")
+
+        with _gt[3]:
+            st.markdown("#### ⏳ Screen-time balance")
+            st.write(f"Balance **{bal['balance']} min** = earned from tasks {bal['earned']} + extras {bal['credits']} "
+                     f"− used {bal['used']}.")
+            used = data.get("used", [])
+            if used:
+                with st.expander("Recent minutes used"):
+                    for u in reversed(used[-15:]):
+                        st.write(f"• {u['date']} {u.get('time', '')}: {u['minutes']} min")
+            ac1, ac2 = st.columns(2)
+            ac1.number_input("Add (+) or remove (−) minutes", step=5, value=0, key="adj_mins")
+            ac2.text_input("Reason", key="adj_reason", placeholder="e.g. extra chores")
+            st.button("Adjust balance", on_click=adjust_balance)
+
+            st.markdown("#### 🍽️ Restaurant dinners")
+            last = data.get("last_restaurant")
+            st.caption(f"Last family restaurant dinner: {last or 'not recorded'}. The 🍽️ wheel prize needs "
+                       f"{RESTAURANT_GAP_DAYS // 7} weeks between dinners.")
+            st.button("We had a family restaurant dinner today", on_click=ate_out)
+
+            st.markdown("#### ✏️ Fix a day")
+            st.caption("Forgot to tick something on a past day? Correct it here — streaks update automatically.")
+            st.date_input("Day", value=today, max_value=today, key="edit_date", format="DD/MM/YYYY")
+            d_iso = st.session_state.edit_date.isoformat()
+            st.multiselect("Tasks done that day", options=[t["id"] for t in TASKS],
+                           default=sorted(ticked_on(data, st.session_state.edit_date) & set(TASK_BY_ID)),
+                           format_func=lambda tid: f"{TASK_BY_ID[tid]['emoji']} {TASK_BY_ID[tid]['name']}",
+                           key=f"edit_tasks_{d_iso}")
+            st.checkbox("⭐ Count this day as a star day (even if not every task is ticked)",
+                        value="star" in done_on(data, st.session_state.edit_date), key=f"edit_star_{d_iso}")
+            st.button("Save this day", on_click=save_edit)
+
+        with _gt[4]:
+            if SHOW_TAMIL:
+                st.markdown("#### 🗣️ Add a Tamil word")
+                st.caption("Add words she looks up that aren't in the list yet (or change how your family says one).")
+                tc1, tc2, tc3 = st.columns(3)
+                tc1.text_input("English", key="tw_en")
+                tc2.text_input("Tamil (in English letters)", key="tw_ta")
+                tc3.text_input("Note (optional)", key="tw_note")
+                st.button("Add word", on_click=add_tamil_word)
+                with st.expander("➕ Add many words at once"):
+                    st.caption("One word per line: english = tamil   (optionally add  | note). Example:\n"
+                               "rainbow = vaanavil\nkite = pattam | also 'paattam'")
+                    st.text_area("Words", key="tw_bulk", height=140, placeholder="rainbow = vaanavil\nkite = pattam")
+                    st.button("Add all", on_click=add_tamil_bulk)
+                if data.get("tamil_custom"):
+                    st.caption("Added: " + ", ".join(f"{k} → {v['tamil']}" for k, v in data["tamil_custom"].items()))
+
+            st.markdown("#### 🎁 Rewards & prizes history")
+            hist = [(h["date"], "$1" if h["reward"] == "dollar" else next(
+                (f"{r['emoji']} {r['name']}" for r in REWARDS if r["id"] == h["reward"]),
+                "🧸 Toy shop trip" if h["reward"] == "toyshop" else
+                ("🙏 Chalisa outing" if h["reward"] == "chalisa_outing" else h["reward"]))) for h in data["history"]]
+            hist += [(s.get("done_date", s["date"]), f"{s['emoji']} {s['name']} ({s['wheel']} wheel)")
+                     for s in data.get("spins", []) if s["status"] != "waiting"]
+            if hist:
+                for dt, name in sorted(hist, reverse=True)[:25]:
+                    st.markdown(f"• {date.fromisoformat(dt).strftime('%d %b %Y')} — {md_safe(name)}")
+            else:
+                st.caption("None yet.")
+
+            with st.expander("⚠️ Reset everything"):
+                confirm = st.checkbox(f"Yes, delete all of {STUDENT_NAME}'s progress")
+                st.button("Reset all progress", on_click=reset_all, disabled=not confirm)
 
         if CHAT_ON:
-            st.markdown("#### 💬 The girls' chat")
-            st.caption(f"Everything {STUDENT_NAME} and {CHAT_FRIEND} write to each other. Both families' grown-ups "
-                       "can read it and remove a message if needed.")
-            try:
-                _cm, _ = chat_load()
-            except Exception:
-                _cm = []
-            if not _cm:
-                st.caption("No chat messages yet.")
-            else:
-                _g1, _g2, _g3 = st.columns(3)
-                _g1.button("📦 Archive all", key="gchat_arch", on_click=chat_archive_all, use_container_width=True)
-                _g2.button("🗑️ Delete archived", key="gchat_del_old", on_click=chat_delete_archived,
-                           use_container_width=True, help=f"Deletes messages older than {CHAT_ARCHIVE_DAYS} days or archived")
-                with _g3.popover("⚠️ Delete all", use_container_width=True):
-                    st.write("This removes every message for both girls.")
-                    st.button("Yes, delete the whole chat", key="gchat_del_all", on_click=chat_delete_all)
-            for m in reversed(_cm[-40:]):
-                c1, c2 = st.columns([6, 1])
-                c1.markdown(f"**{md_safe(m['name'])}** · {m['time'][5:16].replace('T', ' ')} — {md_safe(m['text'])}")
-                c2.button("🗑️", key=f"chdel_{m['id']}", on_click=chat_delete, args=(m["id"],), help="Remove this message")
+            with _gt[5]:
+                st.markdown("#### 💬 The girls' chat")
+                st.caption(f"Everything {STUDENT_NAME} and {CHAT_FRIEND} write to each other. Both families' grown-ups "
+                           "can read it and remove a message if needed.")
+                try:
+                    _cm, _ = chat_load()
+                except Exception:
+                    _cm = []
+                if not _cm:
+                    st.caption("No chat messages yet.")
+                else:
+                    _g1, _g2, _g3 = st.columns(3)
+                    _g1.button("📦 Archive all", key="gchat_arch", on_click=chat_archive_all, use_container_width=True)
+                    _g2.button("🗑️ Delete archived", key="gchat_del_old", on_click=chat_delete_archived,
+                               use_container_width=True, help=f"Deletes messages older than {CHAT_ARCHIVE_DAYS} days or archived")
+                    with _g3.popover("⚠️ Delete all", use_container_width=True):
+                        st.write("This removes every message for both girls.")
+                        st.button("Yes, delete the whole chat", key="gchat_del_all", on_click=chat_delete_all)
+                for m in reversed(_cm[-40:]):
+                    c1, c2 = st.columns([6, 1])
+                    c1.markdown(f"**{md_safe(m['name'])}** · {m['time'][5:16].replace('T', ' ')} — {md_safe(m['text'])}")
+                    c2.button("🗑️", key=f"chdel_{m['id']}", on_click=chat_delete, args=(m["id"],), help="Remove this message")
         if not IS_PARENT and st.button("🔒 Lock"):
             st.session_state.parent_ok = False
             st.rerun()
