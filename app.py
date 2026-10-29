@@ -2,6 +2,7 @@ import base64
 import html as htmllib
 import json
 import random
+import os
 import re
 import uuid
 from datetime import date, datetime, timedelta
@@ -125,7 +126,7 @@ def tasks_for(d):
 def required_ids(d) -> set:
     req = {t["id"] for t in TASKS if t.get("required") and task_on(t, d)}
     if weekend_rules(d):
-        req |= set(WEEKEND_MUST)
+        req |= set(WEEKEND_MUST) & {t["id"] for t in TASKS if task_on(t, d)}
     return req
 
 SECTIONS = [
@@ -1395,7 +1396,7 @@ SG_QUIZ = [
     ("🇸🇬 Singapore", "Which colours are on Singapore's flag?", "Red and white", ["Blue and yellow", "Green and white", "Red and blue"],
      "It also has a crescent moon and five stars. 🌙⭐"),
     ("🇸🇬 Singapore", "How many official languages does Singapore have?", "4", ["1", "2", "6"],
-     "English, Malay, Mandarin Chinese and Tamil — Andal speaks Tamil and you speak Chinese! 🗣️"),
+     "English, Malay, Mandarin Chinese and Tamil. You speak one of them — Chinese! 🗣️"),
     ("🇸🇬 Singapore", "What is Singapore's national flower?", "An orchid (Vanda Miss Joaquim)", ["A rose", "A sunflower", "A lotus"],
      "It's a purple orchid named after Agnes Joaquim, who grew it. 🌸"),
     ("🇸🇬 Singapore", "In Gardens by the Bay, what are the giant metal 'trees' called?", "Supertrees",
@@ -1474,8 +1475,8 @@ SG_TRIP = [   # one "stop" a day on a pretend trip around Singapore: (emoji, pla
      "Turn off the lights, use a torch and play 'spot the toy animal' in your room."),
     ("🏮", "Chinatown", "Red lanterns, temples and shops. At Chinese New Year the streets glow with lights.",
      "Fold a paper lantern and write your favourite Chinese word on it."),
-    ("🪔", "Little India", "Colourful shops, flower garlands and yummy curries. Tamil is spoken here — ask Andal how to say hello!",
-     "Learn 'Vanakkam' (Tamil hello) from Andal in the chat, and teach her 你好!"),
+    ("🪔", "Little India", "Colourful shops, flower garlands, spices and yummy curries.",
+     "Draw a flower garland using as many bright colours as you can, and name each colour in Chinese."),
     ("🏝️", "Sentosa Island", "Beaches, a cable car over the sea and lots of fun outdoor places.",
      "Draw a treasure map of an island. Where is the treasure hidden?"),
     ("🌺", "The Botanic Gardens", "Home of the National Orchid Garden, with thousands of orchids.",
@@ -1498,7 +1499,7 @@ SG_FACTS = [
     "Otters live in Singapore's rivers, and you can sometimes see otter families in the city! 🦦",
 ]
 SG_HELLOS = [("🇬🇧 English", "Hello!"), ("🇲🇾 Malay", "Apa khabar? (How are you?)"),
-             ("🀄 Mandarin Chinese", "你好 (nǐ hǎo)"), ("🪔 Tamil", "Vanakkam!")]
+             ("🀄 Mandarin Chinese", "你好 (nǐ hǎo)")]
 
 RIDDLES = [
     ("What has hands but can't clap?", "A clock ⏰"), ("What has to be broken before you can use it?", "An egg 🥚"),
@@ -2579,7 +2580,8 @@ h3, h4 { font-weight: 700 !important; letter-spacing: .01em; }
   min-height: 46px; font-size: 1.02rem !important; border-width: 2px !important; transition: transform .12s, box-shadow .12s; }
 .stButton > button:hover, .stFormSubmitButton > button:hover { transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(155,107,255,.25); }
-.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"],
+.stFormSubmitButton > button[kind="primaryFormSubmit"], [data-testid="stBaseButton-primaryFormSubmit"] {
   background: linear-gradient(90deg,#ff5fa2,#9b6bff) !important; border: 0 !important; color: #fff !important; }
 .stTextInput input, .stNumberInput input, .stTextArea textarea { border-radius: 14px !important; font-size: 1.05rem !important; }
 [data-testid="stExpander"] details { border-radius: 18px !important; background: rgba(255,255,255,.9); }
@@ -4762,7 +4764,7 @@ def apply_profile(profile):
     global STUDENT_NAME, LANGUAGE, TASKS, TASK_BY_ID, SECTIONS, REWARDS, BEDTIME, PARENT_WORDS, PROGRESS_PATH
     global PIN_SECRET, EMAIL_SECRET, SHOW_TAMIL, SHOW_CHALISA, WEEKEND_RULES_FROM, STAR_DAY_FIXES, BADGES
     global BIG_PRIZES, PRIZE_BY_ID, FRIENDS, SHOW_MINDFUL, ANGELS_ON
-    global SHOW_SINGAPORE, BIG_TEASERS, SPEAKING_IDEAS, QUIZ, QUIZ_TOPICS
+    global SHOW_SINGAPORE, BIG_TEASERS, SPEAKING_IDEAS, QUIZ, QUIZ_TOPICS, QUOTES, MINDFUL_QUOTES
     if profile != "elyssa":
         return
     STUDENT_NAME, LANGUAGE, BEDTIME, PARENT_WORDS = "Elyssa", "Chinese", "9:00 pm", "Mum or Dad"
@@ -4788,14 +4790,13 @@ def apply_profile(profile):
     PRIZE_BY_ID = {**PRIZE_BY_ID, **{p["id"]: p for p in BIG_PRIZES + SMALL_PRIZES}}
     QUIZ = QUIZ + SG_QUIZ                     # added at the end so saved quiz answers keep matching
     QUIZ_TOPICS = sorted({q[0] for q in QUIZ})
-    # the friendly visitor 'Elyssa' becomes 'Andal' when Elyssa is using the app
-    swapped = []
-    for f in FRIENDS:
-        if f["id"] == "elyssa":
-            f = dict(f, name="Andal", emoji="👧🏽",
-                     says=[x.replace("Elyssa:", "Andal:").replace("Hi Andal", "Hi Elyssa") for x in f["says"]])
-        swapped.append(f)
-    FRIENDS = swapped + [CAPYBARA]
+    # the friendly visitor 'Elyssa' isn't shown on Elyssa's own screen (Priya, Mia and Kaya still visit)
+    swapped = [f for f in FRIENDS if f["id"] != "elyssa"]
+    FRIENDS = [dict(f, says=[x.replace("Say Vanakkam! Va-nak-kam! 🙏", "Say Nǐ hǎo! 你好! 👋") for x in f["says"]])
+               for f in swapped] + [CAPYBARA]
+    # quotes and tips: leave out the Tamil poets (they stay for Andal)
+    QUOTES = [q for q in QUOTES if "Tamil" not in q[2]]
+    MINDFUL_QUOTES = [q for q in MINDFUL_QUOTES if "Tamil" not in q[2]]
 
 
 def login_table():
@@ -4813,7 +4814,179 @@ def parent_names():
     return {str(k).lower(): str(v).lower() for k, v in dict(t).items()} if t else {}
 
 
+# ------------------------------- accounts & passwords -------------------------------
+# Starting passwords come from Secrets ([logins] and [admins]). When someone changes their password, a salted
+# hash of the new one is saved in accounts.json in the private data repo, and that replaces the Secrets one.
+ACCOUNTS_PATH = "accounts.json"
+PW_MIN, PW_MAX = 8, 64
+PW_RULES = [f"At least {PW_MIN} characters", "At least one CAPITAL letter", "At least one small letter",
+            "At least one number", "Not your name, and not the same as your old password"]
+PW_COMMON = {"password1", "password123", "qwerty123", "letmein1", "welcome1", "unicorn1", "abcd1234", "12345678a"}
+
+
+def admin_table():
+    """Admin logins, in Secrets:  [admins]  admin = "a strong password"."""
+    t = secret("admins")
+    return {str(k).lower(): str(v) for k, v in dict(t).items()} if t else {}
+
+
+def _acc_cfg():
+    cfg = storage_cfg()
+    return dict(cfg, path=ACCOUNTS_PATH) if cfg else None
+
+
+def accounts_load():
+    cfg = _acc_cfg()
+    if cfg:
+        url, headers = _gh(cfg)
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code == 404:
+            return {}, None
+        r.raise_for_status()
+        body = r.json()
+        return json.loads(base64.b64decode(body["content"]).decode()), body["sha"]
+    f = Path("accounts_local.json")
+    return (json.loads(f.read_text()) if f.exists() else {}), None
+
+
+@st.cache_data(show_spinner=False, ttl=300)
+def _accounts_cached():
+    return accounts_load()[0]
+
+
+def accounts():
+    try:
+        return _accounts_cached()
+    except Exception:
+        return {}
+
+
+def accounts_change(change) -> bool:
+    for attempt in range(3):
+        try:
+            acc, sha = accounts_load()
+            if change(acc) is False:
+                return False
+            text = json.dumps(acc, indent=1, sort_keys=True)
+            cfg = _acc_cfg()
+            if cfg:
+                url, headers = _gh(cfg)
+                payload = {"message": "accounts", "content": base64.b64encode(text.encode()).decode()}
+                if sha:
+                    payload["sha"] = sha
+                r = requests.put(url, headers=headers, json=payload, timeout=15)
+                r.raise_for_status()
+            else:
+                Path("accounts_local.json").write_text(text)
+            _accounts_cached.clear()
+            return True
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code in (409, 422) and attempt < 2:
+                continue
+            return False
+        except Exception:
+            return False
+    return False
+
+
+def _pw_hash(pw: str, salt: str) -> str:
+    return hashlib.pbkdf2_hmac("sha256", pw.encode(), bytes.fromhex(salt), 200_000).hex()
+
+
+def all_users():
+    return {**login_table(), **admin_table()}
+
+
+def password_ok(user: str, pw: str) -> bool:
+    rec = accounts().get("users", {}).get(user)
+    if rec:
+        return hmac.compare_digest(_pw_hash(pw, rec["salt"]), rec["hash"])
+    table = all_users()
+    return user in table and hmac.compare_digest(pw, table[user])
+
+
+def cred_key(user: str) -> str:
+    """What 'keep me signed in' is tied to — changes whenever the password changes."""
+    rec = accounts().get("users", {}).get(user)
+    return rec["hash"] if rec else all_users().get(user, "")
+
+
+def password_problems(user: str, new: str, confirm: str, old: str = None):
+    p = []
+    if len(new) < PW_MIN:
+        p.append(f"It needs at least {PW_MIN} characters (it has {len(new)}).")
+    if len(new) > PW_MAX:
+        p.append(f"It can have at most {PW_MAX} characters.")
+    if not re.search(r"[A-Z]", new):
+        p.append("Add at least one CAPITAL letter.")
+    if not re.search(r"[a-z]", new):
+        p.append("Add at least one small letter.")
+    if not re.search(r"\d", new):
+        p.append("Add at least one number.")
+    if user and user.replace("_parent", "") in new.lower():
+        p.append("Don't use your name in the password.")
+    if new.lower() in PW_COMMON:
+        p.append("That password is too easy to guess.")
+    if old is not None and new == old:
+        p.append("The new password must be different from the old one.")
+    if new != confirm:
+        p.append("The two new passwords don't match.")
+    return p
+
+
+def set_password(user: str, new: str, by: str) -> bool:
+    salt = os.urandom(16).hex()
+
+    def change(acc):
+        acc.setdefault("users", {})[user] = {"salt": salt, "hash": _pw_hash(new, salt), "by": by,
+                                             "changed": datetime.now(ZoneInfo(TIMEZONE)).strftime("%d %b %Y %H:%M")}
+    return accounts_change(change)
+
+
+def reset_password(user: str) -> bool:
+    def change(acc):
+        if user not in acc.get("users", {}):
+            return False
+        del acc["users"][user]
+    return accounts_change(change)
+
+
+def change_my_password(user: str, prefix: str):
+    old = str(st.session_state.get(f"{prefix}_old", ""))
+    new = str(st.session_state.get(f"{prefix}_new", ""))
+    confirm = str(st.session_state.get(f"{prefix}_new2", ""))
+    if not password_ok(user, old):
+        st.session_state[f"{prefix}_msg"] = ("bad", ["Your current password isn't right."])
+        return
+    probs = password_problems(user, new, confirm, old)
+    if probs:
+        st.session_state[f"{prefix}_msg"] = ("bad", probs)
+        return
+    if not set_password(user, new, user):
+        st.session_state[f"{prefix}_msg"] = ("bad", ["The password couldn't be saved just now — please try again."])
+        return
+    for k in ("old", "new", "new2"):
+        st.session_state[f"{prefix}_{k}"] = ""
+    if st.query_params.get("u") == user:          # keep this device signed in with the new password
+        st.query_params["k"] = _token(user, cred_key(user))
+    st.session_state[f"{prefix}_msg"] = ("ok", ["✅ Password changed! Use your new password next time you sign in."])
+
+
+def password_form(user: str, prefix: str):
+    with st.form(f"{prefix}_form", border=False):
+        st.text_input("Current password", type="password", key=f"{prefix}_old")
+        st.text_input("New password", type="password", key=f"{prefix}_new")
+        st.text_input("New password again", type="password", key=f"{prefix}_new2")
+        st.form_submit_button("Change password 🔑", on_click=change_my_password, args=(user, prefix), type="primary",
+                              use_container_width=True)
+    st.caption("Password rules: " + " · ".join(PW_RULES))
+    if m := st.session_state.pop(f"{prefix}_msg", None):
+        (st.success if m[0] == "ok" else st.error)("\n".join(f"- {x}" for x in m[1]) if len(m[1]) > 1 else m[1][0])
+
+
 def who(user):
+    if user in admin_table():
+        return {"user": user, "profile": "", "role": "admin"}
     pmap = parent_names()
     if user in pmap:
         return {"user": user, "profile": pmap[user], "role": "parent"}
@@ -4821,16 +4994,21 @@ def who(user):
     return {"user": user, "profile": profile, "role": "parent" if user.endswith("_parent") else "kid"}
 
 
+def can_sign_in(user):
+    return user in admin_table() or (user in login_table() and who(user)["profile"] in KIDS)
+
+
 def do_login():
     u = str(st.session_state.get("li_user", "")).strip().lower()
     pw = str(st.session_state.get("li_pw", ""))
-    table = login_table()
-    if u in table and hmac.compare_digest(pw, table[u]) and who(u)["profile"] in KIDS:
+    if can_sign_in(u) and password_ok(u, pw):
         st.session_state.auth = who(u)
+        if st.session_state.auth["role"] == "admin":
+            st.session_state.admin_auth = st.session_state.auth
         st.session_state.li_pw = ""
         if st.session_state.get("li_keep"):
             st.query_params["u"] = u
-            st.query_params["k"] = _token(u, table[u])
+            st.query_params["k"] = _token(u, cred_key(u))
     else:
         st.session_state.li_err = "That name or password isn't right. Try again! 🔐"
 
@@ -4841,30 +5019,117 @@ def do_logout():
     st.query_params.clear()
 
 
+def admin_open(user):
+    """Admin: look at the app exactly as this person sees it."""
+    admin = st.session_state.get("admin_auth")
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
+    st.session_state.admin_auth = admin
+    st.session_state.auth = dict(who(user), via_admin=admin["user"])
+
+
+def admin_back():
+    admin = st.session_state.get("admin_auth")
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
+    st.session_state.admin_auth = st.session_state.auth = admin
+
+
+def admin_set_pw(user):
+    new = str(st.session_state.get(f"adm_new_{user}", ""))
+    probs = password_problems(user, new, new)
+    if probs:
+        st.session_state.adm_msg = ("bad", f"{user}: " + " ".join(probs))
+        return
+    if set_password(user, new, st.session_state.admin_auth["user"]):
+        st.session_state[f"adm_new_{user}"] = ""
+        st.session_state.adm_msg = ("ok", f"✅ New password set for {user}. Let them know what it is.")
+    else:
+        st.session_state.adm_msg = ("bad", "Couldn't save just now — try again.")
+
+
+def admin_reset_pw(user):
+    if reset_password(user):
+        st.session_state.adm_msg = ("ok", f"↩️ {user} is back to the password in Secrets.")
+
+
+def admin_console():
+    me = AUTH["user"]
+    st.markdown(BASE_CSS + "<style>" + THEME_CSS["rainbow"] + "</style>", unsafe_allow_html=True)
+    c1, c2 = st.columns([4, 1])
+    c1.markdown(f"## 🛡️ Admin\nSigned in as **{me}**. Open any account to see and use it exactly as that person does.")
+    c2.button("Sign out", on_click=do_logout, key="adm_signout", use_container_width=True)
+    if m := st.session_state.pop("adm_msg", None):
+        (st.success if m[0] == "ok" else st.error)(m[1])
+    acc = accounts().get("users", {})
+    if not storage_cfg():
+        st.warning("Saving isn't set up ([storage] in Secrets), so password changes won't last.")
+    groups = {}
+    for u in sorted(login_table()):
+        w = who(u)
+        if w["profile"] in KIDS:
+            groups.setdefault(w["profile"], []).append((u, w["role"]))
+    for prof, users in groups.items():
+        st.markdown(f"### {KIDS[prof]}'s family")
+        for u, role in sorted(users, key=lambda x: x[1] != "kid"):
+            with st.container(border=True):
+                a, b, c = st.columns([3, 2, 2], vertical_alignment="center")
+                rec = acc.get(u)
+                a.markdown(f"**{u}** · {'🧒 child' if role == 'kid' else '🧑 grown-up'}  \n"
+                           + (f"🔑 Own password (changed {rec['changed']}{' by ' + rec['by'] if rec.get('by') != u else ''})"
+                              if rec else "🔑 Starting password from Secrets"))
+                b.button(f"👀 Open {u}", key=f"adm_open_{u}", on_click=admin_open, args=(u,), type="primary",
+                         use_container_width=True)
+                with c.popover("🔑 Password", use_container_width=True):
+                    st.text_input(f"New password for {u}", type="password", key=f"adm_new_{u}")
+                    st.button("Set password", key=f"adm_set_{u}", on_click=admin_set_pw, args=(u,))
+                    st.caption("Rules: " + " · ".join(PW_RULES[:4]))
+                    if rec:
+                        st.button("↩️ Back to the Secrets password", key=f"adm_reset_{u}", on_click=admin_reset_pw,
+                                  args=(u,))
+    others = [u for u in login_table() if who(u)["profile"] not in KIDS]
+    if others:
+        st.caption("⚠️ These names in [logins] don't belong to a child yet (add them to [parents]): " + ", ".join(others))
+    st.markdown("### 🔑 My admin password")
+    password_form(me, "adm_pw")
+    st.caption("Forgotten the admin password? Delete accounts.json from the private data repo on GitHub — every "
+               "password then goes back to what's in Secrets.")
+
+
 LOGINS = login_table()
 CHAT_ON = bool(LOGINS)
-if not LOGINS:
+if not LOGINS and not admin_table():
     AUTH = {"user": "andal", "profile": "andal", "role": "kid", "legacy": True}
 else:
     AUTH = st.session_state.get("auth")
     if not AUTH:
         qu, qk = st.query_params.get("u", ""), st.query_params.get("k", "")
-        if qu in LOGINS and qk and hmac.compare_digest(qk, _token(qu, LOGINS[qu])):
+        if qu and qk and can_sign_in(qu) and hmac.compare_digest(qk, _token(qu, cred_key(qu))):
             AUTH = st.session_state.auth = who(qu)
+            if AUTH["role"] == "admin":
+                st.session_state.admin_auth = AUTH
     if not AUTH:
         st.markdown(BASE_CSS + "<style>" + THEME_CSS["rainbow"] + "</style>", unsafe_allow_html=True)
         st.markdown('<div class="hero"><div class="title">🦄 Unicorn Stars Club ⭐</div>'
                     '<div class="sub">Sign in to see your stars, tasks and rewards</div></div>', unsafe_allow_html=True)
         with st.container(border=True):
             with st.form("login", border=False):
-                st.text_input("Your name", key="li_user", placeholder="e.g. andal or elyssa")
+                st.text_input("Your name", key="li_user", placeholder="Type your name")
                 st.text_input("Password", key="li_pw", type="password")
                 st.checkbox("Keep me signed in on this device", key="li_keep", value=True)
                 st.form_submit_button("Sign in ✨", on_click=do_login, type="primary", use_container_width=True)
             if err := st.session_state.pop("li_err", None):
                 st.error(err)
-            st.caption("Grown-ups: sign in with your own grown-up name (for example andal_parent).")
+            st.caption("Grown-ups: sign in with your own grown-up name.")
         st.stop()
+    if AUTH["role"] == "admin":
+        admin_console()
+        st.stop()
+VIA_ADMIN = AUTH.get("via_admin")
+if VIA_ADMIN:
+    _va1, _va2 = st.columns([4, 1], vertical_alignment="center")
+    _va1.info(f"🛡️ Admin view — you're using **{AUTH['user']}**'s account.")
+    _va2.button("⬅️ Admin", on_click=admin_back, key="adm_back", use_container_width=True)
 apply_profile(AUTH["profile"])
 IS_PARENT = AUTH["role"] == "parent"
 CHAT_FRIEND = next((n for k, n in KIDS.items() if k != AUTH["profile"]), "")
@@ -5411,6 +5676,446 @@ def badge_popup(badges):
            f"setTimeout(function(){{P.__andalBadge({json.dumps(lst, ensure_ascii=False)});}},350);}}catch(e){{}}</script>", 1)
 
 
+# ================================ TASKS & REWARDS EDITOR (grown-ups) ================================
+# A grown-up's changes are saved in the child's progress file under "setup". Removed items are kept (switched
+# off) so old days, streaks and prizes still show their names. Changes count from today; past days don't change.
+import copy
+
+DEFAULT_SETUP = {"tasks": copy.deepcopy(TASKS), "rewards": copy.deepcopy(REWARDS),
+                 "small": copy.deepcopy(SMALL_PRIZES), "big": copy.deepcopy(BIG_PRIZES), "goal": DAILY_GOAL_MINUTES}
+DEFAULT_TEASERS = {"small": list(SMALL_TEASERS), "big": list(BIG_TEASERS)}
+OLD_PRIZE_BY_ID = dict(PRIZE_BY_ID)
+DAY_CHOICES = {"": "Every day", "school": "School days (Mon–Fri)", "weekends": "Weekends (Sat & Sun)"}
+MIN_WHEEL_PRIZES = 3
+
+
+def _merged(saved, defaults):
+    """Saved list + any default items added to the app later (so new built-in items still appear)."""
+    ids = {x["id"] for x in saved}
+    return [dict(x) for x in saved] + [dict(x) for x in defaults if x["id"] not in ids]
+
+
+def setup_lists(d):
+    s = d.get("setup") or {}
+    return {k: _merged(s.get(k, []), DEFAULT_SETUP[k]) for k in ("tasks", "rewards", "small", "big")} | \
+        {"goal": int(s.get("goal", DEFAULT_SETUP["goal"]))}
+
+
+def apply_setup(d):
+    """Switch the app to this child's own tasks, rewards and prizes (if a grown-up has changed them)."""
+    global TASKS, TASK_BY_ID, REWARDS, SMALL_PRIZES, BIG_PRIZES, PRIZE_BY_ID, DAILY_GOAL_MINUTES
+    global SMALL_TEASERS, BIG_TEASERS
+    if not d.get("setup"):
+        return
+    s = setup_lists(d)
+    TASKS = [t for t in s["tasks"] if not t.get("off")]
+    TASK_BY_ID = {t["id"]: t for t in TASKS}
+    REWARDS = []
+    for r in s["rewards"]:
+        if r.get("off") or r["streak_task"] not in TASK_BY_ID:
+            continue
+        REWARDS.append(dict(r, needs={k: v for k, v in r.get("needs", {}).items() if k in TASK_BY_ID}))
+    SMALL_PRIZES = [p for p in s["small"] if not p.get("off")]
+    BIG_PRIZES = [p for p in s["big"] if not p.get("off")]
+    PRIZE_BY_ID = {**OLD_PRIZE_BY_ID, **{p["id"]: p for p in s["small"] + s["big"]}}
+    for wheel, prizes in (("small", SMALL_PRIZES), ("big", BIG_PRIZES)):
+        ids = [p["id"] for p in prizes]
+        teas = [t for t in DEFAULT_TEASERS[wheel] if t in ids] or ids[:2]
+        if wheel == "small":
+            SMALL_TEASERS = teas
+        else:
+            BIG_TEASERS = teas
+    DAILY_GOAL_MINUTES = max(5, s["goal"])
+
+
+def _setup_save(fn, msg):
+    """Run fn(lists) on the child's saved setup and save it."""
+    def change(d):
+        s = setup_lists(d)
+        if fn(s) is False:
+            return False
+        s["changed"] = datetime.now(ZoneInfo(TIMEZONE)).strftime("%d %b %Y %H:%M")
+        s["by"] = AUTH["user"]
+        d["setup"] = s
+        apply_setup(d)
+    if update(change):
+        st.session_state.se_msg = ("ok", msg)
+    elif not st.session_state.get("se_msg"):
+        st.session_state.se_msg = ("bad", "Couldn't save just now — please try again.")
+
+
+def _find(lst, iid):
+    return next((x for x in lst if x["id"] == iid), None)
+
+
+def _new_id(prefix):
+    return f"{prefix}_{uuid.uuid4().hex[:6]}"
+
+
+def _clean_emoji(text, fallback):
+    text = str(text or "").strip()
+    return text[:4] if text else fallback
+
+
+def _task_fields(k):
+    g = st.session_state.get
+    name = " ".join(str(g(f"{k}_name", "")).split())[:90]
+    return {"name": name, "emoji": _clean_emoji(g(f"{k}_emoji"), "⭐"), "minutes": int(g(f"{k}_min", 0) or 0),
+            "required": bool(g(f"{k}_req")), "section": g(f"{k}_sec") or "learn",
+            "days": g(f"{k}_days") or "", "tip": " ".join(str(g(f"{k}_tip", "")).split())[:300]}
+
+
+def se_task_save(tid):
+    f = _task_fields(f"se_t_{tid}")
+    if not f["name"]:
+        st.session_state.se_msg = ("bad", "The task needs a name.")
+        return
+
+    def fn(s):
+        t = _find(s["tasks"], tid)
+        if t.get("auto"):
+            f["name"] = t["name"]          # the maths task keeps its name (it ticks itself)
+        if t.get("days") == "weekend" and f["days"] == "weekends":
+            f["days"] = "weekend"          # keep Andal's weekend-rules setting
+        if f["section"] == "must":
+            f["required"] = True
+        t.update({k: v for k, v in f.items() if k != "tip"})
+        if f["tip"]:
+            t["tip"] = f["tip"]
+        else:
+            t.pop("tip", None)
+        if not t["days"]:
+            t.pop("days", None)
+    _setup_save(fn, f"✅ Saved “{f['name']}”.")
+
+
+def se_task_add():
+    f = _task_fields("se_tn")
+    if not f["name"]:
+        st.session_state.se_msg = ("bad", "Give the new task a name first.")
+        return
+    if f["section"] == "must":
+        f["required"] = True
+    t = {"id": _new_id("t"), **{k: v for k, v in f.items() if v not in ("",) or k == "name"}}
+
+    def fn(s):
+        s["tasks"].append(t)
+    _setup_save(fn, f"➕ Added the task “{f['name']}”. It shows on the Today page from now on.")
+    for k in ("name", "emoji", "tip"):
+        st.session_state[f"se_tn_{k}"] = ""
+
+
+def se_toggle(kind, iid, off):
+    def fn(s):
+        lst = s[kind]
+        item = _find(lst, iid)
+        if off and kind in ("small", "big") and len([p for p in lst if not p.get("off")]) <= MIN_WHEEL_PRIZES:
+            st.session_state.se_msg = ("bad", f"A wheel needs at least {MIN_WHEEL_PRIZES} prizes. Add one before removing this.")
+            return False
+        if off and kind == "tasks" and len([t for t in lst if not t.get("off")]) <= 1:
+            st.session_state.se_msg = ("bad", "Keep at least one task.")
+            return False
+        item["off"] = off
+        if not off:
+            item.pop("off", None)
+    word = "removed" if off else "brought back"
+    _setup_save(fn, f"{'🗑️' if off else '↩️'} {word.capitalize()}. Past days keep their history.")
+
+
+def se_move(kind, iid, step):
+    def fn(s):
+        lst = s[kind]
+        on = [x for x in lst if not x.get("off")]
+        i = next(n for n, x in enumerate(on) if x["id"] == iid)
+        j = i + step
+        if not 0 <= j < len(on):
+            return False
+        a, b = lst.index(on[i]), lst.index(on[j])
+        lst[a], lst[b] = lst[b], lst[a]
+    _setup_save(fn, "↕️ Order changed.")
+
+
+def se_goal_save():
+    v = int(st.session_state.get("se_goal", DAILY_GOAL_MINUTES) or DAILY_GOAL_MINUTES)
+
+    def fn(s):
+        s["goal"] = max(5, min(240, v))
+    _setup_save(fn, f"⏳ Most minutes per day is now {max(5, min(240, v))}.")
+
+
+def _reward_how(r, names):
+    how = f"{names.get(r['streak_task'], r['streak_task'])}: {r['streak_len']} days in a row"
+    if r.get("needs"):
+        n = max(r["needs"].values())
+        how += (", and " + ", ".join(names.get(t, t) for t in r["needs"]) +
+                f" on at least {n} days in the last {r['window']} days")
+    if r.get("bonus_minutes"):
+        how += f". The {r['bonus_minutes']} minutes go into your balance"
+    return how + "."
+
+
+def _reward_fields(k):
+    g = st.session_state.get
+    return {"name": " ".join(str(g(f"{k}_name", "")).split())[:90], "emoji": _clean_emoji(g(f"{k}_emoji"), "🎁"),
+            "streak_task": g(f"{k}_task"), "streak_len": int(g(f"{k}_len", 7) or 7),
+            "needs_tasks": list(g(f"{k}_needs", []) or []), "needs_n": int(g(f"{k}_needn", 0) or 0),
+            "bonus_minutes": int(g(f"{k}_bonus", 0) or 0)}
+
+
+def _apply_reward(r, f, names):
+    r.update({"name": f["name"], "emoji": f["emoji"], "streak_task": f["streak_task"], "streak_len": f["streak_len"]})
+    needs = {t: max(1, f["needs_n"]) for t in f["needs_tasks"] if t != f["streak_task"]} if f["needs_n"] else {}
+    r["needs"] = needs
+    r["window"] = max(f["streak_len"], max(needs.values()) if needs else 0, r.get("window", 0) if needs else 0)
+    if f["bonus_minutes"]:
+        r["bonus_minutes"] = f["bonus_minutes"]
+    else:
+        r.pop("bonus_minutes", None)
+    r["how"] = _reward_how(r, names)
+
+
+def se_reward_save(rid):
+    f = _reward_fields(f"se_r_{rid}")
+    if not f["name"] or not f["streak_task"]:
+        st.session_state.se_msg = ("bad", "The reward needs a name and a task.")
+        return
+    names = {t["id"]: t["name"] for t in TASKS}
+
+    def fn(s):
+        _apply_reward(_find(s["rewards"], rid), f, names)
+    _setup_save(fn, f"✅ Saved the reward “{f['name']}”.")
+
+
+def se_reward_add():
+    f = _reward_fields("se_rn")
+    if not f["name"] or not f["streak_task"]:
+        st.session_state.se_msg = ("bad", "Give the reward a name and choose a task.")
+        return
+    names = {t["id"]: t["name"] for t in TASKS}
+    r = {"id": _new_id("r")}
+    _apply_reward(r, f, names)
+
+    def fn(s):
+        s["rewards"].append(r)
+    _setup_save(fn, f"➕ Added the reward “{f['name']}”.")
+    for k in ("name", "emoji"):
+        st.session_state[f"se_rn_{k}"] = ""
+
+
+def se_prize_save(wheel, pid):
+    g = st.session_state.get
+    k = f"se_p_{wheel}_{pid}"
+    name = " ".join(str(g(f"{k}_name", "")).split())[:90]
+    if not name:
+        st.session_state.se_msg = ("bad", "The prize needs a name.")
+        return
+
+    def fn(s):
+        p = _find(s[wheel], pid)
+        if not p.get("auto"):
+            p["name"] = name
+        p["emoji"] = _clean_emoji(g(f"{k}_emoji"), p["emoji"])
+        rules = " ".join(str(g(f"{k}_rules", "")).split())[:200]
+        if rules:
+            p["rules"] = rules
+        else:
+            p.pop("rules", None)
+    _setup_save(fn, f"✅ Saved the prize “{name}”.")
+
+
+def se_prize_add(wheel):
+    g = st.session_state.get
+    k = f"se_pn_{wheel}"
+    name = " ".join(str(g(f"{k}_name", "")).split())[:90]
+    if not name:
+        st.session_state.se_msg = ("bad", "Give the prize a name first.")
+        return
+    p = {"id": _new_id("p"), "emoji": _clean_emoji(g(f"{k}_emoji"), "🎁"), "name": name}
+    rules = " ".join(str(g(f"{k}_rules", "")).split())[:200]
+    if rules:
+        p["rules"] = rules
+
+    def fn(s):
+        s[wheel].append(p)
+    _setup_save(fn, f"➕ Added “{name}” to the {wheel} wheel.")
+    for f in ("name", "emoji", "rules"):
+        st.session_state[f"{k}_{f}"] = ""
+
+
+def se_reset_all():
+    def change(d):
+        d.pop("setup", None)
+    if update(change):
+        for k in [k for k in st.session_state if isinstance(k, str) and k.startswith("se_")]:
+            del st.session_state[k]
+        st.session_state.se_msg = ("ok", "↩️ Back to the original tasks, rewards and prizes.")
+
+
+def _days_label(t):
+    return DAY_CHOICES.get("weekends" if t.get("days") == "weekend" else t.get("days", ""), "Every day")
+
+
+def setup_editor():
+    s = setup_lists(data)
+    if m := st.session_state.pop("se_msg", None):
+        (st.success if m[0] == "ok" else st.error)(m[1])
+    st.markdown(f"Change {STUDENT_NAME}'s tasks, rewards and wheel prizes. Changes count **from today** — past days, "
+                "minutes already earned and streaks so far stay as they are.")
+    if data.get("setup", {}).get("changed"):
+        st.caption(f"Last changed {data['setup']['changed']} by {data['setup'].get('by', 'a grown-up')}.")
+    sec_names = dict(SECTIONS)
+    pane = st.segmented_control("What would you like to change?", ["📋 Tasks", "🏆 Streak rewards", "🎡 Wheel prizes",
+                                                                   "⏳ Daily limit"], key="se_pane", default="📋 Tasks")
+    active_tasks = [t for t in s["tasks"] if not t.get("off")]
+    tnames = {t["id"]: f"{t['emoji']} {t['name']}" for t in s["tasks"]}
+
+    def task_form(k, t=None):
+        t = t or {}
+        a, b = st.columns([1, 5])
+        a.text_input("Emoji", value=t.get("emoji", ""), key=f"{k}_emoji", max_chars=4, placeholder="⭐")
+        b.text_input("Task", value=t.get("name", ""), key=f"{k}_name", disabled=bool(t.get("auto")),
+                     placeholder="e.g. Practise piano for 15 minutes")
+        c, d_, e = st.columns(3)
+        c.number_input("Screen-time minutes", 0, 60, int(t.get("minutes", 5)), step=1, key=f"{k}_min")
+        secs = [x for x, _ in SECTIONS]
+        d_.selectbox("Group", secs, index=secs.index(t.get("section", "learn")) if t.get("section", "learn") in secs else 0,
+                     key=f"{k}_sec", format_func=lambda x: sec_names[x])
+        dk = "weekends" if t.get("days") == "weekend" else t.get("days", "")
+        e.selectbox("When", list(DAY_CHOICES), index=list(DAY_CHOICES).index(dk) if dk in DAY_CHOICES else 0,
+                    key=f"{k}_days", format_func=lambda x: DAY_CHOICES[x])
+        st.checkbox("🔒 Must do (screen time stays locked until it's done)", value=bool(t.get("required")),
+                    key=f"{k}_req")
+        st.text_input("Tip shown under the task (optional)", value=t.get("tip", ""), key=f"{k}_tip",
+                      placeholder="e.g. Scales first, then your piece")
+
+    if pane == "📋 Tasks":
+        st.caption(f"{len(active_tasks)} tasks. Tap one to change it.")
+        for i, t in enumerate(active_tasks):
+            badge = " · 🔒 must do" if t.get("required") else ""
+            with st.expander(f"{t['emoji']} {t['name']} · +{t['minutes']} min · {_days_label(t)}{badge}"):
+                with st.form(f"se_t_{t['id']}_f", border=False):
+                    task_form(f"se_t_{t['id']}", t)
+                    if t.get("auto"):
+                        st.caption("🔢 This task ticks itself when the maths is solved, so its name stays the same.")
+                    st.form_submit_button("💾 Save", on_click=se_task_save, args=(t["id"],), type="primary")
+                m1, m2, m3 = st.columns(3)
+                m1.button("⬆️ Up", key=f"se_tu_{t['id']}", on_click=se_move, args=("tasks", t["id"], -1),
+                          disabled=i == 0, use_container_width=True)
+                m2.button("⬇️ Down", key=f"se_td_{t['id']}", on_click=se_move, args=("tasks", t["id"], 1),
+                          disabled=i == len(active_tasks) - 1, use_container_width=True)
+                with m3.popover("🗑️ Remove", use_container_width=True):
+                    st.write(f"Remove **{t['name']}**? It disappears from the Today page. Past days keep it.")
+                    st.button("Yes, remove", key=f"se_tx_{t['id']}", on_click=se_toggle, args=("tasks", t["id"], True))
+        with st.container(border=True):
+            st.markdown("**➕ Add a new task**")
+            with st.form("se_tn_f", border=False):
+                task_form("se_tn")
+                st.form_submit_button("➕ Add task", on_click=se_task_add, type="primary")
+        off = [t for t in s["tasks"] if t.get("off")]
+        if off:
+            with st.expander(f"↩️ Removed tasks ({len(off)})"):
+                for t in off:
+                    c1, c2 = st.columns([4, 1])
+                    c1.write(f"{t['emoji']} {t['name']}")
+                    c2.button("Bring back", key=f"se_tb_{t['id']}", on_click=se_toggle, args=("tasks", t["id"], False))
+
+    elif pane == "🏆 Streak rewards":
+        st.caption("A streak reward unlocks when a task is done a number of days in a row. "
+                   "Add bonus minutes for a screen-time reward, or leave 0 for a real-life treat.")
+        task_ids = [t["id"] for t in active_tasks]
+
+        def reward_form(k, r=None):
+            r = r or {}
+            a, b = st.columns([1, 5])
+            a.text_input("Emoji", value=r.get("emoji", ""), key=f"{k}_emoji", max_chars=4, placeholder="🎁")
+            b.text_input("Reward", value=r.get("name", ""), key=f"{k}_name", placeholder="e.g. Pancake breakfast")
+            c, d_ = st.columns([3, 2])
+            st_ = r.get("streak_task") if r.get("streak_task") in task_ids else task_ids[0]
+            c.selectbox("Task done every day", task_ids, index=task_ids.index(st_), key=f"{k}_task",
+                        format_func=lambda x: tnames.get(x, x))
+            d_.number_input("Days in a row", 2, 120, int(r.get("streak_len", 7)), key=f"{k}_len")
+            needs = [x for x in r.get("needs", {}) if x in task_ids]
+            e, f_ = st.columns([3, 2])
+            e.multiselect("Also needs (optional)", task_ids, default=needs, key=f"{k}_needs",
+                          format_func=lambda x: tnames.get(x, x))
+            f_.number_input("…on at least this many days", 0, 120, int(max(r.get("needs", {}).values() or [0])),
+                            key=f"{k}_needn")
+            st.number_input("Bonus screen-time minutes (0 = a real-life reward)", 0, 300,
+                            int(r.get("bonus_minutes", 0)), step=10, key=f"{k}_bonus")
+
+        for r in [r for r in s["rewards"] if not r.get("off")]:
+            with st.expander(f"{r['emoji']} {r['name']} · {r['streak_len']} days of "
+                             f"{tnames.get(r['streak_task'], r['streak_task'])}"):
+                if r["streak_task"] not in task_ids:
+                    st.warning("⚠️ Its task was removed, so this reward is hidden. Pick a new task and save.")
+                st.caption(r.get("how", ""))
+                with st.form(f"se_r_{r['id']}_f", border=False):
+                    reward_form(f"se_r_{r['id']}", r)
+                    st.form_submit_button("💾 Save", on_click=se_reward_save, args=(r["id"],), type="primary")
+                with st.popover("🗑️ Remove"):
+                    st.write(f"Remove **{r['name']}**? Streak progress towards it stops showing.")
+                    st.button("Yes, remove", key=f"se_rx_{r['id']}", on_click=se_toggle, args=("rewards", r["id"], True))
+        with st.container(border=True):
+            st.markdown("**➕ Add a new streak reward**")
+            with st.form("se_rn_f", border=False):
+                reward_form("se_rn")
+                st.form_submit_button("➕ Add reward", on_click=se_reward_add, type="primary")
+        off = [r for r in s["rewards"] if r.get("off")]
+        if off:
+            with st.expander(f"↩️ Removed rewards ({len(off)})"):
+                for r in off:
+                    c1, c2 = st.columns([4, 1])
+                    c1.write(f"{r['emoji']} {r['name']}")
+                    c2.button("Bring back", key=f"se_rb_{r['id']}", on_click=se_toggle, args=("rewards", r["id"], False))
+
+    elif pane == "🎡 Wheel prizes":
+        wheel = st.segmented_control("Which wheel?", ["small", "big"], key="se_wheel", default="small",
+                                     format_func=lambda w: "🌈 Small wheel" if w == "small" else "🦄 Big wheel") or "small"
+        prizes = [p for p in s[wheel] if not p.get("off")]
+        st.caption(f"{len(prizes)} prizes on the {wheel} wheel (at least {MIN_WHEEL_PRIZES}).")
+        for i, p in enumerate(prizes):
+            k = f"se_p_{wheel}_{p['id']}"
+            with st.expander(f"{p['emoji']} {p['name']}"):
+                with st.form(f"{k}_f", border=False):
+                    a, b = st.columns([1, 5])
+                    a.text_input("Emoji", value=p["emoji"], key=f"{k}_emoji", max_chars=4)
+                    b.text_input("Prize", value=p["name"], key=f"{k}_name", disabled=bool(p.get("auto")))
+                    st.text_input("Rules (optional)", value=p.get("rules", ""), key=f"{k}_rules")
+                    if p.get("auto"):
+                        st.caption("⚡ This prize is added automatically when won, so its name stays the same.")
+                    st.form_submit_button("💾 Save", on_click=se_prize_save, args=(wheel, p["id"]), type="primary")
+                with st.popover("🗑️ Remove"):
+                    st.write(f"Take **{p['name']}** off the wheel?")
+                    st.button("Yes, remove", key=f"se_px_{wheel}_{p['id']}", on_click=se_toggle,
+                              args=(wheel, p["id"], True))
+        with st.container(border=True):
+            st.markdown(f"**➕ Add a prize to the {wheel} wheel**")
+            with st.form(f"se_pn_{wheel}_f", border=False):
+                a, b = st.columns([1, 5])
+                a.text_input("Emoji", key=f"se_pn_{wheel}_emoji", max_chars=4, placeholder="🎁")
+                b.text_input("Prize", key=f"se_pn_{wheel}_name", placeholder="e.g. Choose a family board game")
+                st.text_input("Rules (optional)", key=f"se_pn_{wheel}_rules")
+                st.form_submit_button("➕ Add prize", on_click=se_prize_add, args=(wheel,), type="primary")
+        off = [p for p in s[wheel] if p.get("off")]
+        if off:
+            with st.expander(f"↩️ Removed prizes ({len(off)})"):
+                for p in off:
+                    c1, c2 = st.columns([4, 1])
+                    c1.write(f"{p['emoji']} {p['name']}")
+                    c2.button("Bring back", key=f"se_pb_{wheel}_{p['id']}", on_click=se_toggle, args=(wheel, p["id"], False))
+
+    else:
+        st.number_input("Most screen-time minutes she can earn from tasks in one day", 5, 240, s["goal"], step=5,
+                        key="se_goal")
+        st.caption("A ⭐ star day is a day she earns this many minutes.")
+        st.button("💾 Save", key="se_goal_btn", on_click=se_goal_save, type="primary")
+
+    with st.expander("⚠️ Go back to the original lists"):
+        st.write("This puts back the original tasks, rewards, prizes and daily limit. Progress is not deleted.")
+        ok = st.checkbox("Yes, I'm sure", key="se_reset_ok")
+        st.button("Reset tasks & rewards", on_click=se_reset_all, disabled=not ok)
+
+
 # =================================== APP ===================================
 if "data" not in st.session_state:
     try:
@@ -5422,6 +6127,7 @@ if "data" not in st.session_state:
 today = today_local()
 TODAY_KEY = today.isoformat()
 data = st.session_state.data
+apply_setup(data)       # this child's own tasks, rewards and prizes (if a grown-up changed them)
 
 def add_notice(d, kind, text, **extra):
     d.setdefault("notify", []).append(dict({"id": uuid.uuid4().hex[:8], "kind": kind, "text": text,
@@ -5457,8 +6163,18 @@ st.markdown(BASE_CSS + "<style>" + THEME_CSS.get(theme_id, THEME_CSS["rainbow"])
             unsafe_allow_html=True)
 install_sound_engine()
 if not AUTH.get("legacy"):
-    _sb1, _sb2 = st.columns([4, 1])
-    _sb1.caption(f"👋 Signed in as **{STUDENT_NAME}'s grown-up**" if IS_PARENT else f"👋 Signed in as **{STUDENT_NAME}**")
+    _sb1, _sbp, _sb2 = st.columns([3, 1, 1], vertical_alignment="center")
+    if not IS_PARENT:
+        _me = STUDENT_NAME
+    elif AUTH["user"].endswith("_parent"):
+        _me = f"{STUDENT_NAME}'s grown-up"
+    else:
+        _me = f"{AUTH['user'].title()} ({STUDENT_NAME}'s grown-up)"
+    _sb1.caption(f"👋 Signed in as **{_me}**")
+    if not VIA_ADMIN:
+        with _sbp.popover("🔑", use_container_width=True, help="Change my password"):
+            st.markdown("**🔑 Change my password**")
+            password_form(AUTH["user"], "mypw")
     _sb2.button("Sign out", on_click=do_logout, key="signout", use_container_width=True)
 alerts = st.container()   # fixed holders, so the tabs below never move (moving resets the open tab)
 
@@ -5526,7 +6242,7 @@ def dismiss_message(mid):
 
 FB_STARS = {0: "", 1: "⭐", 2: "⭐⭐", 3: "⭐⭐⭐"}
 FB_TASKS = [(t["id"], f"{t['emoji']} {t['name']}") for t in TASKS] + [
-    ("chalisa_recite", "🙏 Hanuman Chalisa recitation"), ("story", "📖 Story / writing"),
+    *([("chalisa_recite", "🙏 Hanuman Chalisa recitation")] if SHOW_CHALISA else []), ("story", "📖 Story / writing"),
     ("bonus_maths", "⭐ Bonus maths"), ("general", "💬 General / the whole day")]
 FB_TASK_NAME = dict(FB_TASKS)
 new_feedback = [f for f in data.get("task_feedback", []) if not f.get("seen")]
@@ -5561,13 +6277,17 @@ def save_task_feedback(prefix, day_key, need_pin):
         st.session_state[f"{prefix}_msg"] = ("ok", f"💬 Feedback saved — {STUDENT_NAME} will see it on her Today page.")
 
 
+FEEDBACK_EXAMPLE = ("Lovely clear Tamil today! Try to say 'naan' a little slower. 💖" if SHOW_TAMIL else
+                    f"Lovely clear {LANGUAGE} today! Keep practising your tones. 💖")
+
+
 def feedback_form(prefix, day_key, need_pin, task_ids=None):
     opts = [k for k, _ in FB_TASKS if task_ids is None or k in task_ids or k in ("chalisa_recite", "story",
                                                                                    "bonus_maths", "general")]
     with st.form(f"{prefix}_form", border=False):
         st.selectbox("Which task?", opts, key=f"{prefix}_task", format_func=lambda k: FB_TASK_NAME.get(k, k))
         st.text_area("Your feedback", key=f"{prefix}_text", height=80,
-                     placeholder="Lovely clear Tamil today! Try to say 'naan' a little slower. 💖")
+                     placeholder=FEEDBACK_EXAMPLE)
         st.radio("Stars (optional)", [0, 1, 2, 3], key=f"{prefix}_stars", horizontal=True,
                  format_func=lambda n: FB_STARS[n] or "none")
         if need_pin:
@@ -6179,6 +6899,7 @@ with tab_today:
                    "<b>🧘 Calm corner</b> (in 🌈 My Day).",
         "comb": "💇‍♀️ Comb your hair nicely, all the way through. Ask a grown-up to help with tangles.",
     })
+    tips.update({t["id"]: "💡 " + html_safe(t["tip"]) for t in TASKS if t.get("tip")})
     for sec_id, sec_title in SECTIONS:
         sec_tasks = [t for t in TASKS_TODAY
                      if ("must" if t["id"] in REQ_TODAY else t.get("section", "learn")) == sec_id]
@@ -7200,7 +7921,7 @@ if tab_sg is not None:
         st.caption("🔈 No sound? Turn the iPad's silent switch off and turn the volume up.")
 
         # ---- hello in Singapore's 4 languages ----
-        st.markdown("#### 🗣️ Say hello in Singapore's 4 languages")
+        st.markdown("#### 🗣️ Say hello the Singapore way")
         st.markdown('<div class="sg-hellos">' + "".join(f'<div class="sg-hello"><div>{html_safe(lang)}</div>'
                     f'<b>{html_safe(word)}</b></div>' for lang, word in SG_HELLOS) + '</div>', unsafe_allow_html=True)
 
@@ -7437,13 +8158,15 @@ with tab_rewards:
         with st.container(border=True):
             st.markdown(f'<div class="reward-head">{r["emoji"]} {html_safe(r["name"])}</div>'
                         f'<div class="how">{html_safe(r["how"])}</div>', unsafe_allow_html=True)
-            word = STREAK_WORDS.get(r["streak_task"], r["streak_task"])
+            word = STREAK_WORDS.get(r["streak_task"]) or \
+                (f'{TASK_BY_ID[r["streak_task"]]["emoji"]} {TASK_BY_ID[r["streak_task"]]["name"][:28]}'
+                 if r["streak_task"] in TASK_BY_ID else r["streak_task"])
             rp = [f'<span class="pill {"ok" if s["streak"] >= r["streak_len"] else ""}">'
                   f'{word} in a row {min(s["streak"], r["streak_len"])}/{r["streak_len"]}</span>']
             for tid, n in r["needs"].items():
                 t = TASK_BY_ID[tid]
                 rp.append(f'<span class="pill {"ok" if s["counts"][tid] >= n else ""}">'
-                          f'{t["emoji"]} {tid} {min(s["counts"][tid], n)}/{n} days</span>')
+                          f'{t["emoji"]} {html_safe(t["name"][:24])} {min(s["counts"][tid], n)}/{n} days</span>')
             st.markdown("".join(rp), unsafe_allow_html=True)
             st.markdown(f'<div class="rbar"><div class="rfill" style="width:{max(pct, 3)}%"></div></div>',
                         unsafe_allow_html=True)
@@ -7856,7 +8579,8 @@ with tab_parent:
                 st.caption("Nothing waiting. 🎉")
 
 
-        _gt = st.tabs(["📨 Messages", "📖 Stories & words", "😊 Moods & more", "⏳ Screen time & fixes", "🎁 Prizes & settings"] + (["💬 Girls' chat"] if CHAT_ON else []), key="gt_tabs")
+        _gt = st.tabs(["📨 Messages", "📖 Stories & words", "😊 Moods & more", "⏳ Screen time & fixes", "🎁 Prizes & settings"] + (["💬 Girls' chat"] if CHAT_ON else [])
+                      + ["⚙️ Tasks & rewards"], key="gt_tabs")
         with _gt[0]:
             kms = data.get("kid_messages", [])
             st.markdown(f"#### 📨 Messages from {STUDENT_NAME}" + (f" ({len(unread_kid)} new)" if unread_kid else ""))
@@ -8051,6 +8775,8 @@ with tab_parent:
                     c1, c2 = st.columns([6, 1])
                     c1.markdown(f"**{md_safe(m['name'])}** · {m['time'][5:16].replace('T', ' ')} — {md_safe(m['text'])}")
                     c2.button("🗑️", key=f"chdel_{m['id']}", on_click=chat_delete, args=(m["id"],), help="Remove this message")
+        with _gt[-1]:
+            setup_editor()
         if not IS_PARENT and st.button("🔒 Lock"):
             st.session_state.parent_ok = False
             st.rerun()
