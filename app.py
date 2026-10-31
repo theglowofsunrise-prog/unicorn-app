@@ -8308,6 +8308,21 @@ def cert_title(star):
     return "🌱 Rising Star Award 🌱"
 
 
+def weeks_unlock():
+    if pin_ok("wk_pin"):
+        st.session_state.parent_ok = True
+        st.session_state.parent_ok_at = datetime.now().timestamp()
+    else:
+        st.session_state.wk_bad = True
+    st.session_state.wk_pin = ""
+
+
+def weeks_approve(day_key, tids):
+    if not (IS_PARENT or st.session_state.get("parent_ok")):
+        return
+    approve_tasks(day_key, tids)
+
+
 with tab_weeks:
     st.markdown("### 🏆 My weekly certificates")
     this_monday = today - timedelta(days=today.weekday())
@@ -8347,13 +8362,52 @@ with tab_weeks:
     for t in TASKS:
         cells = "".join(f"<td>{'✅' if t['id'] in done_on(data, d_) else ('⏳' if t['id'] in ticked_on(data, d_) else ('·' if task_on(t, d_) else ''))}</td>"
                         for d_ in days14)
-        rows += f"<tr><td class='name'>{t['emoji']} {t['id']}</td>{cells}</tr>"
+        _tn = t["name"] if len(t["name"]) <= 26 else t["name"][:25].rstrip() + "…"
+        rows += f"<tr><td class='name' title='{html_safe(t['name'])}'>{t['emoji']} {html_safe(_tn)}</td>{cells}</tr>"
     stars_row = "".join(f"<td>{'⭐' if is_star_day(done_on(data, d_)) else ''}</td>" for d_ in days14)
     mins_row = "".join(f"<td>{task_minutes(done_on(data, d_)) or ''}</td>" for d_ in days14)
     rows += f"<tr class='star'><td class='name'>⭐ star day</td>{stars_row}</tr>"
     rows += f"<tr><td class='name'>⏱️ minutes</td>{mins_row}</tr>"
     st.markdown(f"<div class='scroll'><table class='week'><tr><th></th>{head}</tr>{rows}</table></div>",
                 unsafe_allow_html=True)
+    st.caption("✅ approved · ⏳ ticked, waiting for a grown-up · · not done")
+
+    # ---- grown-ups: approve single tasks straight from the calendar ----
+    _wk_pend = [(d_, sorted(pending_on(data, d_), key=lambda x: [t["id"] for t in TASKS].index(x)
+                            if x in TASK_BY_ID else 99)) for d_ in reversed(days14)]
+    _wk_pend = [(d_, p) for d_, p in _wk_pend if p]
+    st.markdown("### ⏳ Waiting for a grown-up to approve")
+    if not _wk_pend:
+        st.caption("Nothing waiting — every ticked task in the last 14 days is approved. 🎉")
+    else:
+        _wk_open = IS_PARENT or (st.session_state.get("parent_ok") and datetime.now().timestamp()
+                                 - st.session_state.get("parent_ok_at", 0) <= PARENT_AUTOLOCK_MINUTES * 60)
+        with st.container(border=True):
+            if not _wk_open:
+                st.markdown(f"**{sum(len(p) for _, p in _wk_pend)} task(s)** are waiting. "
+                            "Grown-ups: enter the PIN to approve them one by one.")
+                with st.form("wk_unlock", border=False):
+                    _u1, _u2 = st.columns([2, 1], vertical_alignment="bottom")
+                    _u1.text_input("Grown-up PIN", type="password", key="wk_pin")
+                    _u2.form_submit_button("🔓 Unlock", on_click=weeks_unlock, use_container_width=True)
+                if st.session_state.pop("wk_bad", None):
+                    st.error("That PIN isn't right.")
+            else:
+                if not IS_PARENT:
+                    st.caption(f"🔓 Unlocked — locks again after {PARENT_AUTOLOCK_MINUTES} minutes.")
+                for d_, p in _wk_pend:
+                    _h1, _h2 = st.columns([3, 2], vertical_alignment="center")
+                    _h1.markdown(f'<div class="pb-day">{"Today" if d_ == today else d_.strftime("%A %d %b")}</div>',
+                                 unsafe_allow_html=True)
+                    if len(p) > 1:
+                        _h2.button(f"✅ Approve all {len(p)}", key=f"wk_all_{d_}", on_click=weeks_approve,
+                                   args=(d_.isoformat(), p), use_container_width=True)
+                    for tid in p:
+                        t = TASK_BY_ID.get(tid, {"emoji": "•", "name": tid})
+                        _r1, _r2 = st.columns([4, 1], vertical_alignment="center")
+                        _r1.markdown(f"{t['emoji']} {html_safe(t['name'])}", unsafe_allow_html=True)
+                        _r2.button("✅", key=f"wk_ok_{d_}_{tid}", on_click=weeks_approve,
+                                   args=(d_.isoformat(), [tid]), help="Approve this task", use_container_width=True)
 
 
 # ================================ GROWN-UPS ================================
